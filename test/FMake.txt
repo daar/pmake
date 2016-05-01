@@ -1,0 +1,4 @@
+project('FMake test');
+
+add_executable('helloworld', ['hello.pp']);
+target_link_libraries('helloworld', ['lib_hello']);
