@@ -14,12 +14,14 @@ var
   f: Text;
   fpc: string;
   sw : string = '';
+  BasePath: string;
 
   procedure FileSearch(const path: string);
   var
     info: TSearchRec;
     fi: Text;
     c: char;
+    tmp: String;
   begin
     if FindFirst(path + '*', faAnyFile, info) = 0 then
     begin
@@ -30,7 +32,8 @@ var
             //add FMake.txt to the compile 'script'
             if info.name = 'FMake.txt' then
             begin
-              writeln('  -- found ', path + info.name);
+              tmp := path + info.name;
+              writeln('-- Found ', StringReplace(tmp, BasePath, '.' + DirectorySeparator, [rfReplaceAll]));
               assign(fi, path + info.name);
               reset(fi);
               writeln(f, '  add_subdirectory(''' + ExtractFilePath(path + info.name) + ''');');
@@ -63,7 +66,8 @@ begin
   writeln(f, 'begin');
   writeln(f, '  init_make;');
 
-  FileSearch(IncludeTrailingBackSlash(GetCurrentDir));
+  BasePath := IncludeTrailingBackSlash(GetCurrentDir);
+  FileSearch(BasePath);
 
   writeln(f, '  run_make;');
   writeln(f, 'end.');
@@ -82,6 +86,6 @@ begin
   {$endif}
   DeleteFile(ChangeFileExt(fname, '.o'));
 
-  writeln('  -- Generating done');
-  writeln('  -- Build file has been written to: ', ExpandFileName('make'));
+  writeln('-- Generating done');
+  writeln('-- Build file has been written to: ', ExpandFileName('make'));
 end.
