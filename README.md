@@ -46,7 +46,7 @@ Please note that this is only a proof of concept for now. The fmake sources cont
 A rather incomplete list, but with most important items mentioned:
 
  - [x] add getopts to fmake so one can assign commandline parameters for FPC location, get/display help message and control verbosity of fmake
- - [ ] keep track of FMake.txt locations and display a proper message when failing to compile via fmake
+ - [x] keep track of FMake.txt locations and display a proper message when failing to compile via fmake
  - [ ] add clean target to make
  - [ ] add install target to make
  - [ ] implement executing of external tools to make
