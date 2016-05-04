@@ -15,15 +15,28 @@ uses {$IFDEF UNIX}
 const
   FMakeVersion = '0.01';
 
+type
+  TFMakeItem = record
+    fname: string;
+    startpos: integer;
+    endpos: integer;
+  end;
+  PFMakeItem = ^TFMakeItem;
+
 var
   fname: string = '';
-  f: Text;
+  make: TStrings;
   BasePath: string = '';
-  verbose: boolean = false;
+  verbose: boolean = False;
+  fmakelist: TFPList;
 
   Procedure PrintUsage;
   begin
-    writeln('FMake the freepascal build tool. Version ', FMakeVersion, ' [', {$I %DATE%}, '] for ', {$I %FPCTARGETCPU%});
+    writeln('FMake the freepascal build tool. Version ', FMakeVersion, ' [',
+{$I %DATE%}
+      , '] for ',
+{$I %FPCTARGETCPU%}
+      );
     writeln('Copyright (c) 2016 by Darius Blaszyk');
     writeln(ParamStr(0), ' [options]');
     writeln;
@@ -67,7 +80,7 @@ var
       case c of
         'h': PrintUsage;
         'f': ufmake.fpc := optarg;
-        'v': verbose := true;
+        'v': verbose := True;
         '?', ':': PrintUsage;
       end;
     until c = endofoptions;
@@ -88,9 +101,8 @@ var
   procedure FileSearch(const path: string);
   var
     info: TSearchRec;
-    fi: Text;
-    c: char;
-    tmp: string;
+    infile: TStrings;
+    fitem: PFMakeItem;
   begin
     if FindFirst(path + '*', faAnyFile, info) = 0 then
     begin
@@ -99,29 +111,34 @@ var
           if (info.Attr and faDirectory) = 0 then
           begin
             //add FMake.txt to the compile 'script'
-            if info.name = 'FMake.txt' then
+            if info.Name = 'FMake.txt' then
             begin
-              tmp := path + info.name;
-              writeln('-- Found ', StringReplace(tmp, BasePath, '.' +
-                DirectorySeparator, [rfReplaceAll]));
-              assign(fi, path + info.name);
-              reset(fi);
-              writeln(f, '  add_subdirectory(''' +
-                ExtractFilePath(path + info.name) + ''');');
+              fitem := getmem(sizeof(TFMakeItem));
+              fmakelist.Add(fitem);
 
+              fitem^.fname := StringReplace(path + info.Name, BasePath,
+                '.' + DirectorySeparator, [rfReplaceAll]);
+              writeln('-- Found ', fitem^.fname);
 
-              while not EOF(fi) do
-              begin
-                read(fi, c);
-                write(f, c);
-              end;
-              close(fi);
+              make.Add('  add_subdirectory(''' +
+                ExtractFilePath(path + info.Name) + ''');');
+
+              fitem^.startpos := make.Count;
+
+              infile := TStringList.Create;
+              infile.LoadFromFile(path + info.Name);
+
+              make.AddStrings(infile);
+
+              fitem^.endpos := make.Count;
+
+              infile.Free;
             end;
           end
           else
           //start the recursive search
-          if (info.name <> '.') and (info.name <> '..') then
-            FileSearch(IncludeTrailingBackSlash(path + info.name));
+          if (info.Name <> '.') and (info.Name <> '..') then
+            FileSearch(IncludeTrailingBackSlash(path + info.Name));
 
         until FindNext(info) <> 0
       finally
@@ -130,11 +147,64 @@ var
     end;
   end;
 
+  procedure UpdateFMakePostions(var FPCMsgs: TFPList; fName: string);
+  var
+    i: integer;
+    fpc_msg: PFPCMessage;
+    fpc_msgtype: TMessage;
+    from_file, to_file: string;
+    sep: integer;
+    lineno, j: integer;
+    fitem: PFMakeItem;
+    found: Boolean;
+    tmp: string;
+  begin
+    from_file := ExtractFileName(fName);
+    to_file := 'FMake.txt';
+
+    for i := 0 to FPCMsgs.Count - 1 do
+    begin
+      fpc_msg := PFPCMessage(FPCMsgs[i]);
+      fpc_msgtype := GetFPCMsgType(fpc_msg^.msgidx);
+      if fpc_msgtype in [mError, mFail] then
+      begin
+        sep := pos(',', fpc_msg^.Text);
+        if sep > 0 then
+        begin
+          sep := sep - length(from_file) - 2;
+          lineno := StrToInt(copy(fpc_msg^.Text, length(from_file) + 2, sep));
+
+          //find the line no
+          for j := 0 to fmakelist.Count - 1 do
+          begin
+            fitem := PFMakeItem(fmakelist[j]);
+            found := False;
+            if (fitem^.startpos <= lineno) and (fitem^.endpos >= lineno) then
+            begin
+              found := True;
+              break;
+            end;
+          end;
+
+          if found then
+          begin
+            sep := pos(',', fpc_msg^.Text);
+            tmp := copy(fpc_msg^.Text, sep, length(fpc_msg^.Text) - sep + 1);
+            fpc_msg^.Text :=
+              format('%s(%d%s', [fitem^.fname, lineno - fitem^.startpos, tmp]);
+          end;
+        end;
+      end;
+    end;
+  end;
+
 var
   fpc_out: TStrings;
   param: TStrings;
   fpc_msg: TFPList;
+  fitem: PFMakeItem;
   ShowMsg: TMessages;
+  i: Integer;
 
 begin
   ParseOptions;
@@ -143,19 +213,20 @@ begin
     writeln('-- FPC compiler ', fpc);
 
   fname := GetTempFileName('.', 'fmake');
-  Assign(f, fname);
-  rewrite(f);
 
-  writeln(f, 'program make;');
-  writeln(f, 'uses ufmake;');
-  writeln(f, 'begin');
+  make := TStringList.Create;
+
+  make.Add('program make;');
+  make.Add('uses ufmake;');
+  make.Add('begin');
 
   BasePath := IncludeTrailingBackSlash(GetCurrentDir);
+  fmakelist := TFPList.Create;
   FileSearch(BasePath);
 
-  writeln(f, '  run_make;');
-  writeln(f, 'end.');
-  Close(f);
+  make.Add('  run_make;');
+  make.Add('end.');
+  make.SaveToFile(fname);
 
   param := TStringList.Create;
   param.Add('-viq');
@@ -177,15 +248,28 @@ begin
   fpc_msg := ParseFPCCommand(fpc_out);
   fpc_out.Free;
 
+  UpdateFMakePostions(fpc_msg, fname);
+
+  for i := 0 to fmakelist.Count - 1 do
+  begin
+    fitem := PFMakeItem(fmakelist[i]);
+    freemem(fitem);
+  end;
+  fmakelist.Free;
+
+
   if verbose then
     ShowMsg := mAll
   else
-    ShowMsg := [mFail];
+    ShowMsg := [mFail, mError];
 
   WriteFPCCommand(fpc_msg, ShowMsg);
   fpc_msg.Free;
 
   //remove the object and source files
+  if verbose then
+    writeln('-- Deleting temporary files');
+
   {$ifndef debug}
   DeleteFile(fname);
   {$endif}

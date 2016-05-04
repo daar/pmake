@@ -47,6 +47,7 @@ procedure target_link_libraries(Name: string; files: array of const);
 function RunFPCCommand(Parameters: TStrings): TStrings;
 function ParseFPCCommand(FPCOutput: TStrings): TFPList;
 procedure WriteFPCCommand(FPCMsgs: TFPList; ShowMsg: TMessages; progress: double = -1);
+function GetFPCMsgType(msgidx: integer): TMessage;
 
 var
   fpc: string;
@@ -137,15 +138,15 @@ begin
   end;
 end;
 
-procedure WriteFPCCommand(FPCMsgs: TFPList; ShowMsg: TMessages; progress: double = -1);
+function GetFPCMsgType(msgidx: integer): TMessage;
+begin
+  if msgidx = -1 then
+    Result := mUnknown
+  else
+    Result := Msg[msgidx].msgtype;
+end;
 
-  function GetFPCMsgType(msgidx: integer): TMessage;
-  begin
-    if msgidx = -1 then
-      Result := mUnknown
-    else
-      Result := Msg[msgidx].msgtype;
-  end;
+procedure WriteFPCCommand(FPCMsgs: TFPList; ShowMsg: TMessages; progress: double = -1);
 
   function GetFPCMsgCol(msgidx: integer): TMessage;
   begin
@@ -199,7 +200,7 @@ begin
       ipos := Pos(snum, sLine);
       if ipos <> 0 then
       begin
-        sLine := Copy(sLine, ipos + Length(snum), Length(sLine) - ipos - Length(snum) + 1);
+        sLine := StringReplace(sLine, sNum + ' ', '', [rfReplaceAll]);
         sLine := StringReplace(sLine, BasePath, '.' + DirectorySeparator, [rfReplaceAll]);
         found := True;
         break;
