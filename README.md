@@ -42,3 +42,13 @@ The make file is not yet capable of detecting changes in the FMake.txt files and
 The idea is to add more functionality when needed. Especially execting external programs, generating files, validating FMake.txt files and adding a configure step in the fmake generator is on the todo list. Also autogenerating make is something that should be considered.
 
 Please note that this is only a proof of concept for now. The fmake sources contain parts of code from a number of different projects, most prominently fpmkunit, that is part of the freepascal project. This means that fmake is far from efficient, however it get's the job done. A refactor and recode is needed to simplify fmake and make it more versatile and efficient. Any help is greatly appreciated!
+
+A rather incomplete list, but with most important items mentioned:
+
+ - [ ] add getopts to fmake so one can assign commandline parameters for FPC location and help window + control verbosity
+ - [ ] keep track of FMake.txt locations and display a proper message when failing to compile via fmake
+ - [ ] add clean target to make
+ - [ ] add install target to make
+ - [ ] implement executing of external tools to make
+ - [ ] implement autogenerating of make
+ - [ ] refactor ufmake.pas. Drop dependency on fpmkunit??
