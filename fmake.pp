@@ -8,13 +8,82 @@ uses {$IFDEF UNIX}
   HeapTrc, {$endif}
   Classes,
   SysUtils,
+  getopts,
   ufmake,
   Process;
+
+const
+  FMakeVersion = '0.01';
 
 var
   fname: string = '';
   f: Text;
   BasePath: string = '';
+  verbose: boolean = false;
+
+  Procedure PrintUsage;
+  begin
+    writeln('FMake the freepascal build tool. Version ', FMakeVersion, ' [', {$I %DATE%}, '] for ', {$I %FPCTARGETCPU%});
+    writeln('Copyright (c) 2016 by Darius Blaszyk');
+    writeln(ParamStr(0), ' [options]');
+    writeln;
+    writeln('Options');
+    writeln(' -h, --help          This help screen.');
+    writeln(' -f, --fpc <path>    Specify a custom FPC compiler location. If');
+    writeln('                     omitted the PATH envronment variable is searched.');
+    writeln(' -v, --verbose       Be more verbose.');
+    halt(0);
+  end;
+
+  procedure ParseOptions;
+  var
+    c: char = #0;
+    optionindex: Longint = 0;
+    theopts: array[1..3] of TOption;
+  begin
+    with theopts[1] do
+    begin
+      Name := 'verbose';
+      has_arg := 0;
+      flag := nil;
+      Value := 'v';
+    end;
+    with theopts[2] do
+    begin
+      Name := 'fpc';
+      has_arg := 1;
+      flag := nil;
+      Value := 'f';
+    end;
+    with theopts[3] do
+    begin
+      Name := '';
+      has_arg := 0;
+      flag := nil;
+    end;
+    c := #0;
+    repeat
+      c := getlongopts('hf:v', @theopts[1], optionindex);
+      case c of
+        'h': PrintUsage;
+        'f': ufmake.fpc := optarg;
+        'v': verbose := true;
+        '?', ':': PrintUsage;
+      end;
+    until c = endofoptions;
+
+    if optind <= paramcount then
+    begin
+      Write('Unknown options : ');
+      while optind <= paramcount do
+      begin
+        Write(ParamStr(optind), ' ');
+        Inc(optind);
+      end;
+      writeln;
+      PrintUsage;
+    end;
+  end;
 
   procedure FileSearch(const path: string);
   var
@@ -65,8 +134,14 @@ var
   fpc_out: TStrings;
   param: TStrings;
   fpc_msg: TFPList;
+  ShowMsg: TMessages;
 
 begin
+  ParseOptions;
+
+  if verbose then
+    writeln('-- FPC compiler ', fpc);
+
   fname := GetTempFileName('.', 'fmake');
   Assign(f, fname);
   rewrite(f);
@@ -102,7 +177,12 @@ begin
   fpc_msg := ParseFPCCommand(fpc_out);
   fpc_out.Free;
 
-  WriteFPCCommand(fpc_msg, [mFail]);
+  if verbose then
+    ShowMsg := mAll
+  else
+    ShowMsg := [mFail];
+
+  WriteFPCCommand(fpc_msg, ShowMsg);
   fpc_msg.Free;
 
   //remove the object and source files

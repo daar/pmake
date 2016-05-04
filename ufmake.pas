@@ -48,6 +48,9 @@ function RunFPCCommand(Parameters: TStrings): TStrings;
 function ParseFPCCommand(FPCOutput: TStrings): TFPList;
 procedure WriteFPCCommand(FPCMsgs: TFPList; ShowMsg: TMessages; progress: double = -1);
 
+var
+  fpc: string;
+
 implementation
 
 uses
@@ -99,7 +102,6 @@ var
   active_target: TTarget;
   ActivePath: string;
   BasePath: string = '';
-  fpc: string;
 
 function BuildCPU: TCpu;
 begin
