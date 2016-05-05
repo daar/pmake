@@ -33,24 +33,41 @@ type
   end;
   PFPCMessage = ^TFPCMessage;
 
+  TCmdTool = (ctFMake, ctMake);
+  TCmdTools = set of TCmdTool;
+
+  TCmdOption = record
+    Name: string;
+    descr: string;
+    tools: TCmdTools;
+  end;
+
 const
-  mAll = [mCompiling, mDebug, mError, mFail, mHint, mInformation, mLinking,
-    mNote, mOption, mUnitInfo, mUnknown, mWarning];
+  FMakeVersion = '0.01';
+
+  mAll = [mCompiling, mDebug, mError, mFail, mHint, mInformation,
+    mLinking, mNote, mOption, mUnitInfo, mUnknown, mWarning];
 
 procedure add_executable(Name: string; files: array of const);
 procedure add_library(Name: string; files: array of const);
 procedure add_subdirectory(Name: string);
 procedure project(Name: string);
-procedure run_make;
 procedure target_link_libraries(Name: string; files: array of const);
+
+procedure init_make;
+procedure run_make;
+procedure free_make;
 
 function RunFPCCommand(Parameters: TStrings): TStrings;
 function ParseFPCCommand(FPCOutput: TStrings): TFPList;
 procedure WriteFPCCommand(FPCMsgs: TFPList; ShowMsg: TMessages; progress: double = -1);
 function GetFPCMsgType(msgidx: integer): TMessage;
+procedure check_options(tool: TCmdTool);
+procedure usage(tool: TCmdTool);
 
 var
   fpc: string;
+  verbose: boolean = False;
 
 implementation
 
@@ -80,7 +97,18 @@ type
     progress: double;
   end;
 
+  TRunMode = (rmBuild, rmInstall, rmClean);
+
 const
+  CmdOptions: array[1..6] of TCmdOption = (
+    (Name: 'build'; descr: 'Build all targets in the project.'; tools: [ctMake]),
+    (Name: 'clean'; descr: 'Clean all units and folders in the project'; tools: [ctMake]),
+    (Name: 'install'; descr: 'Install all targets in the project.'; tools: [ctMake]),
+    (Name: '--fpc-compiler'; descr: 'Use indicated binary as compiler'; tools: [ctMake, ctFMake]),
+    (Name: '--help'; descr: 'This message.'; tools: [ctMake, ctFMake]),
+    (Name: '--verbose'; descr: 'Be verbose.'; tools: [ctMake, ctFMake])
+    );
+
   MsgCol: array [TMessage] of TFPCColor = (
     (msgtype: mCompiling; msgcol: Green),
     (msgtype: mDebug; msgcol: LightGray),
@@ -103,24 +131,21 @@ var
   active_target: TTarget;
   ActivePath: string;
   BasePath: string = '';
+  RunMode: TRunMode;
 
 function BuildCPU: TCpu;
 begin
-  Result := StringToCPU(
-{$I %FPCTARGETCPU%}
-    );
+  Result := StringToCPU({$I %FPCTARGETCPU%});
 end;
 
 function BuildOS: TOS;
 begin
-  Result := StringToOS(
-{$I %FPCTARGETOS%}
-    );
+  Result := StringToOS({$I %FPCTARGETOS%});
 end;
 
 function UnitsOutputDir(BasePath: string; ACPU: TCPU; AOS: TOS): string;
 begin
-  Result := IncludeTrailingBackSlash(BasePath + 'units') + MakeTargetString(ACPU, AOS);
+  Result := BasePath + 'units' + DirectorySeparator + MakeTargetString(ACPU, AOS) + DirectorySeparator;
   if not ForceDirectories(Result) then
   begin
     writeln('Failed to create directory "' + Result + '"');
@@ -130,7 +155,7 @@ end;
 
 function BinOutputDir(BasePath: string; ACPU: TCPU; AOS: TOS): string;
 begin
-  Result := IncludeTrailingBackSlash(BasePath + 'bin') + MakeTargetString(ACPU, AOS);
+  Result := BasePath + 'bin' + DirectorySeparator + MakeTargetString(ACPU, AOS) + DirectorySeparator;
   if not ForceDirectories(Result) then
   begin
     writeln('Failed to create directory "' + Result + '"');
@@ -159,7 +184,7 @@ procedure WriteFPCCommand(FPCMsgs: TFPList; ShowMsg: TMessages; progress: double
 var
   i: integer;
   fpc_msg: TFPCMessage;
-  fpc_msgtype : TMessage;
+  fpc_msgtype: TMessage;
 begin
   for i := 0 to FPCMsgs.Count - 1 do
   begin
@@ -191,7 +216,7 @@ begin
 
   for i := 0 to FPCOutput.Count - 1 do
   begin
-    sLine := FPCOutput[i];
+    sLine := StringReplace(FPCOutput[i], BasePath, '.' + DirectorySeparator, [rfReplaceAll]);
 
     found := False;
     for msgidx := Low(Msg) to High(Msg) do
@@ -201,7 +226,7 @@ begin
       if ipos <> 0 then
       begin
         sLine := StringReplace(sLine, sNum + ' ', '', [rfReplaceAll]);
-        sLine := StringReplace(sLine, BasePath, '.' + DirectorySeparator, [rfReplaceAll]);
+
         found := True;
         break;
       end;
@@ -283,7 +308,7 @@ begin
 
   // Output file paths
   if TType = ttExe then
-    Result.Add('-FE' + BinOutputDir(ATarget.ActivePath, BuildCPU, BuildOS));
+    Result.Add('-FE' + ATarget.BinOutput);
 
   Result.Add('-FU' + ATarget.UnitsOutput);
 
@@ -305,7 +330,7 @@ begin
   if TType = ttExe then
   begin
     Result.Add(Source);
-    Result.Add('-o' + ATarget.Name);
+    Result.Add('-o' + ATarget.Name + ExtractFileExt(ParamStr(0)));
   end;
 
   // compile unit name
@@ -341,6 +366,9 @@ begin
   active_target.done := False;
   active_target.ActivePath := ActivePath;
 
+  active_target.UnitsOutput := UnitsOutputDir(ActivePath, BuildCPU, BuildOS);
+  active_target.BinOutput := BinOutputDir(ActivePath, BuildCPU, BuildOS);
+
   fbuild.Targets.Add(active_target);
 end;
 
@@ -365,6 +393,8 @@ begin
   active_target.done := False;
   active_target.ActivePath := ActivePath;
 
+  active_target.UnitsOutput := UnitsOutputDir(ActivePath, BuildCPU, BuildOS);
+
   fbuild.Targets.Add(active_target);
 end;
 
@@ -375,26 +405,6 @@ begin
   ActivePath := Name;
 end;
 
-procedure init_make;
-begin
-  //{$note fix this for windows, allow to add commandline parameter}
-  //fpc := 'C:\Work\develop\fpc264\bin\i386-win32\fpc.exe';
-
-  if fpc = '' then
-    fpc := ExeSearch('fpc', SysUtils.GetEnvironmentVariable('PATH'));
-
-  if fpc = '' then
-  begin
-    writeln('error: cannot find the fpc compiler on searchpath');
-    writeln('       either set the PATH variable or use the commandline parameter -fpcbin');
-    halt(1);
-  end;
-  fbuild := TBuild.Create;
-  fbuild.Targets := TFPList.Create;
-  fbuild.sfilecount := 0;
-  fbuild.progress := 0;
-end;
-
 procedure project(Name: string);
 begin
   fbuild.projname := Name;
@@ -403,20 +413,16 @@ end;
 procedure ExecuteTarget(target: TTarget);
 var
   i: integer;
-  cmd: TMemoryStream;
   param: TStringList;
   fpc_out: TStrings;
   fpc_msg: TFPList;
 begin
-  cmd := TMemoryStream.Create;
-
   //build units of target
-  target.UnitsOutput := UnitsOutputDir(target.ActivePath, BuildCPU, BuildOS);
   for i := 0 to target.units.Count - 1 do
   begin
     fbuild.progress += 100 / fbuild.sfilecount;
     param := CompilerCommand(target, target.ActivePath + target.units[i], ttUnit);
-    //writeln(s);
+
     fpc_out := RunFPCCommand(param);
     param.Free;
 
@@ -444,8 +450,6 @@ begin
   end;
 
   writeln('Built target ', target.Name);
-
-  cmd.Free;
 end;
 
 procedure free_make;
@@ -466,19 +470,14 @@ begin
   fbuild.Free;
 end;
 
-procedure run_make;
+procedure Build;
 var
-  target: TTarget;
-  i, j: integer;
-  depname: string;
   done: integer = 0;
+  depname: string;
+  j: integer;
+  i: integer;
+  target: TTarget;
 begin
-  if fbuild.projname = '' then
-  begin
-    writeln('error: no project defined');
-    halt(1);
-  end;
-
   while done < fbuild.Targets.Count do
   begin
 
@@ -520,6 +519,69 @@ begin
   end;
 end;
 
+function DeleteDirectory(const DirectoryName: string): boolean;
+var
+  info: TSearchRec;
+begin
+  if FindFirst(DirectoryName + '*', faAnyFile, info) = 0 then
+  begin
+    try
+      repeat
+        if (info.Attr and faDirectory) = 0 then
+        begin
+          if not DeleteFile(DirectoryName + info.Name) then
+          begin
+            Result := False;
+            exit;
+          end;
+        end
+        else
+        //start the recursive search
+        if (info.Name <> '.') and (info.Name <> '..') then
+        begin
+          if not DeleteDirectory(IncludeTrailingBackSlash(DirectoryName + info.Name)) then
+          begin
+            Result := False;
+            exit;
+          end;
+          if not RemoveDir(IncludeTrailingBackSlash(DirectoryName + info.Name)) then
+          begin
+            Result := False;
+            exit;
+          end;
+        end;
+      until FindNext(info) <> 0
+    finally
+      FindClose(info);
+    end;
+  end;
+end;
+
+procedure Clean;
+var
+  i: integer;
+  target: TTarget;
+begin
+  for i := 0 to fbuild.Targets.Count - 1 do
+  begin
+    target := TTarget(fbuild.Targets[i]);
+
+    if DirectoryExists(target.UnitsOutput) then
+      if not DeleteDirectory(target.UnitsOutput) then
+      begin
+        writeln('error: cannot remove directory ', target.UnitsOutput);
+        halt(1);
+      end;
+
+    if DirectoryExists(target.BinOutput) then
+      if not DeleteDirectory(target.BinOutput) then
+      begin
+        writeln('error: cannot remove directory ', target.BinOutput);
+        halt(1);
+      end;
+  end;
+end;
+
 procedure target_link_libraries(Name: string; files: array of const);
 var
   i: integer;
@@ -532,9 +594,138 @@ begin
   end;
 end;
 
-initialization
-  init_make;
+procedure usage(tool: TCmdTool);
+var
+  i: integer;
+  First: boolean;
+begin
+  writeln('FMake the freepascal build tool. Version ', FMakeVersion, ' [', {$I %DATE%}, '] for ', {$I %FPCTARGETCPU%});
+  writeln('Copyright (c) 2016 by Darius Blaszyk');
+  writeln;
+  writeln('usage: ', ParamStr(0), ' <subcommand> [options] [args]');
+  writeln;
 
-finalization
-  free_make;
+  First := True;
+  for i := low(CmdOptions) to high(CmdOptions) do
+    if tool in CmdOptions[i].tools then
+      if pos('--', CmdOptions[i].Name) = 0 then
+      begin
+        if First then
+          writeln('Subcommands');
+        First := False;
+        writeln(Format(' %-16s %s', [CmdOptions[i].Name, CmdOptions[i].descr]));
+      end;
+
+  if First = False then
+    writeln;
+
+  First := True;
+  for i := low(CmdOptions) to high(CmdOptions) do
+    if tool in CmdOptions[i].tools then
+      if pos('--', CmdOptions[i].Name) <> 0 then
+      begin
+        if First then
+          writeln('Options');
+        First := False;
+        writeln(Format(' %-16s %s', [CmdOptions[i].Name, CmdOptions[i].descr]));
+      end;
+
+  halt(1);
+end;
+
+procedure check_options(tool: TCmdTool);
+var
+  i, j: integer;
+  found: boolean;
+begin
+  i := 1;
+
+  while i <= ParamCount do
+  begin
+    found := False;
+    for j := low(CmdOptions) to high(CmdOptions) do
+    begin
+      if ParamStr(i) = CmdOptions[j].Name then
+      begin
+        if tool in CmdOptions[j].tools then
+        begin
+
+          found := True;
+
+          case CmdOptions[j].Name of
+            'build': RunMode := rmBuild;
+            'clean': RunMode := rmClean;
+            'install': RunMode := rmInstall;
+            '--fpc-compiler':
+            begin
+              if i < ParamCount then
+              begin
+                Inc(i);
+                fpc := ParamStr(i);
+                if not FileExists(fpc) then
+                begin
+                  writeln('error: cannot find the supplied FPC-compiler');
+                  halt(1);
+                end;
+              end
+              else
+              begin
+                writeln('error: please supply a valid path for the FPC-compiler');
+                usage(tool);
+              end;
+            end;
+            '--help': usage(tool);
+            '--verbose': verbose := True;
+          end;
+        end;
+        if found then
+          break;
+      end;
+    end;
+
+    if not found then
+    begin
+      writeln('error: invalid commandline parameter ', ParamStr(i));
+      usage(tool);
+    end;
+
+    Inc(i);
+  end;
+end;
+
+procedure init_make;
+begin
+  if RunMode = rmBuild then
+  begin
+    if fpc = '' then
+      fpc := ExeSearch('fpc', SysUtils.GetEnvironmentVariable('PATH'));
+
+    if fpc = '' then
+    begin
+      writeln('error: cannot find the FPC compiler');
+      usage(ctMake);
+    end;
+  end;
+
+  fbuild := TBuild.Create;
+  fbuild.Targets := TFPList.Create;
+  fbuild.sfilecount := 0;
+  fbuild.progress := 0;
+end;
+
+procedure run_make;
+begin
+  if fbuild.projname = '' then
+  begin
+    writeln('error: no project defined');
+    halt(1);
+  end;
+
+  case RunMode of
+    rmBuild: Build;
+    rmClean: Clean;
+    //rmInstall: Install;
+  end;
+end;
+
 end.

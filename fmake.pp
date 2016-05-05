@@ -3,17 +3,15 @@ program fmake;
 {$mode objfpc}{$H+}
 { $define debug}
 
-uses {$IFDEF UNIX}
-  cthreads, {$ENDIF} {$ifdef debug}
-  HeapTrc, {$endif}
-  Classes,
-  SysUtils,
-  getopts,
-  ufmake,
-  Process;
-
-const
-  FMakeVersion = '0.01';
+uses 
+{$IFDEF UNIX}
+  cthreads, 
+{$ENDIF} 
+{$ifdef debug}
+  HeapTrc, 
+{$endif}
+  Classes, SysUtils, getopts, Process,
+  ufmake;
 
 type
   TFMakeItem = record
@@ -27,76 +25,7 @@ var
   fname: string = '';
   make: TStrings;
   BasePath: string = '';
-  verbose: boolean = False;
   fmakelist: TFPList;
-
-  Procedure PrintUsage;
-  begin
-    writeln('FMake the freepascal build tool. Version ', FMakeVersion, ' [',
-{$I %DATE%}
-      , '] for ',
-{$I %FPCTARGETCPU%}
-      );
-    writeln('Copyright (c) 2016 by Darius Blaszyk');
-    writeln(ParamStr(0), ' [options]');
-    writeln;
-    writeln('Options');
-    writeln(' -h, --help          This help screen.');
-    writeln(' -f, --fpc <path>    Specify a custom FPC compiler location. If');
-    writeln('                     omitted the PATH envronment variable is searched.');
-    writeln(' -v, --verbose       Be more verbose.');
-    halt(0);
-  end;
-
-  procedure ParseOptions;
-  var
-    c: char = #0;
-    optionindex: Longint = 0;
-    theopts: array[1..3] of TOption;
-  begin
-    with theopts[1] do
-    begin
-      Name := 'verbose';
-      has_arg := 0;
-      flag := nil;
-      Value := 'v';
-    end;
-    with theopts[2] do
-    begin
-      Name := 'fpc';
-      has_arg := 1;
-      flag := nil;
-      Value := 'f';
-    end;
-    with theopts[3] do
-    begin
-      Name := '';
-      has_arg := 0;
-      flag := nil;
-    end;
-    c := #0;
-    repeat
-      c := getlongopts('hf:v', @theopts[1], optionindex);
-      case c of
-        'h': PrintUsage;
-        'f': ufmake.fpc := optarg;
-        'v': verbose := True;
-        '?', ':': PrintUsage;
-      end;
-    until c = endofoptions;
-
-    if optind <= paramcount then
-    begin
-      Write('Unknown options : ');
-      while optind <= paramcount do
-      begin
-        Write(ParamStr(optind), ' ');
-        Inc(optind);
-      end;
-      writeln;
-      PrintUsage;
-    end;
-  end;
 
   procedure FileSearch(const path: string);
   var
@@ -152,15 +81,14 @@ var
     i: integer;
     fpc_msg: PFPCMessage;
     fpc_msgtype: TMessage;
-    from_file, to_file: string;
+    from_file: string;
     sep: integer;
     lineno, j: integer;
     fitem: PFMakeItem;
-    found: Boolean;
+    found: boolean;
     tmp: string;
   begin
     from_file := ExtractFileName(fName);
-    to_file := 'FMake.txt';
 
     for i := 0 to FPCMsgs.Count - 1 do
     begin
@@ -204,10 +132,16 @@ var
   fpc_msg: TFPList;
   fitem: PFMakeItem;
   ShowMsg: TMessages;
-  i: Integer;
+  i: integer;
 
 begin
-  ParseOptions;
+  check_options(ctFMake);
+
+  if fpc = '' then
+  begin
+    writeln('error: cannot find the FPC compiler');
+    usage(ctFMake);
+  end;
 
   if verbose then
     writeln('-- FPC compiler ', fpc);
@@ -219,12 +153,17 @@ begin
   make.Add('program make;');
   make.Add('uses ufmake;');
   make.Add('begin');
+  make.Add('  check_options(ctMake);');
+  make.Add('  init_make;');
 
   BasePath := IncludeTrailingBackSlash(GetCurrentDir);
+  make.Add('  add_subdirectory(''' + BasePath + ''');');
+
   fmakelist := TFPList.Create;
   FileSearch(BasePath);
 
   make.Add('  run_make;');
+  make.Add('  free_make;');
   make.Add('end.');
   make.SaveToFile(fname);
 
