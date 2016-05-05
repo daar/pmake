@@ -47,6 +47,7 @@ Once the FMake.txt files are present in your source tree, then using fmake is ve
     ./make
 
 The make file is not yet capable of detecting changes in the FMake.txt files and regenerate itself. So please invoke fmake each time you have worked on the build scripts or consider using a shell script that does this for you.
+Fmake and make will search the path environment variable in search of the FPC compiler. One can also use the --fpc-compiler commndline parameter followed by the complete path to the FPC compiler instead. There's also a commandline option --verbose if one would like to get a more verbose output of fmake and make.
 
 ##TODO
 The idea is to add more functionality when needed. Especially execting external programs, generating files, validating FMake.txt files and adding a configure step in the fmake generator is on the todo list. Also autogenerating make is something that should be considered.
