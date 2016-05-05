@@ -53,6 +53,7 @@ procedure add_library(Name: string; files: array of const);
 procedure add_subdirectory(Name: string);
 procedure project(Name: string);
 procedure target_link_libraries(Name: string; files: array of const);
+procedure install(directory, destination, pattern: string);
 
 procedure init_make;
 procedure run_make;
@@ -77,6 +78,13 @@ uses
 type
   TTargetType = (ttExe, ttUnit);
 
+  TInstallCommand = record
+    pattern: string;
+    directory: string;
+    destination: string;
+  end;
+  PInstallCommand = ^TInstallCommand;
+
   TTarget = class
     Dep: TStrings;
     Todo_Dep: TStrings;
@@ -88,6 +96,7 @@ type
     ActivePath: string;
     BinOutput: string;
     UnitsOutput: string;
+    Install: TFPList;
   end;
 
   TBuild = class
@@ -351,6 +360,7 @@ begin
   active_target.units := TStringList.Create;
   active_target.dep := TStringList.Create;
   active_target.todo_dep := TStringList.Create;
+  active_target.Install := TFPList.Create;
 
   active_target.Name := Name;
   active_target.Executable := ActivePath + string(files[Low(files)].VAnsiString);
@@ -381,6 +391,7 @@ begin
   active_target.units := TStringList.Create;
   active_target.dep := TStringList.Create;
   active_target.todo_dep := TStringList.Create;
+  active_target.Install := TFPList.Create;
 
   active_target.Name := Name;
 
@@ -454,8 +465,9 @@ end;
 
 procedure free_make;
 var
-  i: integer;
+  i, j: integer;
   target: TTarget;
+  ic: PInstallCommand;
 begin
   //free all objects
   for i := 0 to fbuild.Targets.Count - 1 do
@@ -464,18 +476,25 @@ begin
     target.todo_dep.Free;
     target.dep.Free;
     target.units.Free;
+
+    for j := 0 to target.Install.Count - 1 do
+    begin
+      ic := PInstallCommand(target.Install[j]);
+      FreeMem(ic);
+    end;
+    target.Install.Free;
+
     target.Free;
   end;
   fbuild.Targets.Free;
   fbuild.Free;
 end;
 
-procedure Build;
+procedure BuildMode;
 var
   done: integer = 0;
   depname: string;
-  j: integer;
-  i: integer;
+  i, j, k: integer;
   target: TTarget;
 begin
   while done < fbuild.Targets.Count do
@@ -490,7 +509,23 @@ begin
       if i > fbuild.Targets.Count - 1 then
       begin
         writeln('error: dependencies between remaining packages cannot be resolved!');
+
         //make a dump here for all unresolved packages
+        for j := 0 to fbuild.Targets.Count - 1 do
+        begin
+          target := TTarget(fbuild.Targets[j]);
+          if target.Todo_Dep.Count > 0 then
+          begin
+            writeln('Target:       ', target.Name);
+            Write('Dependencies: ');
+            for k := 0 to target.Todo_Dep.Count - 1 do
+              if k <> target.Todo_Dep.Count - 1 then
+                Write(target.Todo_Dep[k], ', ')
+              else
+                writeln(target.Todo_Dep[k]);
+          end;
+        end;
+
         halt(1);
       end;
       target := TTarget(fbuild.Targets[i]);
@@ -557,7 +592,7 @@ begin
   end;
 end;
 
-procedure Clean;
+procedure CleanMode;
 var
   i: integer;
   target: TTarget;
@@ -580,6 +615,98 @@ begin
         halt(1);
       end;
   end;
+end;
+
+procedure copyfile(old, new: string);
+var
+  infile, outfile: file;
+  buf: array[1..2048] of char;
+  numread: longint = 0;
+  numwritten: longint = 0;
+begin
+  // open files - no error checking this should be added
+  Assign(infile, old);
+  reset(infile, 1);
+  Assign(outfile, new);
+  rewrite(outfile, 1);
+
+  // copy file
+  repeat
+    blockread(infile, buf, sizeof(buf), numread);
+    blockwrite(outfile, buf, numread, numwritten);
+  until (numread = 0) or (numwritten <> numread);
+
+  Close(infile);
+  Close(outfile);
+end;
+
+procedure InstallMode;
+var
+  info: TSearchRec;
+  i, j: integer;
+  target: TTarget;
+  ic: PInstallCommand;
+begin
+  for i := 0 to fbuild.Targets.Count - 1 do
+  begin
+    target := TTarget(fbuild.Targets[i]);
+
+    for j := 0 to target.Install.Count - 1 do
+    begin
+      ic := PInstallCommand(target.Install[j]);
+
+      if FindFirst(ic^.directory + ic^.pattern, faAnyFile, info) = 0 then
+      begin
+        try
+          repeat
+            if (info.Attr and faDirectory) = 0 then
+            begin
+              if not ForceDirectories(ic^.destination) then
+              begin
+                writeln('Failed to create directory "' + ic^.directory + '"');
+                halt(1);
+              end;
+              copyfile(ic^.directory + info.Name, ic^.destination + info.Name);
+            end;
+          until FindNext(info) <> 0
+        finally
+          FindClose(info);
+        end;
+      end;
+    end;
+  end;
+end;
+
+//expand some simple macro's
+function ExpandMacros(str: string; Target: TTarget): string;
+var
+  tmp: string = '';
+begin
+  tmp := StringReplace(str, '$(TargetOS)', OSToString(BuildOS), [rfReplaceAll]);
+  tmp := StringReplace(tmp, '$(TargetCPU)', CPUToString(BuildCPU), [rfReplaceAll]);
+  tmp := StringReplace(tmp, '$(UNITSOUTPUTDIR)', Target.UnitsOutput, [rfReplaceAll]);
+  tmp := StringReplace(tmp, '$(BINOUTPUTDIR)', Target.BinOutput, [rfReplaceAll]);
+
+  {$ifdef unix}
+  tmp := StringReplace(tmp, '$(EXE)', '', [rfReplaceAll]);
+  {$else}
+  tmp := StringReplace(tmp, '$(EXE)', '.exe', [rfReplaceAll]);
+  {$endif}
+
+  Result := tmp;
+end;
+
+procedure install(directory, destination, pattern: string);
+var
+  ic: ^TInstallCommand;
+begin
+  ic := AllocMem(sizeof(TInstallCommand));
+  ic^.directory := IncludeTrailingPathDelimiter(ExpandMacros(directory, active_target));
+  ic^.destination := IncludeTrailingPathDelimiter(ExpandMacros(destination,
+    active_target));
+  ic^.pattern := ExpandMacros(pattern, active_target);
+
+  active_target.Install.Add(ic);
 end;
 
 procedure target_link_libraries(Name: string; files: array of const);
@@ -722,9 +849,9 @@ begin
   end;
 
   case RunMode of
-    rmBuild: Build;
-    rmClean: Clean;
-    //rmInstall: Install;
+    rmBuild: BuildMode;
+    rmClean: CleanMode;
+    rmInstall: InstallMode;
   end;
 end;
 

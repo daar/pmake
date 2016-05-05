@@ -2,3 +2,4 @@ project('FMake test');
 
 add_executable('helloworld', ['hello.pp']);
 target_link_libraries('helloworld', ['lib_hello']);
+install('$(BINOUTPUTDIR)', '.\release\$(TargetCPU)-$(TargetOS)', 'helloworld$(EXE)');
