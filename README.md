@@ -29,6 +29,16 @@ This procedure will define an executable. The name of the compiled executable is
     procedure target_link_libraries(Name: string; files: array of const);
 This procedure defines how dependencies are related to each other. One can interlink libraries and executables any way one chooses. The first parameter is the name of the library or executable that the dependencies belong to. The second parameter is a list of dependencies.
 
+    procedure install(directory, destination, pattern: string);
+The install procedure allows to define which files should be copied to which folder. The install definition is linked to a target that is defined. The user should first define the target and then let it be followed by the install command. Some important macro's that are defined are;
+
+  - $(TargetOS)
+  - $(TargetCPU)
+  - $(UNITSOUTPUTDIR)
+  - $(BINOUTPUTDIR)
+  - $(EXE)
+
+If needed the destination folder is created. The command can work with file patterns, but it can also take an explicit file name.
 
 ##Using fmake
 Once the FMake.txt files are present in your source tree, then using fmake is very simple. You should compile the fmake generator only once and put it somewhere accessible from the environment. Then it's only a matter of invoking fmake to create the make file itself.
