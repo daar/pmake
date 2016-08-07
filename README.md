@@ -1,3 +1,5 @@
+[![license](https://img.shields.io/badge/license-%20GPL--2-blue.svg)](../master/LICENSE)
+
 # fmake
 a build tool for (free) pascal
 
