@@ -159,6 +159,7 @@ begin
   if cmdtype = ctExecutable then
     Result.Add('-FE' + pkg^.binoutput);
 
+  Result.Add('-Fu' + pkg^.unitsoutput);
   Result.Add('-FU' + pkg^.unitsoutput);
 
   //search other unit files for the dependencies

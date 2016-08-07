@@ -8,8 +8,20 @@ uses
   Classes, SysUtils;
 
 type
-  TCommandType = (ctUnit, ctExecutable, ctInstall, ctCustom);
+  TCommandType = (ctUnit, ctExecutable, ctCustom);
   TCommandTypes = set of TCommandType;
+
+  pPackage = ^Package;
+  Package = record
+    name: string;
+    resolved: boolean;
+    dependency: TFPList;
+    unresolved: TFPList;
+    commands: TFPList;
+    activepath: string;
+    binoutput: string;
+    unitsoutput: string;
+  end;
 
   pUnitCommand = ^UnitCommand;
   UnitCommand = record
@@ -30,6 +42,7 @@ type
     directory: string;
     destination: string;
     pattern: string;
+    depends: pPackage;
   end;
 
   pCustomCommand = ^CustomCommand;
@@ -43,18 +56,6 @@ type
   Dependency = record
     source: string;
     target: string;
-  end;
-
-  pPackage = ^Package;
-  Package = record
-    name: string;
-    resolved: boolean;
-    dependency: TFPList;
-    unresolved: TFPList;
-    commands: TFPList;
-    activepath: string;
-    binoutput: string;
-    unitsoutput: string;
   end;
 
 function find_pkg_by_name(pkglist: TFPList; name: string): pPackage;

@@ -24,8 +24,11 @@ const
   FMakeVersion = '0.01';
 
 procedure add_executable(pkgname, executable, srcfile: string; depends: array of const);
+
+procedure add_library(pkgname: string; srcfiles: array of const);
 procedure add_library(pkgname: string; srcfiles, depends: array of const);
-procedure install(directory, destination, pattern: string);
+
+procedure install(directory, destination, pattern, depends: string);
 procedure add_custom_command(pkgname, executable, parameters: string; depends: array of const);
 procedure project(name: string);
 
@@ -58,12 +61,12 @@ type
 
 const
   CmdOptions: array[1..6] of TCmdOption = (
-    (Name: 'build'; descr: 'Build all targets in the project.'; tools: [ctMake]),
-    (Name: 'clean'; descr: 'Clean all units and folders in the project'; tools: [ctMake]),
-    (Name: 'install'; descr: 'Install all targets in the project.'; tools: [ctMake]),
-    (Name: '--compiler'; descr: 'Use indicated binary as compiler'; tools: [ctMake, ctFMake]),
-    (Name: '--help'; descr: 'This message.'; tools: [ctMake, ctFMake]),
-    (Name: '--verbose'; descr: 'Be more verbose.'; tools: [ctMake, ctFMake])
+    (name: 'build'; descr: 'Build all targets in the project.'; tools: [ctMake]),
+    (name: 'clean'; descr: 'Clean all units and folders in the project'; tools: [ctMake]),
+    (name: 'install'; descr: 'Install all targets in the project.'; tools: [ctMake]),
+    (name: '--compiler'; descr: 'Use indicated binary as compiler'; tools: [ctMake, ctFMake]),
+    (name: '--help'; descr: 'This message.'; tools: [ctMake, ctFMake]),
+    (name: '--verbose'; descr: 'Be more verbose.'; tools: [ctMake, ctFMake])
     );
 
 var
@@ -107,6 +110,48 @@ begin
   end;
 end;
 
+//expand some simple macro's
+function ExpandMacros(str: string; pkg: pPackage = nil): string;
+var
+  tmp: string = '';
+begin
+  tmp := StringReplace(str, '$(TargetOS)', OSToString(BuildOS), [rfReplaceAll]);
+  tmp := StringReplace(tmp, '$(TargetCPU)', CPUToString(BuildCPU), [rfReplaceAll]);
+
+  if pkg <> nil then
+  begin
+    tmp := StringReplace(tmp, '$(UNITSOUTPUTDIR)', pkg^.unitsoutput, [rfReplaceAll]);
+    tmp := StringReplace(tmp, '$(BINOUTPUTDIR)', pkg^.binoutput, [rfReplaceAll]);
+  end
+  else
+  begin
+    if pos('$(UNITSOUTPUTDIR)', tmp) <> 0 then
+    begin
+      writeln('invalid use of macro $(UNITSOUTPUTDIR) in "' + str + '"');
+      halt(1);
+    end;
+    if pos('$(BINOUTPUTDIR)', tmp) <> 0 then
+    begin
+      writeln('invalid use of macro $(BINOUTPUTDIR) in "' + str + '"');
+      halt(1);
+    end;
+  end;
+
+  {$ifdef unix}
+  tmp := StringReplace(tmp, '$(EXE)', '', [rfReplaceAll]);
+  {$else}
+  tmp := StringReplace(tmp, '$(EXE)', '.exe', [rfReplaceAll]);
+  {$endif}
+
+  {$ifdef windows}
+  tmp := StringReplace(tmp, '$(DLL)', '.dll', [rfReplaceAll]);
+  {$else}
+  tmp := StringReplace(tmp, '$(DLL)', '.so', [rfReplaceAll]);
+  {$endif}
+
+  Result := tmp;
+end;
+
 function RunCommand(Executable: string; Parameters: TStrings): TStrings;
 const
   BUF_SIZE = 2048; // Buffer size for reading the output in chunks
@@ -146,7 +191,7 @@ end;
 
 procedure add_dependecies_to_cache(pkgname: string; depends: array of const);
 var
-  i: Integer;
+  i: integer;
 begin
   for i := Low(depends) to High(depends) do
     add_dependency_to_cache(depcache, pkgname, string(depends[i].VAnsiString));
@@ -172,6 +217,11 @@ begin
 
   //dependencies will be processed once all packages are processed
   add_dependecies_to_cache(pkgname, depends);
+end;
+
+procedure add_library(pkgname: string; srcfiles: array of const);
+begin
+  add_library(pkgname, srcfiles, []);
 end;
 
 procedure add_library(pkgname: string; srcfiles, depends: array of const);
@@ -207,9 +257,9 @@ begin
   ActivePath := path;
 end;
 
-procedure project(Name: string);
+procedure project(name: string);
 begin
-  projname := Name;
+  projname := name;
 end;
 
 procedure copyfile(old, new: string);
@@ -252,82 +302,111 @@ var
   pkg: pPackage = nil;
   cmdtype: TCommandType;
   cmd: pointer;
-  info: TSearchRec;
 begin
   //execute commands
   for i := 0 to pkglist.Count - 1 do
   begin
-    progress += 100 / cmd_count;
-    write(format('[%3.0f%%] ', [progress]));
-
     pkg := pkglist[i];
 
     for j := 0 to pkg^.commands.Count - 1 do
     begin
+      progress += 100 / cmd_count;
+
       cmd := pkg^.commands[j];
       cmdtype := TCommandType(cmd^);
 
       if cmdtype in mode then
-      case cmdtype of
-        ctExecutable, ctUnit:
+        case cmdtype of
+          ctExecutable, ctUnit:
           begin
-    param := CompilerCommandLine(pkg, cmd);
+            param := CompilerCommandLine(pkg, cmd);
 
-    fpc_out := RunCompilerCommand(param);
-    param.Free;
+            fpc_out := RunCompilerCommand(param);
+            param.Free;
 
-    fpc_msg := ParseFPCCommand(fpc_out, BasePath);
-    fpc_out.Free;
+            fpc_msg := ParseFPCCommand(fpc_out, BasePath);
+            fpc_out.Free;
 
-    WriteFPCCommand(fpc_msg, [mCompiling, mLinking, mFail], progress);
-    fpc_msg.Free;
-  end;
-        ctInstall: begin
-          TextColor(blue);
-
-          if FindFirst(pInstallCommand(cmd)^.directory + pInstallCommand(cmd)^.pattern, faAnyFile, info) = 0 then
-          begin
-            try
-              repeat
-                if (info.Attr and faDirectory) = 0 then
-                begin
-                  if not ForceDirectories(pInstallCommand(cmd)^.destination) then
-                  begin
-                    writeln('Failed to create directory "' + pInstallCommand(cmd)^.directory + '"');
-                    halt(1);
-                  end;
-                  copyfile(pInstallCommand(cmd)^.directory + info.Name, pInstallCommand(cmd)^.destination + info.Name);
-                end;
-              until FindNext(info) <> 0
-            finally
-              FindClose(info);
-            end;
+            writeFPCCommand(fpc_msg, [mCompiling, mLinking, mFail], progress);
+            fpc_msg.Free;
           end;
-          NormVideo;
+          ctCustom:
+          begin
+            TextColor(blue);
+            writeln('Executing ', pCustomCommand(cmd)^.executable);
+            NormVideo;
+
+            param := TStringList.Create;
+            param.Add(pCustomCommand(cmd)^.parameters);
+
+            cmd_out := RunCommand(pCustomCommand(cmd)^.executable, param);
+            param.Free;
+
+            if verbose then
+              for k := 0 to cmd_out.Count - 1 do
+                writeln(cmd_out[k]);
+
+            cmd_out.Free;
+          end;
         end;
-        ctCustom:
-        begin
-          TextColor(blue);
-          writeln('Executing ', pCustomCommand(cmd)^.executable);
-          NormVideo;
-
-          param := TStringList.Create;
-          param.Add(pCustomCommand(cmd)^.parameters);
-
-          cmd_out := RunCommand(pCustomCommand(cmd)^.executable, param);
-          param.Free;
-
-          if verbose then
-            for k := 0 to cmd_out.Count - 1 do
-              writeln(cmd_out[k]);
-
-          cmd_out.Free;
-        end;
-      end;
-     end;
+    end;
   end;
 
   writeln('Built package ', pkg^.name);
+end;
+
+
+procedure InstallPackages;
+var
+  i: integer;
+  progress: double = 0;
+  cmd: pInstallCommand;
+  info: TSearchRec;
+  First: boolean = True;
+begin
+  //execute commands
+  for i := 0 to instlist.Count - 1 do
+  begin
+    cmd := instlist[i];
+
+    progress += 100 / instlist.Count;
+    write(format('[%3.0f%%] ', [progress]));
+
+    First := True;
+
+    TextColor(blue);
+
+    if FindFirst(cmd^.directory + cmd^.pattern, faAnyFile, info) = 0 then
+    begin
+      try
+        repeat
+          if (info.Attr and faDirectory) = 0 then
+          begin
+            if not ForceDirectories(cmd^.destination) then
+            begin
+              NormVideo;
+              writeln;
+              writeln('Failed to create directory "' + cmd^.directory + '"');
+              halt(1);
+            end;
+
+            //give proper offset for consequtive copies
+            if not First then
+              write('       ');
+
+            writeln('Installing - ', cmd^.destination + info.name);
+            copyfile(cmd^.directory + info.name, cmd^.destination + info.name);
+            First := False;
+          end;
+        until FindNext(info) <> 0
+      finally
+        FindClose(info);
+      end;
+    end;
+    NormVideo;
+  end;
+
+  writeln('Installed files');
 end;
 
 procedure free_make;
@@ -361,42 +440,39 @@ begin
   depcache.Free;
 end;
 
-function DeleteDirectory(const DirectoryName: string): boolean;
+function DeleteDirectory(const Directoryname: string; OnlyChildren: boolean): boolean;
+const
+  //Don't follow symlinks on *nix, just delete them
+  DeleteMask = faAnyFile {$ifdef unix} or faSymLink {$endif unix};
+  {$IFDEF WINDOWS}
+  GetAllFilesMask ='*.*';
+  {$ELSE}
+  GetAllFilesMask ='*';
+  {$ENDIF}
 var
-  info: TSearchRec;
+  FileInfo: TSearchRec;
+  CurSrcDir: String;
+  CurFilename: String;
 begin
-  if FindFirst(DirectoryName + '*', faAnyFile, info) = 0 then
-  begin
-    try
-      repeat
-        if (info.Attr and faDirectory) = 0 then
-        begin
-          if not DeleteFile(DirectoryName + info.Name) then
-          begin
-            Result := False;
-            exit;
-          end;
-        end
-        else
-        //start the recursive search
-        if (info.Name <> '.') and (info.Name <> '..') then
-        begin
-          if not DeleteDirectory(IncludeTrailingBackSlash(DirectoryName + info.Name)) then
-          begin
-            Result := False;
-            exit;
-          end;
-          if not RemoveDir(IncludeTrailingBackSlash(DirectoryName + info.Name)) then
-          begin
-            Result := False;
-            exit;
-          end;
-        end;
-      until FindNext(info) <> 0
-    finally
-      FindClose(info);
-    end;
+  Result:=false;
+  CurSrcDir:=Directoryname;
+  if FindFirst(CurSrcDir+GetAllFilesMask,DeleteMask,FileInfo)=0 then begin
+    repeat
+      // check if special file
+      if (FileInfo.name='.') or (FileInfo.name='..') or (FileInfo.name='') then
+        continue;
+      CurFilename:=CurSrcDir+FileInfo.name;
+      if ((FileInfo.Attr and faDirectory)>0)
+         {$ifdef unix} and ((FileInfo.Attr and faSymLink)=0) {$endif unix} then begin
+        if not DeleteDirectory(CurFilename,false) then exit;
+      end else begin
+        if not DeleteFile(CurFilename) then exit;
+      end;
+    until FindNext(FileInfo)<>0;
   end;
+  FindClose(FileInfo);
+  if (not OnlyChildren) and (not RemoveDir(CurSrcDir)) then exit;
+  Result:=true;
 end;
 
 procedure CleanMode(pkglist: TFPList);
@@ -404,11 +480,19 @@ var
   i, j: integer;
   pkg: pPackage = nil;
   cmdtype: TCommandType;
+  progress: double = 0;
 begin
   for i := 0 to pkglist.Count - 1 do
   begin
-
     pkg := pkglist[i];
+
+    NormVideo;
+
+    progress += 100 / pkglist.Count;
+    write(format('[%3.0f%%] ', [progress]));
+
+    TextColor(red);
+    writeln('package ', pkg^.name);
 
     for j := 0 to pkg^.commands.Count - 1 do
     begin
@@ -417,67 +501,64 @@ begin
       if cmdtype in [ctExecutable, ctUnit] then
       begin
         if DirectoryExists(pkg^.unitsoutput) then
-          if not DeleteDirectory(pkg^.unitsoutput) then
+        begin
+          if not DeleteDirectory(pkg^.unitsoutput, false) then
           begin
+            NormVideo;
+            writeln;
             writeln('error: cannot remove directory ', pkg^.unitsoutput);
             halt(1);
-          end;
+          end
+          else
+            if verbose then
+              writeln('       deleting ', pkg^.unitsoutput);
+        end;
 
         if DirectoryExists(pkg^.binoutput) then
-          if not DeleteDirectory(pkg^.binoutput) then
+        begin
+          if not DeleteDirectory(pkg^.binoutput, false) then
           begin
+            NormVideo;
+            writeln;
             writeln('error: cannot remove directory ', pkg^.binoutput);
             halt(1);
-          end;
+          end
+          else
+            if verbose then
+              writeln('       deleting ', pkg^.binoutput);
+        end;
       end;
     end;
   end;
+  NormVideo;
+  writeln('Cleaned all packages');
 end;
 
-//expand some simple macro's
-function ExpandMacros(str: string; pkg: pPackage): string;
-var
-  tmp: string = '';
-begin
-  tmp := StringReplace(str, '$(TargetOS)', OSToString(BuildOS), [rfReplaceAll]);
-  tmp := StringReplace(tmp, '$(TargetCPU)', CPUToString(BuildCPU), [rfReplaceAll]);
-
-  if pkg <> nil then
-  begin
-    tmp := StringReplace(tmp, '$(UNITSOUTPUTDIR)', pkg^.unitsoutput, [rfReplaceAll]);
-    tmp := StringReplace(tmp, '$(BINOUTPUTDIR)', pkg^.binoutput, [rfReplaceAll]);
-  end;
-
-  {$ifdef unix}
-  tmp := StringReplace(tmp, '$(EXE)', '', [rfReplaceAll]);
-  {$else}
-  tmp := StringReplace(tmp, '$(EXE)', '.exe', [rfReplaceAll]);
-  {$endif}
-
-  {$ifdef windows}
-  tmp := StringReplace(tmp, '$(DLL)', '.dll', [rfReplaceAll]);
-  {$else}
-  tmp := StringReplace(tmp, '$(DLL)', '.so', [rfReplaceAll]);
-  {$endif}
-
-  Result := tmp;
-end;
-
-procedure install(directory, destination, pattern: string);
+procedure install(directory, destination, pattern, depends: string);
 var
   cmd: pInstallCommand;
+  pkg: pPackage;
 begin
+  pkg := find_pkg_by_name(pkglist, depends);
+
+  if pkg = nil then
+  begin
+    writeln('error: cannot find dependency "' + depends + '" for install command');
+    halt(1);
+  end;
+
   cmd := AllocMem(sizeof(InstallCommand));
-  cmd^.directory := IncludeTrailingPathDelimiter(ExpandMacros(directory, nil));
-  cmd^.destination := IncludeTrailingPathDelimiter(ExpandMacros(destination, nil));
-  cmd^.pattern := ExpandMacros(pattern, nil);
+  cmd^.directory := IncludeTrailingPathDelimiter(ExpandMacros(directory, pkg));
+  cmd^.destination := IncludeTrailingPathDelimiter(ExpandMacros(destination, pkg));
+  cmd^.pattern := ExpandMacros(pattern, pkg);
+  cmd^.depends := pkg;
 
   instlist.Add(cmd);
 end;
 
 procedure add_custom_command(pkgname, executable, parameters: string; depends: array of const);
 var
-  cmd : pCustomCommand;
+  cmd: pCustomCommand;
   pkg: pPackage;
 begin
   pkg := find_or_create_package(pkglist, pkgname, activepath);
@@ -508,12 +589,12 @@ begin
   First := True;
   for i := low(CmdOptions) to high(CmdOptions) do
     if tool in CmdOptions[i].tools then
-      if pos('--', CmdOptions[i].Name) = 0 then
+      if pos('--', CmdOptions[i].name) = 0 then
       begin
         if First then
           writeln('Subcommands');
         First := False;
-        writeln(Format(' %-16s %s', [CmdOptions[i].Name, CmdOptions[i].descr]));
+        writeln(Format(' %-16s %s', [CmdOptions[i].name, CmdOptions[i].descr]));
       end;
 
   if First = False then
@@ -522,12 +603,12 @@ begin
   First := True;
   for i := low(CmdOptions) to high(CmdOptions) do
     if tool in CmdOptions[i].tools then
-      if pos('--', CmdOptions[i].Name) <> 0 then
+      if pos('--', CmdOptions[i].name) <> 0 then
       begin
         if First then
           writeln('Options');
         First := False;
-        writeln(Format(' %-16s %s', [CmdOptions[i].Name, CmdOptions[i].descr]));
+        writeln(Format(' %-16s %s', [CmdOptions[i].name, CmdOptions[i].descr]));
       end;
 
   halt(1);
@@ -545,14 +626,14 @@ begin
     found := False;
     for j := low(CmdOptions) to high(CmdOptions) do
     begin
-      if ParamStr(i) = CmdOptions[j].Name then
+      if ParamStr(i) = CmdOptions[j].name then
       begin
         if tool in CmdOptions[j].tools then
         begin
 
           found := True;
 
-          case CmdOptions[j].Name of
+          case CmdOptions[j].name of
             'build': RunMode := rmBuild;
             'clean': RunMode := rmClean;
             'install': RunMode := rmInstall;
@@ -598,9 +679,6 @@ begin
   if RunMode = rmBuild then
   begin
     if fpc = '' then
-      fpc := ExeSearch('fpc', SysUtils.GetEnvironmentVariable('PATH'));
-
-    if fpc = '' then
     begin
       writeln('error: cannot find the FPC compiler');
       usage(ctMake);
@@ -616,7 +694,7 @@ end;
 
 procedure run_make;
 var
-  i: Integer;
+  i: integer;
   dep: pDependency;
   deplist: TFPList;
 begin
@@ -641,10 +719,13 @@ begin
   case RunMode of
     rmBuild: ExecutePackages(deplist, [ctUnit, ctExecutable, ctCustom]);
     rmClean: CleanMode(deplist);
-    rmInstall: ExecutePackages(deplist, [ctInstall]);
+    rmInstall: InstallPackages;
   end;
 
-  deplist.free;
+  deplist.Free;
 end;
+
+initialization
+  fpc := ExeSearch(ExpandMacros('fpc$(EXE)'), SysUtils.GetEnvironmentVariable('PATH'));
 
 end.

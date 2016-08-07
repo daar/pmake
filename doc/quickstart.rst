@@ -98,6 +98,5 @@ Now the project can be compiled by using the following commands;
 
   >./fmake
   >./make install
-  >
   
 If all went well there will be two folders created in the root folder ./bin/x86_64-win64 and ./units/x86_64-win64 (in case you are working on a 64bit windows machine, using the 64bit FPC compiler). In the bin folder you will find an executable called hellodemo.exe.
