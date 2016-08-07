@@ -20,6 +20,9 @@ type
     tools: TCmdTools;
   end;
 
+  msgMode = (none, STATUS, WARNING, AUTHOR_WARNING, SEND_ERROR,
+    FATAL_ERROR, DEPRECATION);
+
 const
   FMakeVersion = '0.01';
 
@@ -31,6 +34,9 @@ procedure add_library(pkgname: string; srcfiles, depends: array of const);
 procedure install(directory, destination, pattern, depends: string);
 procedure add_custom_command(pkgname, executable, parameters: string; depends: array of const);
 procedure project(name: string);
+
+procedure message(mode: msgMode; msg: string);
+procedure message(msg: string);
 
 procedure add_subdirectory(path: string);
 
@@ -250,6 +256,25 @@ begin
   add_dependecies_to_cache(pkgname, depends);
 end;
 
+procedure message(mode: msgMode; msg: string);
+begin
+  case mode of
+    none: ;
+    STATUS: ;
+    WARNING: ;
+    AUTHOR_WARNING: ;
+    SEND_ERROR: ;
+    FATAL_ERROR: ;
+    DEPRECATION: ;
+  end;
+  writeln(msg);
+end;
+
+procedure message(msg: string);
+begin
+  message(none, msg);
+end;
+
 procedure add_subdirectory(path: string);
 begin
   if BasePath = '' then
@@ -443,36 +468,53 @@ end;
 function DeleteDirectory(const Directoryname: string; OnlyChildren: boolean): boolean;
 const
   //Don't follow symlinks on *nix, just delete them
-  DeleteMask = faAnyFile {$ifdef unix} or faSymLink {$endif unix};
+  DeleteMask = faAnyFile
+{$ifdef unix}
+    or faSymLink
+{$endif unix}
+  ;
   {$IFDEF WINDOWS}
-  GetAllFilesMask ='*.*';
+  GetAllFilesMask = '*.*';
   {$ELSE}
-  GetAllFilesMask ='*';
+  GetAllFilesMask = '*';
   {$ENDIF}
 var
   FileInfo: TSearchRec;
   CurSrcDir: String;
   CurFilename: String;
 begin
-  Result:=false;
-  CurSrcDir:=Directoryname;
-  if FindFirst(CurSrcDir+GetAllFilesMask,DeleteMask,FileInfo)=0 then begin
+  Result := False;
+  CurSrcDir := Directoryname;
+  if FindFirst(CurSrcDir + GetAllFilesMask, DeleteMask, FileInfo) = 0 then
+  begin
     repeat
       // check if special file
-      if (FileInfo.name='.') or (FileInfo.name='..') or (FileInfo.name='') then
+      if (FileInfo.Name = '.') or (FileInfo.Name = '..') or (FileInfo.Name = '') then
         continue;
-      CurFilename:=CurSrcDir+FileInfo.name;
-      if ((FileInfo.Attr and faDirectory)>0)
-         {$ifdef unix} and ((FileInfo.Attr and faSymLink)=0) {$endif unix} then begin
-        if not DeleteDirectory(CurFilename,false) then exit;
-      end else begin
-        if not DeleteFile(CurFilename) then exit;
+
+      CurFilename := CurSrcDir + FileInfo.Name;
+
+      if ((FileInfo.Attr and faDirectory) > 0)
+      {$ifdef unix}
+        and ((FileInfo.Attr and faSymLink) = 0)
+      {$endif unix} then
+      begin
+        if not DeleteDirectory(CurFilename, False) then
+          exit;
+      end
+      else
+      begin
+        if not DeleteFile(CurFilename) then
+          exit;
       end;
-    until FindNext(FileInfo)<>0;
+    until FindNext(FileInfo) <> 0;
   end;
   FindClose(FileInfo);
-  if (not OnlyChildren) and (not RemoveDir(CurSrcDir)) then exit;
-  Result:=true;
+
+  if (not OnlyChildren) and (not RemoveDir(CurSrcDir)) then
+    exit;
+
+  Result := True;
 end;
 
 procedure CleanMode(pkglist: TFPList);
@@ -502,7 +544,7 @@ begin
       begin
         if DirectoryExists(pkg^.unitsoutput) then
         begin
-          if not DeleteDirectory(pkg^.unitsoutput, false) then
+          if not DeleteDirectory(pkg^.unitsoutput, False) then
           begin
             NormVideo;
             writeln;
@@ -510,13 +552,13 @@ begin
             halt(1);
           end
           else
-            if verbose then
-              writeln('       deleting ', pkg^.unitsoutput);
+          if verbose then
+            writeln('       deleting ', pkg^.unitsoutput);
         end;
 
         if DirectoryExists(pkg^.binoutput) then
         begin
-          if not DeleteDirectory(pkg^.binoutput, false) then
+          if not DeleteDirectory(pkg^.binoutput, False) then
           begin
             NormVideo;
             writeln;
@@ -524,8 +566,8 @@ begin
             halt(1);
           end
           else
-            if verbose then
-              writeln('       deleting ', pkg^.binoutput);
+          if verbose then
+            writeln('       deleting ', pkg^.binoutput);
         end;
       end;
     end;

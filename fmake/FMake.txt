@@ -1,0 +1,21 @@
+project('FMake a build tool for (free) pascal');
+
+//compile the fmake units
+add_library('lib_fmake', ['compiler.pas']);
+add_library('lib_fmake', ['depsolver.pas']);
+add_library('lib_fmake', ['ufmake.pas']);
+
+add_executable('fmake', 'fmake', 'fmake.pp', ['lib_fmake']);
+
+//install the compiled units and the fmake executable
+{$IFDEF MSWINDOWS}
+  install('$(BINOUTPUTDIR)', 'C:\Lazarus\fmake\', 'fmake$(EXE)', 'fmake');
+  install('$(UNITSOUTPUTDIR)', 'C:\Lazarus\fmake\', '*.o', 'lib_fmake');
+  install('$(UNITSOUTPUTDIR)', 'C:\Lazarus\fmake\', '*.ppu', 'lib_fmake');
+{$ENDIF}
+
+{$IFDEF LINUX}
+  install('$(BINOUTPUTDIR)', '/usr/bin', 'fmake$(EXE)', 'fmake');
+  install('$(UNITSOUTPUTDIR)', '/usr/lib/fmake', '*.o', 'lib_fmake');
+  install('$(UNITSOUTPUTDIR)', '/usr/lib/fmake', '*.ppu', 'lib_fmake');
+{$ENDIF}
