@@ -35,7 +35,7 @@ An example of how to use the executable command is shown below;
 
 .. code:: pascal
 
-  install('$(BINOUTPUTDIR)', '.\\release\\$(TargetCPU)-$(TargetOS)', 'helloworld$(EXE)');
+  install('$(BINOUTPUTDIR)', '.\release\$(TargetCPU)-$(TargetOS)', 'helloworld$(EXE)');
 
 This command will install the helloworld executable (helloworld.exe on windows) from the binary output folder of the package to the .\\release\\$(TargetCPU)-$(TargetOS) folder, relative to the folder from which fmake was invoked from and where make.exe is generated. For the file pattern it is also possible to use wildcard characters such as;
 
@@ -54,6 +54,6 @@ An example of how to use the install command is shown below;
 
 .. code:: pascal
 
-  add_custom_command('exec_helloworld', '.\\bin\\$(TargetCPU)-$(TargetOS)\\helloworld$(EXE)', '', ['pkg_helloworld']);
+  add_custom_command('exec_helloworld', '.\bin\$(TargetCPU)-$(TargetOS)\helloworld$(EXE)', '', ['pkg_helloworld']);
   
 This command will execute the hello world executable located in the bin folder with no additional parameters. This command is part of the exec_helloworld package and has a dependency on *pkg_helloworld*. This means that this package needs to be built and linked first before the custom command is executed.

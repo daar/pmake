@@ -10,29 +10,29 @@ $(TargetCPU)
   Expands to the target CPU that fmake is invoked on. Example is x86_64 on a 64bit machine.
 
 $(UNITSOUTPUTDIR)
-  Expands to the unit output directory that is defined for the specific package. The value is equivalent to ./units/$(TargetCPU)-$(TargetOS)
+  Expands to the unit output directory that is defined for the specific package. The value is equivalent to .\\units\\$(TargetCPU)-$(TargetOS)
 
 $(BINOUTPUTDIR)
-  Expands to the binary output directory that is defined for the specific package. The value is equivalent to ./bin/$(TargetCPU)-$(TargetOS)
+  Expands to the binary output directory that is defined for the specific package. The value is equivalent to .\\bin\\$(TargetCPU)-$(TargetOS)
 
 $(EXE)
   Expands to the executable file extension defined for the platorm fmake is invoked on. On unix systems executbles have no extension by default, on the other platforms this is .exe.
 
 $(DLL)
-  Expands to the shared library file extension defined for the platorm fmake is invoked on.
+  Expands to the shared library file extension defined for the platform fmake is invoked on.
 
-+-------------------+-------------------+----------------+
-| Operating systems | Library extension | Library prefix |
-+===================+===================+================+
-| Apple             | .so               | lib            |
-+-------------------+-------------------+----------------+
-| BeOS              | .so               | lib            |
-+-------------------+-------------------+----------------+
-| FreeBSD           | .so               | lib            |
-+-------------------+-------------------+----------------+
-| Linux             | .so               | lib            |
-+-------------------+-------------------+----------------+
-| NetBSD            | .so               | lib            |
-+-------------------+-------------------+----------------+
-| Windows           | .dll              | none           |
-+-------------------+-------------------+----------------+
++-------------------+----------------+-------------------+
+| Operating systems | Library prefix | Library extension |
++===================+================+===================+
+| Apple             | lib            | .so               |
++-------------------+----------------+-------------------+
+| BeOS              | lib            | .so               |
++-------------------+----------------+-------------------+
+| FreeBSD           | lib            | .so               |
++-------------------+----------------+-------------------+
+| Linux             | lib            | .so               |
++-------------------+----------------+-------------------+
+| NetBSD            | lib            | .so               |
++-------------------+----------------+-------------------+
+| Windows           | none           | .dll              |
++-------------------+----------------+-------------------+

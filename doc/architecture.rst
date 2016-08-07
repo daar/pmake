@@ -5,7 +5,7 @@ When using *fmake* it is important to understand the architecture of the softwar
   
 Build
 =====
-The build target will compile and link all source code that is defined by the build scripts in the source tree. It will create if needed an output folder for the object (*.o) and compiled pascal unit files (*.ppu). The default output folder for compiled units is *.\units\$(TargetCPU)-$(TargetOS)*, while for binary executables the output folder is: *.\bin\$(TargetCPU)-$(TargetOS)*. These folders will be created in the locations where the FMake.txt files are placed. Build is also the default tagret. This means that it does not need to be supplied, but by default it will assume the build target is called for.
+The build target will compile and link all source code that is defined by the build scripts in the source tree. It will create if needed an output folder for the object (*.o) and compiled pascal unit files (*.ppu). The default output folder for compiled units is *.\\units\\$(TargetCPU)-$(TargetOS)*, while for binary executables the output folder is: *.\\bin\\$(TargetCPU)-$(TargetOS)*. These folders will be created in the locations where the FMake.txt files are placed. Build is also the default tagret. This means that it does not need to be supplied, but by default it will assume the build target is called for.
 
 Clean
 =====
