@@ -1,1 +1,1 @@
-add_library('lib_hello', ['uhello.pas']);
+add_library('lib_hello', ['uhello.pas'], []);

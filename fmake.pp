@@ -10,8 +10,8 @@ uses
 {$ifdef debug}
   HeapTrc, 
 {$endif}
-  Classes, SysUtils, getopts, Process,
-  ufmake;
+  Classes, SysUtils,
+  ufmake, compiler;
 
 type
   TFMakeItem = record
@@ -49,8 +49,8 @@ var
                 '.' + DirectorySeparator, [rfReplaceAll]);
               writeln('-- Found ', fitem^.fname);
 
-              make.Add('  add_subdirectory(''' +
-                ExtractFilePath(path + info.Name) + ''');');
+              make.Add('  //' + path + info.Name);
+              make.Add('  add_subdirectory(''' + ExtractFilePath(path + info.Name) + ''');');
 
               fitem^.startpos := make.Count;
 
@@ -137,14 +137,14 @@ var
 begin
   check_options(ctFMake);
 
-  if fpc = '' then
+  if verbose then
+    writeln('-- FPC compiler ', fpc);
+
+  if (fpc = '') or (not FileExists(fpc)) then
   begin
     writeln('error: cannot find the FPC compiler');
     usage(ctFMake);
   end;
-
-  if verbose then
-    writeln('-- FPC compiler ', fpc);
 
   fname := GetTempFileName('.', 'fmake');
 
@@ -181,10 +181,10 @@ begin
   //based on the app extension of fmake, add the same extension to make
   param.Add('-omake' + ExtractFileExt(ParamStr(0)));
 
-  fpc_out := RunFPCCommand(param);
+  fpc_out := RunCompilerCommand(param);
   param.Free;
 
-  fpc_msg := ParseFPCCommand(fpc_out);
+  fpc_msg := ParseFPCCommand(fpc_out, BasePath);
   fpc_out.Free;
 
   UpdateFMakePostions(fpc_msg, fname);
@@ -196,9 +196,9 @@ begin
   end;
   fmakelist.Free;
 
-
   if verbose then
-    ShowMsg := mAll
+    ShowMsg := [mCompiling, mDebug, mError, mFail, mHint, mInformation,
+    mLinking, mNote, mOption, mUnitInfo, mUnknown, mWarning]
   else
     ShowMsg := [mFail, mError];
 
@@ -215,5 +215,5 @@ begin
   DeleteFile(ChangeFileExt(fname, '.o'));
 
   writeln('-- Generating done');
-  writeln('-- Build file has been written to: ', ExpandFileName('make'));
+  writeln('-- Build file has been written to: ', ExpandFileName('make' + ExtractFileExt(ParamStr(0))));
 end.

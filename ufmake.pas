@@ -1,7 +1,6 @@
 unit ufmake;
 
 {$mode objfpc}{$H+}
-{ $define debug}
 
 interface
 
@@ -9,30 +8,9 @@ uses
   {$IFDEF UNIX}
   cthreads,
   {$ENDIF}
-  Classes, Crt;
+  Classes, fpmkunit;
 
 type
-
-  TMessage = (mCompiling, mDebug, mError, mFail, mHint, mInformation, mLinking,
-    mNote, mOption, mUnitInfo, mUnknown, mWarning);
-  TMessages = set of TMessage;
-
-  TFPCOutput = record
-    msgno: integer;
-    msgtype: TMessage;
-  end;
-
-  TFPCColor = record
-    msgtype: TMessage;
-    msgcol: integer;
-  end;
-
-  TFPCMessage = record
-    msgidx: integer;
-    Text: string;
-  end;
-  PFPCMessage = ^TFPCMessage;
-
   TCmdTool = (ctFMake, ctMake);
   TCmdTools = set of TCmdTool;
 
@@ -45,26 +23,26 @@ type
 const
   FMakeVersion = '0.01';
 
-  mAll = [mCompiling, mDebug, mError, mFail, mHint, mInformation,
-    mLinking, mNote, mOption, mUnitInfo, mUnknown, mWarning];
-
-procedure add_executable(Name: string; files: array of const);
-procedure add_library(Name: string; files: array of const);
-procedure add_subdirectory(Name: string);
-procedure project(Name: string);
-procedure target_link_libraries(Name: string; files: array of const);
+procedure add_executable(pkgname, executable, srcfile: string; depends: array of const);
+procedure add_library(pkgname: string; srcfiles, depends: array of const);
 procedure install(directory, destination, pattern: string);
+procedure add_custom_command(pkgname, executable, parameters: string; depends: array of const);
+procedure project(name: string);
+
+procedure add_subdirectory(path: string);
 
 procedure init_make;
 procedure run_make;
 procedure free_make;
 
-function RunFPCCommand(Parameters: TStrings): TStrings;
-function ParseFPCCommand(FPCOutput: TStrings): TFPList;
-procedure WriteFPCCommand(FPCMsgs: TFPList; ShowMsg: TMessages; progress: double = -1);
-function GetFPCMsgType(msgidx: integer): TMessage;
+function RunCommand(Executable: string; Parameters: TStrings): TStrings;
 procedure check_options(tool: TCmdTool);
 procedure usage(tool: TCmdTool);
+
+function BuildCPU: TCpu;
+function BuildOS: TOS;
+function UnitsOutputDir(BasePath: string; ACPU: TCPU; AOS: TOS): string;
+function BinOutputDir(BasePath: string; ACPU: TCPU; AOS: TOS): string;
 
 var
   fpc: string;
@@ -73,39 +51,9 @@ var
 implementation
 
 uses
-  SysUtils, fpmkunit, Process;
+  Crt, SysUtils, Process, depsolver, compiler;
 
 type
-  TTargetType = (ttExe, ttUnit);
-
-  TInstallCommand = record
-    pattern: string;
-    directory: string;
-    destination: string;
-  end;
-  PInstallCommand = ^TInstallCommand;
-
-  TTarget = class
-    Dep: TStrings;
-    Todo_Dep: TStrings;
-    Units: TStrings;
-    Name: string;
-    Executable: string;
-    TargetType: TTargetType;
-    Done: boolean;
-    ActivePath: string;
-    BinOutput: string;
-    UnitsOutput: string;
-    Install: TFPList;
-  end;
-
-  TBuild = class
-    Targets: TFPList;
-    projname: string;
-    sfilecount: integer;
-    progress: double;
-  end;
-
   TRunMode = (rmBuild, rmInstall, rmClean);
 
 const
@@ -113,34 +61,21 @@ const
     (Name: 'build'; descr: 'Build all targets in the project.'; tools: [ctMake]),
     (Name: 'clean'; descr: 'Clean all units and folders in the project'; tools: [ctMake]),
     (Name: 'install'; descr: 'Install all targets in the project.'; tools: [ctMake]),
-    (Name: '--fpc-compiler'; descr: 'Use indicated binary as compiler'; tools: [ctMake, ctFMake]),
+    (Name: '--compiler'; descr: 'Use indicated binary as compiler'; tools: [ctMake, ctFMake]),
     (Name: '--help'; descr: 'This message.'; tools: [ctMake, ctFMake]),
-    (Name: '--verbose'; descr: 'Be verbose.'; tools: [ctMake, ctFMake])
+    (Name: '--verbose'; descr: 'Be more verbose.'; tools: [ctMake, ctFMake])
     );
 
-  MsgCol: array [TMessage] of TFPCColor = (
-    (msgtype: mCompiling; msgcol: Green),
-    (msgtype: mDebug; msgcol: LightGray),
-    (msgtype: mError; msgcol: White),
-    (msgtype: mFail; msgcol: Yellow),
-    (msgtype: mHint; msgcol: LightGray),
-    (msgtype: mInformation; msgcol: LightGray),
-    (msgtype: mLinking; msgcol: Red),
-    (msgtype: mNote; msgcol: LightGray),
-    (msgtype: mOption; msgcol: LightGray),
-    (msgtype: mUnitInfo; msgcol: LightGray),
-    (msgtype: mUnknown; msgcol: LightGray),
-    (msgtype: mWarning; msgcol: LightGray));
-
-//to add more FPC versions, ifdef this include file
-{$i fpc300.inc}
-
 var
-  fbuild: TBuild;
-  active_target: TTarget;
+  //active_package: pPackage;
   ActivePath: string;
   BasePath: string = '';
   RunMode: TRunMode;
+  pkglist: TFPList;
+  instlist: TFPList;
+  depcache: TFPList;
+  projname: string;
+  cmd_count: integer = 0;
 
 function BuildCPU: TCpu;
 begin
@@ -172,91 +107,9 @@ begin
   end;
 end;
 
-function GetFPCMsgType(msgidx: integer): TMessage;
-begin
-  if msgidx = -1 then
-    Result := mUnknown
-  else
-    Result := Msg[msgidx].msgtype;
-end;
-
-procedure WriteFPCCommand(FPCMsgs: TFPList; ShowMsg: TMessages; progress: double = -1);
-
-  function GetFPCMsgCol(msgidx: integer): TMessage;
-  begin
-    if msgidx = -1 then
-      Result := mUnknown
-    else
-      Result := Msg[msgidx].msgtype;
-  end;
-
-var
-  i: integer;
-  fpc_msg: TFPCMessage;
-  fpc_msgtype: TMessage;
-begin
-  for i := 0 to FPCMsgs.Count - 1 do
-  begin
-    fpc_msg := TFPCMessage(FPCMsgs[i]^);
-    fpc_msgtype := GetFPCMsgType(fpc_msg.msgidx);
-    if fpc_msgtype in ShowMsg then
-    begin
-      if (fpc_msgtype = mCompiling) and (progress >= 0) and (progress <= 100) then
-        Write(format('[%3.0f%%]', [progress]));
-
-      if fpc_msg.msgidx <> -1 then
-        TextColor(MsgCol[fpc_msgtype].msgcol);
-      writeln(fpc_msg.Text);
-      NormVideo;
-    end;
-  end;
-end;
-
-function ParseFPCCommand(FPCOutput: TStrings): TFPList;
-var
-  sLine, snum: string;
-  found: boolean;
-  i: integer;
-  FPCmsg: PFPCMessage;
-  msgidx: integer;
-  ipos: SizeInt;
-begin
-  Result := TFPList.Create;
-
-  for i := 0 to FPCOutput.Count - 1 do
-  begin
-    sLine := StringReplace(FPCOutput[i], BasePath, '.' + DirectorySeparator, [rfReplaceAll]);
-
-    found := False;
-    for msgidx := Low(Msg) to High(Msg) do
-    begin
-      snum := Format('(%d)', [Msg[msgidx].msgno]);
-      ipos := Pos(snum, sLine);
-      if ipos <> 0 then
-      begin
-        sLine := StringReplace(sLine, sNum + ' ', '', [rfReplaceAll]);
-
-        found := True;
-        break;
-      end;
-    end;
-
-    FPCmsg := GetMem(sizeof(TFPCMessage));
-
-    if found then
-      FPCmsg^.msgidx := msgidx
-    else
-      FPCmsg^.msgidx := -1;
-
-    FPCmsg^.Text := sLine;
-    Result.Add(FPCmsg);
-  end;
-end;
-
-function RunFPCCommand(Parameters: TStrings): TStrings;
+function RunCommand(Executable: string; Parameters: TStrings): TStrings;
 const
   BUF_SIZE = 2048; // Buffer size for reading the output in chunks
-
 var
   AProcess: TProcess;
   OutputStream: TStream;
@@ -268,7 +121,7 @@ begin
     Buffer[i] := 0;
 
   AProcess := TProcess.Create(nil);
-  AProcess.Executable := fpc;
+  AProcess.Executable := Executable;
   AProcess.Parameters.AddStrings(Parameters);
   AProcess.Options := [poUsePipes];
   AProcess.Execute;
@@ -291,267 +144,221 @@ begin
   OutputStream.Free;
 end;
 
-function FindDepTarget(Dependency: string): TTarget;
+procedure add_dependecies_to_cache(pkgname: string; depends: array of const);
 var
-  i: integer;
-  target: TTarget;
+  i: Integer;
 begin
-  for i := 0 to fbuild.Targets.Count - 1 do
-  begin
-    target := TTarget(fbuild.Targets[i]);
-    if target.Name = dependency then
-      exit(target);
-  end;
-
-  //dependency not found!
-  exit(nil);
+  for i := Low(depends) to High(depends) do
+    add_dependency_to_cache(depcache, pkgname, string(depends[i].VAnsiString));
 end;
 
-function CompilerCommand(ATarget: TTarget; Source: string; TType: TTargetType): TStringList;
+procedure add_executable(pkgname, executable, srcfile: string; depends: array of const);
 var
-  i: integer;
-  targ: TTarget;
+  pkg: pPackage = nil;
+  cmd: pExecutableCommand;
 begin
-  Result := TStringList.Create;
-  Result.Duplicates := dupIgnore;
+  pkg := find_or_create_package(pkglist, pkgname, activepath);
 
-  // Output file paths
-  if TType = ttExe then
-    Result.Add('-FE' + ATarget.BinOutput);
+  cmd := allocmem(sizeof(ExecutableCommand));
 
-  Result.Add('-FU' + ATarget.UnitsOutput);
+  cmd^.command := ctExecutable;
+  cmd^.filename := srcfile;
+  cmd^.executable := executable;
 
-  //search other unit files for the dependencies
-  for i := 0 to ATarget.Dep.Count - 1 do
-  begin
-    targ := FindDepTarget(ATarget.Dep[i]);
+  //add the command to the package
+  pkg^.commands.Add(cmd);
 
-    if targ = nil then
-    begin
-      writeln('fail: cannot find dependency ', ATarget.Dep[i]);
-      halt(1);
-    end;
+  inc(cmd_count);
 
-    Result.Add('-Fu' + targ.UnitsOutput);
-  end;
-
-  // Output executable name
-  if TType = ttExe then
-  begin
-    Result.Add(Source);
-    Result.Add('-o' + ATarget.Name + ExtractFileExt(ParamStr(0)));
-  end;
-
-  // compile unit name
-  if TType = ttUnit then
-    Result.Add(Source);
-
-  // Force the compiler-output to be easy parseable
-  //if not Verbose then
-  Result.Add('-viq');
+  //dependencies will be processed once all packages are processed
+  add_dependecies_to_cache(pkgname, depends);
 end;
 
-procedure add_executable(Name: string; files: array of const);
+procedure add_library(pkgname: string; srcfiles, depends: array of const);
 var
   i: integer;
+  pkg: pPackage = nil;
+  cmd: pExecutableCommand;
 begin
-  //add a new target with files associated to it
-  active_target := TTarget.Create;
-  active_target.units := TStringList.Create;
-  active_target.dep := TStringList.Create;
-  active_target.todo_dep := TStringList.Create;
-  active_target.Install := TFPList.Create;
+  pkg := find_or_create_package(pkglist, pkgname, activepath);
 
-  active_target.Name := Name;
-  active_target.Executable := ActivePath + string(files[Low(files)].VAnsiString);
-  Inc(fbuild.sfilecount);
-
-  for i := Low(files) + 1 to High(files) do
+  //for each source file add a command to the package
+  for i := Low(srcfiles) to High(srcfiles) do
   begin
-    active_target.units.Add(string(files[i].VAnsiString));
-    Inc(fbuild.sfilecount);
+    cmd := allocmem(sizeof(ExecutableCommand));
+
+    cmd^.command := ctUnit;
+    cmd^.filename := string(srcfiles[i].VAnsiString);
+
+    //add the command to the package
+    pkg^.commands.Add(cmd);
+
+    inc(cmd_count);
   end;
 
-  active_target.TargetType := ttExe;
-  active_target.done := False;
-  active_target.ActivePath := ActivePath;
-
-  active_target.UnitsOutput := UnitsOutputDir(ActivePath, BuildCPU, BuildOS);
-  active_target.BinOutput := BinOutputDir(ActivePath, BuildCPU, BuildOS);
-
-  fbuild.Targets.Add(active_target);
+  //dependencies will be processed once all packages are processed
+  add_dependecies_to_cache(pkgname, depends);
 end;
 
-procedure add_library(Name: string; files: array of const);
-var
-  i: integer;
-begin
-  //add a new target with files associated to it
-  active_target := TTarget.Create;
-  active_target.units := TStringList.Create;
-  active_target.dep := TStringList.Create;
-  active_target.todo_dep := TStringList.Create;
-  active_target.Install := TFPList.Create;
-
-  active_target.Name := Name;
-
-  for i := Low(files) to High(files) do
-  begin
-    active_target.units.Add(string(files[i].VAnsiString));
-    Inc(fbuild.sfilecount);
-  end;
-  active_target.TargetType := ttUnit;
-  active_target.done := False;
-  active_target.ActivePath := ActivePath;
-
-  active_target.UnitsOutput := UnitsOutputDir(ActivePath, BuildCPU, BuildOS);
-
-  fbuild.Targets.Add(active_target);
-end;
-
-procedure add_subdirectory(Name: string);
+procedure add_subdirectory(path: string);
 begin
   if BasePath = '' then
-    BasePath := Name;
-  ActivePath := Name;
+    BasePath := path;
+  ActivePath := path;
 end;
 
 procedure project(Name: string);
 begin
-  fbuild.projname := Name;
+  projname := Name;
 end;
 
-procedure ExecuteTarget(target: TTarget);
+procedure copyfile(old, new: string);
+const
+  BUF_SIZE = 2048; // Buffer size for reading the output in chunks
 var
+  infile, outfile: file;
+  buf: array[1..BUF_SIZE] of char;
+  numread: longint = 0;
+  numwritten: longint = 0;
   i: integer;
+begin
+  for i := 1 to BUF_SIZE do
+    buf[i] := #0;
+
+  // open files - no error checking this should be added
+  Assign(infile, old);
+  reset(infile, 1);
+  Assign(outfile, new);
+  rewrite(outfile, 1);
+
+  // copy file
+  repeat
+    blockread(infile, buf, sizeof(buf), numread);
+    blockwrite(outfile, buf, numread, numwritten);
+  until (numread = 0) or (numwritten <> numread);
+
+  Close(infile);
+  Close(outfile);
+end;
+
+procedure ExecutePackages(pkglist: TFPList; mode: TCommandTypes);
+var
+  i, j, k: integer;
   param: TStringList;
   fpc_out: TStrings;
+  cmd_out: TStrings;
   fpc_msg: TFPList;
+  progress: double = 0;
+  pkg: pPackage = nil;
+  cmdtype: TCommandType;
+  cmd: pointer;
+  info: TSearchRec;
 begin
-  //build units of target
-  for i := 0 to target.units.Count - 1 do
+  //execute commands
+  for i := 0 to pkglist.Count - 1 do
   begin
-    fbuild.progress += 100 / fbuild.sfilecount;
-    param := CompilerCommand(target, target.ActivePath + target.units[i], ttUnit);
+    progress += 100 / cmd_count;
+    write(format('[%3.0f%%] ', [progress]));
 
-    fpc_out := RunFPCCommand(param);
+    pkg := pkglist[i];
+
+    for j := 0 to pkg^.commands.Count - 1 do
+    begin
+      cmd := pkg^.commands[j];
+      cmdtype := TCommandType(cmd^);
+
+      if cmdtype in mode then
+      case cmdtype of
+        ctExecutable, ctUnit:
+          begin
+    param := CompilerCommandLine(pkg, cmd);
+
+    fpc_out := RunCompilerCommand(param);
     param.Free;
 
-    fpc_msg := ParseFPCCommand(fpc_out);
+    fpc_msg := ParseFPCCommand(fpc_out, BasePath);
     fpc_out.Free;
 
-    WriteFPCCommand(fpc_msg, [mCompiling, mLinking, mFail], fbuild.progress);
+    WriteFPCCommand(fpc_msg, [mCompiling, mLinking, mFail], progress);
     fpc_msg.Free;
   end;
+        ctInstall: begin
+          TextColor(blue);
 
-  //build exe
-  if target.TargetType = ttExe then
-  begin
-    fbuild.progress += 100 / fbuild.sfilecount;
-    param := CompilerCommand(target, target.Executable, ttExe);
+          if FindFirst(pInstallCommand(cmd)^.directory + pInstallCommand(cmd)^.pattern, faAnyFile, info) = 0 then
+          begin
+            try
+              repeat
+                if (info.Attr and faDirectory) = 0 then
+                begin
+                  if not ForceDirectories(pInstallCommand(cmd)^.destination) then
+                  begin
+                    writeln('Failed to create directory "' + pInstallCommand(cmd)^.directory + '"');
+                    halt(1);
+                  end;
+                  copyfile(pInstallCommand(cmd)^.directory + info.Name, pInstallCommand(cmd)^.destination + info.Name);
+                end;
+              until FindNext(info) <> 0
+            finally
+              FindClose(info);
+            end;
+          end;
+          NormVideo;
+        end;
+        ctCustom:
+        begin
+          TextColor(blue);
+          writeln('Executing ', pCustomCommand(cmd)^.executable);
+          NormVideo;
 
-    fpc_out := RunFPCCommand(param);
-    param.Free;
+          param := TStringList.Create;
+          param.Add(pCustomCommand(cmd)^.parameters);
 
-    fpc_msg := ParseFPCCommand(fpc_out);
-    fpc_out.Free;
+          cmd_out := RunCommand(pCustomCommand(cmd)^.executable, param);
+          param.Free;
 
-    WriteFPCCommand(fpc_msg, [mCompiling, mLinking, mFail], fbuild.progress);
-    fpc_msg.Free;
+          if verbose then
+            for k := 0 to cmd_out.Count - 1 do
+              writeln(cmd_out[k]);
+
+          cmd_out.Free;
+        end;
+      end;
+     end;
   end;
 
-  writeln('Built target ', target.Name);
+  writeln('Built package ', pkg^.name);
 end;
 
 procedure free_make;
 var
   i, j: integer;
-  target: TTarget;
-  ic: PInstallCommand;
+  pkg: pPackage = nil;
 begin
-  //free all objects
-  for i := 0 to fbuild.Targets.Count - 1 do
+  //free all commands from all pacakges
+  for i := 0 to pkglist.Count - 1 do
   begin
-    target := TTarget(fbuild.Targets[i]);
-    target.todo_dep.Free;
-    target.dep.Free;
-    target.units.Free;
+    pkg := pkglist[i];
 
-    for j := 0 to target.Install.Count - 1 do
-    begin
-      ic := PInstallCommand(target.Install[j]);
-      FreeMem(ic);
-    end;
-    target.Install.Free;
+    for j := 0 to pkg^.commands.Count - 1 do
+      freemem(pkg^.commands[j]);
 
-    target.Free;
+    pkg^.commands.Free;
+    freemem(pkg);
   end;
-  fbuild.Targets.Free;
-  fbuild.Free;
-end;
 
-procedure BuildMode;
-var
-  done: integer = 0;
-  depname: string;
-  i, j, k: integer;
-  target: TTarget;
-begin
-  while done < fbuild.Targets.Count do
-  begin
+  pkglist.Free;
 
-    //determine the order to build, based on dependency count
-    i := 0;
-    target := TTarget(fbuild.Targets[i]);
-    while (target.todo_dep.Count > 0) or (target.done = True) do
-    begin
-      Inc(i);
-      if i > fbuild.Targets.Count - 1 then
-      begin
-        writeln('error: dependencies between remaining packages cannot be resolved!');
+  //free all install commands
+  for i := 0 to instlist.Count - 1 do
+    freemem(instlist[j]);
+  instlist.Free;
 
-        //make a dump here for all unresolved packages
-        for j := 0 to fbuild.Targets.Count - 1 do
-        begin
-          target := TTarget(fbuild.Targets[j]);
-          if target.Todo_Dep.Count > 0 then
-          begin
-            writeln('Target:       ', target.Name);
-            Write('Dependencies: ');
-            for k := 0 to target.Todo_Dep.Count - 1 do
-              if k <> target.Todo_Dep.Count - 1 then
-                Write(target.Todo_Dep[k], ', ')
-              else
-                writeln(target.Todo_Dep[k]);
-          end;
-        end;
+  //free the dependecy cache
+  for i := 0 to depcache.Count - 1 do
+    freemem(depcache[i]);
 
-        halt(1);
-      end;
-      target := TTarget(fbuild.Targets[i]);
-    end;
-
-    ExecuteTarget(target);
-
-    target.Done := True;
-
-    depname := '';
-    if target.TargetType = ttUnit then
-      depname := target.Name;
-
-    //keep track of the amount of targets processed
-    Inc(done);
-
-    //remove depencency as it is resolved
-    if depname <> '' then
-      for i := 0 to fbuild.Targets.Count - 1 do
-      begin
-        target := TTarget(fbuild.Targets[i]);
-        j := target.todo_dep.IndexOf(depname);
-        if j <> -1 then
-          target.todo_dep.Delete(j);
-      end;
-  end;
+  depcache.Free;
 end;
 
 function DeleteDirectory(const DirectoryName: string): boolean;
@@ -592,100 +399,54 @@ begin
   end;
 end;
 
-procedure CleanMode;
+procedure CleanMode(pkglist: TFPList);
 var
-  i: integer;
-  target: TTarget;
-begin
-  for i := 0 to fbuild.Targets.Count - 1 do
-  begin
-    target := TTarget(fbuild.Targets[i]);
-
-    if DirectoryExists(target.UnitsOutput) then
-      if not DeleteDirectory(target.UnitsOutput) then
-      begin
-        writeln('error: cannot remove directory ', target.UnitsOutput);
-        halt(1);
-      end;
-
-    if DirectoryExists(target.BinOutput) then
-      if not DeleteDirectory(target.BinOutput) then
-      begin
-        writeln('error: cannot remove directory ', target.BinOutput);
-        halt(1);
-      end;
-  end;
-end;
-
-procedure copyfile(old, new: string);
-var
-  infile, outfile: file;
-  buf: array[1..2048] of char;
-  numread: longint = 0;
-  numwritten: longint = 0;
-begin
-  // open files - no error checking this should be added
-  Assign(infile, old);
-  reset(infile, 1);
-  Assign(outfile, new);
-  rewrite(outfile, 1);
-
-  // copy file
-  repeat
-    blockread(infile, buf, sizeof(buf), numread);
-    blockwrite(outfile, buf, numread, numwritten);
-  until (numread = 0) or (numwritten <> numread);
-
-  Close(infile);
-  Close(outfile);
-end;
-
-procedure InstallMode;
-var
-  info: TSearchRec;
   i, j: integer;
-  target: TTarget;
-  ic: PInstallCommand;
+  pkg: pPackage = nil;
+  cmdtype: TCommandType;
 begin
-  for i := 0 to fbuild.Targets.Count - 1 do
+  for i := 0 to pkglist.Count - 1 do
   begin
-    target := TTarget(fbuild.Targets[i]);
 
-    for j := 0 to target.Install.Count - 1 do
+    pkg := pkglist[i];
+
+    for j := 0 to pkg^.commands.Count - 1 do
     begin
-      ic := PInstallCommand(target.Install[j]);
+      cmdtype := TCommandType(pkg^.commands[j]^);
 
-      if FindFirst(ic^.directory + ic^.pattern, faAnyFile, info) = 0 then
+      if cmdtype in [ctExecutable, ctUnit] then
       begin
-        try
-          repeat
-            if (info.Attr and faDirectory) = 0 then
-            begin
-              if not ForceDirectories(ic^.destination) then
-              begin
-                writeln('Failed to create directory "' + ic^.directory + '"');
-                halt(1);
-              end;
-              copyfile(ic^.directory + info.Name, ic^.destination + info.Name);
-            end;
-          until FindNext(info) <> 0
-        finally
-          FindClose(info);
-        end;
+        if DirectoryExists(pkg^.unitsoutput) then
+          if not DeleteDirectory(pkg^.unitsoutput) then
+          begin
+            writeln('error: cannot remove directory ', pkg^.unitsoutput);
+            halt(1);
+          end;
+
+        if DirectoryExists(pkg^.binoutput) then
+          if not DeleteDirectory(pkg^.binoutput) then
+          begin
+            writeln('error: cannot remove directory ', pkg^.binoutput);
+            halt(1);
+          end;
       end;
     end;
   end;
 end;
 
 //expand some simple macro's
-function ExpandMacros(str: string; Target: TTarget): string;
+function ExpandMacros(str: string; pkg: pPackage): string;
 var
   tmp: string = '';
 begin
   tmp := StringReplace(str, '$(TargetOS)', OSToString(BuildOS), [rfReplaceAll]);
   tmp := StringReplace(tmp, '$(TargetCPU)', CPUToString(BuildCPU), [rfReplaceAll]);
-  tmp := StringReplace(tmp, '$(UNITSOUTPUTDIR)', Target.UnitsOutput, [rfReplaceAll]);
-  tmp := StringReplace(tmp, '$(BINOUTPUTDIR)', Target.BinOutput, [rfReplaceAll]);
+
+  if pkg <> nil then
+  begin
+    tmp := StringReplace(tmp, '$(UNITSOUTPUTDIR)', pkg^.unitsoutput, [rfReplaceAll]);
+    tmp := StringReplace(tmp, '$(BINOUTPUTDIR)', pkg^.binoutput, [rfReplaceAll]);
+  end;
 
   {$ifdef unix}
   tmp := StringReplace(tmp, '$(EXE)', '', [rfReplaceAll]);
@@ -693,32 +454,44 @@ begin
   tmp := StringReplace(tmp, '$(EXE)', '.exe', [rfReplaceAll]);
   {$endif}
 
+  {$ifdef windows}
+  tmp := StringReplace(tmp, '$(DLL)', '.dll', [rfReplaceAll]);
+  {$else}
+  tmp := StringReplace(tmp, '$(DLL)', '.so', [rfReplaceAll]);
+  {$endif}
+
   Result := tmp;
 end;
 
 procedure install(directory, destination, pattern: string);
 var
-  ic: ^TInstallCommand;
+  cmd: pInstallCommand;
 begin
-  ic := AllocMem(sizeof(TInstallCommand));
-  ic^.directory := IncludeTrailingPathDelimiter(ExpandMacros(directory, active_target));
-  ic^.destination := IncludeTrailingPathDelimiter(ExpandMacros(destination,
-    active_target));
-  ic^.pattern := ExpandMacros(pattern, active_target);
+  cmd := AllocMem(sizeof(InstallCommand));
+  cmd^.directory := IncludeTrailingPathDelimiter(ExpandMacros(directory, nil));
+  cmd^.destination := IncludeTrailingPathDelimiter(ExpandMacros(destination, nil));
+  cmd^.pattern := ExpandMacros(pattern, nil);
 
-  active_target.Install.Add(ic);
+  instlist.Add(cmd);
 end;
 
-procedure target_link_libraries(Name: string; files: array of const);
+procedure add_custom_command(pkgname, executable, parameters: string; depends: array of const);
 var
-  i: integer;
+  cmd : pCustomCommand;
+  pkg: pPackage;
 begin
-  if active_target <> nil then
-  begin
-    for i := Low(files) to High(files) do
-      active_target.dep.Add(string(files[i].VAnsiString));
-    active_target.todo_dep.Text := active_target.dep.Text;
-  end;
+  pkg := find_or_create_package(pkglist, pkgname, activepath);
+
+  cmd := AllocMem(sizeof(CustomCommand));
+  cmd^.executable := ExpandMacros(executable, pkg);
+  cmd^.parameters := ExpandMacros(parameters, pkg);
+
+  pkg^.commands.Add(cmd);
+
+  Inc(cmd_count);
+
+  //dependencies will be processed once all packages are processed
+  add_dependecies_to_cache(pkgname, depends);
 end;
 
 procedure usage(tool: TCmdTool);
@@ -783,7 +556,7 @@ begin
             'build': RunMode := rmBuild;
             'clean': RunMode := rmClean;
             'install': RunMode := rmInstall;
-            '--fpc-compiler':
+            '--compiler':
             begin
               if i < ParamCount then
               begin
@@ -791,13 +564,13 @@ begin
                 fpc := ParamStr(i);
                 if not FileExists(fpc) then
                 begin
-                  writeln('error: cannot find the supplied FPC-compiler');
+                  writeln('error: cannot find the supplied compiler');
                   halt(1);
                 end;
               end
               else
               begin
-                writeln('error: please supply a valid path for the FPC-compiler');
+                writeln('error: please supply a valid path for the compiler');
                 usage(tool);
               end;
             end;
@@ -834,25 +607,44 @@ begin
     end;
   end;
 
-  fbuild := TBuild.Create;
-  fbuild.Targets := TFPList.Create;
-  fbuild.sfilecount := 0;
-  fbuild.progress := 0;
+  pkglist := TFPList.Create;
+  instlist := TFPList.Create;
+  depcache := TFPList.Create;
+
+  cmd_count := 0;
 end;
 
 procedure run_make;
+var
+  i: Integer;
+  dep: pDependency;
+  deplist: TFPList;
 begin
-  if fbuild.projname = '' then
+  //test to make sure the project is well defined
+  if projname = '' then
   begin
     writeln('error: no project defined');
     halt(1);
   end;
 
-  case RunMode of
-    rmBuild: BuildMode;
-    rmClean: CleanMode;
-    rmInstall: InstallMode;
+  //add all dependencies for all packages. we do this only here to make sure all
+  //packages are created first. if a package is not found then something must
+  //have gone wrong in the build script.
+  for i := 0 to depcache.Count - 1 do
+  begin
+    dep := depcache[i];
+    add_dependency(pkglist, dep^.source, dep^.target);
   end;
+
+  deplist := dep_resolve(pkglist);
+
+  case RunMode of
+    rmBuild: ExecutePackages(deplist, [ctUnit, ctExecutable, ctCustom]);
+    rmClean: CleanMode(deplist);
+    rmInstall: ExecutePackages(deplist, [ctInstall]);
+  end;
+
+  deplist.free;
 end;
 
 end.
