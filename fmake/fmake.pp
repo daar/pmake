@@ -168,6 +168,8 @@ begin
   make.SaveToFile(fname);
 
   param := TStringList.Create;
+  param.Delimiter := ' ';
+
   param.Add('-viq');
 
   //build the makefile
@@ -175,6 +177,9 @@ begin
   {$ifdef debug}
   param.Add('-gh');
   {$endif}
+
+  //add the unit search path where the fmake executable is locate
+  param.Add('-FU' + ExtractFilePath(ParamStr(0)));
 
   param.Add(fname);
 

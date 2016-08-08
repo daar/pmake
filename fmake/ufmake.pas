@@ -171,6 +171,9 @@ begin
   for i := 1 to BUF_SIZE do
     Buffer[i] := 0;
 
+  if verbose then
+    writeln(Executable, ' ', Parameters.DelimitedText);
+
   AProcess := TProcess.Create(nil);
   AProcess.Executable := Executable;
   AProcess.Parameters.AddStrings(Parameters);
