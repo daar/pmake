@@ -179,13 +179,13 @@ begin
   // Output executable name
   if cmdtype = ctExecutable then
   begin
-    Result.Add(pExecutableCommand(cmd)^.filename);
-    Result.Add('-o' + pkg^.name + ExtractFileExt(ParamStr(0)));
+    Result.Add(pkg^.activepath + pExecutableCommand(cmd)^.filename);
+    Result.Add('-o' + pExecutableCommand(cmd)^.executable + ExtractFileExt(ParamStr(0)));
   end;
 
   // compile unit name
   if cmdtype = ctUnit then
-    Result.Add(pUnitCommand(cmd)^.filename);
+    Result.Add(pkg^.activepath + pUnitCommand(cmd)^.filename);
 
   // Force the compiler-output to be easy parseable
   //if not Verbose then

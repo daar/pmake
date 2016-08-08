@@ -168,7 +168,6 @@ begin
   make.SaveToFile(fname);
 
   param := TStringList.Create;
-  param.Delimiter := ' ';
 
   param.Add('-viq');
 

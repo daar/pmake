@@ -171,6 +171,8 @@ begin
   for i := 1 to BUF_SIZE do
     Buffer[i] := 0;
 
+  Parameters.Delimiter := ' ';
+
   if verbose then
     writeln(Executable, ' ', Parameters.DelimitedText);
 
@@ -378,9 +380,8 @@ begin
           end;
         end;
     end;
+    writeln(format('[%3.0f%%] Built package %s', [progress, pkg^.name]));
   end;
-
-  writeln('Built package ', pkg^.name);
 end;
 
 
