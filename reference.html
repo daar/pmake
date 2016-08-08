@@ -1,0 +1,136 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>FMake reference &mdash; fmake 0.01 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.01',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="fmake 0.01 documentation" href="index.html" />
+    <link rel="prev" title="Project setup" href="projectsetup.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="fmake-reference">
+<h1>FMake reference<a class="headerlink" href="#fmake-reference" title="Permalink to this headline">¶</a></h1>
+<div class="code pascal highlight-default"><div class="highlight"><pre><span></span><span class="n">add_executable</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">executable</span><span class="p">,</span> <span class="n">srcfile</span><span class="p">:</span> <span class="n">string</span><span class="p">;</span> <span class="n">depends</span><span class="p">:</span> <span class="n">array</span> <span class="n">of</span> <span class="n">const</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This procedure will add a package called <strong>name</strong> to the build system and link to it a source file via the <strong>srcfile</strong> variable. The <strong>depends</strong> variable, if needed, can contain one or more dependencies to other packages. An example of how to use the executable command is shown below;</p>
+<div class="code pascal highlight-default"><div class="highlight"><pre><span></span><span class="n">add_executable</span><span class="p">(</span><span class="s1">&#39;pkg_helloworld&#39;</span><span class="p">,</span> <span class="s1">&#39;helloworld$(EXE)&#39;</span><span class="p">,</span> <span class="s1">&#39;hello.pp&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;lib_hello&#39;</span><span class="p">]);</span>
+</pre></div>
+</div>
+<p>This command indicates that the executabale <em>helloworld$(EXE)</em> that belongs to the package <em>pkg_helloworld</em> is compiled from the source file hello.pp. In turn this source file depends on the package <em>lib_hello</em>. Please note that the helloworld executable makes use of the macro $(EXE) that resolves to .exe for platforms other than unix platforms. Please go to the macro page to get an overview of the supported macro&#8217;s.</p>
+<p>With this command it is also possible to compile shared libraries. Instead of the $(EXE) macro then please use the $(DLL) macro.</p>
+<div class="code pascal highlight-default"><div class="highlight"><pre><span></span><span class="n">add_library</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="n">string</span><span class="p">;</span> <span class="n">srcfiles</span><span class="p">,</span> <span class="n">depends</span><span class="p">:</span> <span class="n">array</span> <span class="n">of</span> <span class="n">const</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This procedure will add a package called <strong>name</strong> to the build system and link to it one or more source files via the <strong>srcfiles</strong> variable. The <strong>depends</strong> variable, if needed, can contain one or more dependencies to other packages. An example of how to use the executable command is shown below;</p>
+<div class="code pascal highlight-default"><div class="highlight"><pre><span></span><span class="n">add_executable</span><span class="p">(</span><span class="s1">&#39;lib_hello&#39;</span><span class="p">,</span> <span class="s1">&#39;uhello.pas&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">]);</span>
+</pre></div>
+</div>
+<p>This command indicates that the package <em>lib_hello</em> contains one source file uhello.pas. This package does not have a dependency to any other package.</p>
+<div class="code pascal highlight-default"><div class="highlight"><pre><span></span><span class="n">install</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">destination</span><span class="p">,</span> <span class="n">pattern</span><span class="p">:</span> <span class="n">string</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>An example of how to use the executable command is shown below;</p>
+<div class="code pascal highlight-default"><div class="highlight"><pre><span></span><span class="n">install</span><span class="p">(</span><span class="s1">&#39;$(BINOUTPUTDIR)&#39;</span><span class="p">,</span> <span class="s1">&#39;.</span><span class="se">\r</span><span class="s1">elease\$(TargetCPU)-$(TargetOS)&#39;</span><span class="p">,</span> <span class="s1">&#39;helloworld$(EXE)&#39;</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>This command will install the helloworld executable (helloworld.exe on windows) from the binary output folder of the package to the .\release\$(TargetCPU)-$(TargetOS) folder, relative to the folder from which fmake was invoked from and where make.exe is generated. For the file pattern it is also possible to use wildcard characters such as;</p>
+<dl class="docutils">
+<dt>*</dt>
+<dd>match zero or more characters</dd>
+</dl>
+<dl class="docutils">
+<dt>?</dt>
+<dd>match one character</dd>
+</dl>
+<p>So using *.exe as search pattern would copy all .exe files from the binary output folder to the release folder.</p>
+<div class="code pascal highlight-default"><div class="highlight"><pre><span></span><span class="n">add_custom_command</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">executable</span><span class="p">,</span> <span class="n">parameters</span><span class="p">:</span> <span class="n">string</span><span class="p">;</span> <span class="n">depends</span><span class="p">:</span> <span class="n">array</span> <span class="n">of</span> <span class="n">const</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>An example of how to use the install command is shown below;</p>
+<div class="code pascal highlight-default"><div class="highlight"><pre><span></span><span class="n">add_custom_command</span><span class="p">(</span><span class="s1">&#39;exec_helloworld&#39;</span><span class="p">,</span> <span class="s1">&#39;.</span><span class="se">\b</span><span class="s1">in\$(TargetCPU)-$(TargetOS)\helloworld$(EXE)&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;pkg_helloworld&#39;</span><span class="p">]);</span>
+</pre></div>
+</div>
+<p>This command will execute the hello world executable located in the bin folder with no additional parameters. This command is part of the exec_helloworld package and has a dependency on <em>pkg_helloworld</em>. This means that this package needs to be built and linked first before the custom command is executed.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="projectsetup.html" title="previous chapter">Project setup</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/reference.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Darius Blaszyk.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
+      
+      |
+      <a href="_sources/reference.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

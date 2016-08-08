@@ -1,0 +1,150 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Macro’s &mdash; fmake 0.01 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.01',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="fmake 0.01 documentation" href="index.html" />
+    <link rel="next" title="Project setup" href="projectsetup.html" />
+    <link rel="prev" title="Architecture" href="architecture.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="macro-s">
+<h1>Macro&#8217;s<a class="headerlink" href="#macro-s" title="Permalink to this headline">¶</a></h1>
+<p>When using <em>fmake</em> it is important to understand the architecture of the software in order to be able to create a proper buildscript. A few basic concepts of the <em>fmake</em> build tool are targets and packages. A package is a collection of one or more source files that belong to each other. In the FMake.txt build scripts one can define how these packages are linked to each other (dependencies) and of which commands they exist. There are a number of different commands like <em>executable</em>, <em>unit</em>, <em>install</em> and <em>custom</em>. A target is a specific overall command that is going to be executed. This target is specified form the commandline by the developer. The predefined targets for <em>fmake</em> are;</p>
+<dl class="docutils">
+<dt>$(TargetOS)</dt>
+<dd>Expands to the target OS that fmake is invoked on. Example is win64 on a 64bit windows machine.</dd>
+<dt>$(TargetCPU)</dt>
+<dd>Expands to the target CPU that fmake is invoked on. Example is x86_64 on a 64bit machine.</dd>
+<dt>$(UNITSOUTPUTDIR)</dt>
+<dd>Expands to the unit output directory that is defined for the specific package. The value is equivalent to .\units\$(TargetCPU)-$(TargetOS)</dd>
+<dt>$(BINOUTPUTDIR)</dt>
+<dd>Expands to the binary output directory that is defined for the specific package. The value is equivalent to .\bin\$(TargetCPU)-$(TargetOS)</dd>
+<dt>$(EXE)</dt>
+<dd>Expands to the executable file extension defined for the platorm fmake is invoked on. On unix systems executbles have no extension by default, on the other platforms this is .exe.</dd>
+<dt>$(DLL)</dt>
+<dd>Expands to the shared library file extension defined for the platform fmake is invoked on.</dd>
+</dl>
+<table border="1" class="docutils">
+<colgroup>
+<col width="35%" />
+<col width="30%" />
+<col width="35%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Operating systems</th>
+<th class="head">Library prefix</th>
+<th class="head">Library extension</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Apple</td>
+<td>lib</td>
+<td>.so</td>
+</tr>
+<tr class="row-odd"><td>BeOS</td>
+<td>lib</td>
+<td>.so</td>
+</tr>
+<tr class="row-even"><td>FreeBSD</td>
+<td>lib</td>
+<td>.so</td>
+</tr>
+<tr class="row-odd"><td>Linux</td>
+<td>lib</td>
+<td>.so</td>
+</tr>
+<tr class="row-even"><td>NetBSD</td>
+<td>lib</td>
+<td>.so</td>
+</tr>
+<tr class="row-odd"><td>Windows</td>
+<td>none</td>
+<td>.dll</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="architecture.html" title="previous chapter">Architecture</a></li>
+      <li>Next: <a href="projectsetup.html" title="next chapter">Project setup</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/macro.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Darius Blaszyk.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
+      
+      |
+      <a href="_sources/macro.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

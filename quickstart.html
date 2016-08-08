@@ -1,0 +1,186 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Quick start &mdash; fmake 0.01 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.01',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="fmake 0.01 documentation" href="index.html" />
+    <link rel="next" title="Architecture" href="architecture.html" />
+    <link rel="prev" title="Introduction" href="introduction.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="quick-start">
+<h1>Quick start<a class="headerlink" href="#quick-start" title="Permalink to this headline">¶</a></h1>
+<p>Here&#8217;s a quick start on how to install <em>fmake</em> and create a simple working project, compilable and installable by <em>fmake</em>.</p>
+<div class="section" id="install-fmake">
+<h2>Install fmake<a class="headerlink" href="#install-fmake" title="Permalink to this headline">¶</a></h2>
+<p>There are two ways to get and install fmake on your machine. One way is to download and install the binary from GitHub (<a class="reference external" href="https://github.com/daar/fmake/releases">https://github.com/daar/fmake/releases</a>). The release files are zip files and need to be copied to a location on your machine that is accessible from the command line. So either copy the folder contents to such a location or add the folder location which contains the binary and unit files to the PATH environment.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Make sure you copy the location of the ufmake folder relative to the <em>fmake</em> executable, so <em>fmake</em> can find them when compiling the build scripts.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">It&#8217;s more convenient to use the install target of <em>fmake</em> to install the build tool to the correct location on your machine. See below for a detailed explanation on how to do it.</p>
+</div>
+<p>The other way to download the sources from <a class="reference external" href="https://github.com/daar/fmake/">https://github.com/daar/fmake/</a> via either GIT or SVN.</p>
+<div class="code bash highlight-default"><div class="highlight"><pre><span></span><span class="n">svn</span> <span class="n">co</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">daar</span><span class="o">/</span><span class="n">fmake</span><span class="o">/</span>
+</pre></div>
+</div>
+<p>or</p>
+<div class="code bash highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">pull</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">daar</span><span class="o">/</span><span class="n">fmake</span><span class="o">/</span>
+</pre></div>
+</div>
+<p>Then you can compile fmake by doing</p>
+<div class="code bash highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">fmake</span><span class="o">.</span><span class="n">git</span>
+<span class="n">cd</span> <span class="n">trunk</span>
+<span class="n">cd</span> <span class="n">fmake</span>
+<span class="n">fpc</span> <span class="n">fmake</span>
+</pre></div>
+</div>
+<p>To install <em>fmake</em> you need to invoke <em>fmake</em> to create <em>make</em> and then do a <em>make install</em>;</p>
+<div class="code bash highlight-default"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">fmake</span>
+<span class="n">sudo</span> <span class="o">./</span><span class="n">make</span> <span class="n">install</span>
+</pre></div>
+</div>
+<p>This command will allow you to install <em>fmake</em> to the correct platform specific location. On *nix platforms you will need to provide the administrator password to have rights to install the files, hence <em>sudo</em>.</p>
+</div>
+<div class="section" id="simple-example">
+<h2>Simple example<a class="headerlink" href="#simple-example" title="Permalink to this headline">¶</a></h2>
+<p>Once <em>fmake</em> is installed you can start using it in your projects.</p>
+<p>The following example demonstrates some concept ideas of <em>fmake</em>. For this example you need two source files and one FMake.txt. The executable <em>hellodemo</em> is built by linking to the library hello_pkg that is built first.</p>
+<p>The first, top-level directory contains the following FMake.txt file.</p>
+<div class="code pascal highlight-default"><div class="highlight"><pre><span></span><span class="o">//</span><span class="n">root</span> <span class="n">folder</span> <span class="n">FMake</span><span class="o">.</span><span class="n">txt</span>
+<span class="n">project</span><span class="p">(</span><span class="s1">&#39;HELLO&#39;</span><span class="p">);</span>
+
+<span class="n">add_library</span><span class="p">(</span><span class="s1">&#39;hello_pkg&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;uhello.pas&#39;</span><span class="p">])</span>
+<span class="n">add_executable</span><span class="p">(</span><span class="s1">&#39;hellodemo_pkg&#39;</span><span class="p">,</span> <span class="s1">&#39;hellodemo$(EXE)&#39;</span><span class="p">,</span> <span class="s1">&#39;demo.pp&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;hello_pkg&#39;</span><span class="p">]);</span>
+</pre></div>
+</div>
+<p>The program source file in the root folder is:</p>
+<div class="code pascal highlight-default"><div class="highlight"><pre><span></span><span class="n">program</span> <span class="n">hello</span><span class="p">;</span>
+
+<span class="n">uses</span>
+  <span class="n">uhello</span><span class="p">;</span>
+
+<span class="n">begin</span>
+  <span class="n">WriteHello</span><span class="p">;</span>
+<span class="n">end</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>The unit source file is shown below:</p>
+<div class="code pascal highlight-default"><div class="highlight"><pre><span></span><span class="n">unit</span> <span class="n">uhello</span><span class="p">;</span>
+
+<span class="n">interface</span>
+
+<span class="n">procedure</span> <span class="n">WriteHello</span><span class="p">;</span>
+
+<span class="n">implementation</span>
+
+<span class="n">procedure</span> <span class="n">WriteHello</span><span class="p">;</span>
+<span class="n">begin</span>
+  <span class="n">writeln</span><span class="p">(</span><span class="s1">&#39;Hello World!&#39;</span><span class="p">);</span>
+<span class="n">end</span><span class="p">;</span>
+
+<span class="n">end</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>Now the project can be compiled by using the following commands;</p>
+<div class="code bash highlight-default"><div class="highlight"><pre><span></span><span class="o">&gt;./</span><span class="n">fmake</span>
+<span class="o">&gt;./</span><span class="n">make</span> <span class="n">install</span>
+</pre></div>
+</div>
+<p>If all went well there will be two folders created in the root folder ./bin/x86_64-win64 and ./units/x86_64-win64 (in case you are working on a 64bit windows machine, using the 64bit FPC compiler). In the bin folder you will find an executable called hellodemo.exe.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Quick start</a><ul>
+<li><a class="reference internal" href="#install-fmake">Install fmake</a></li>
+<li><a class="reference internal" href="#simple-example">Simple example</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="introduction.html" title="previous chapter">Introduction</a></li>
+      <li>Next: <a href="architecture.html" title="next chapter">Architecture</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/quickstart.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Darius Blaszyk.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
+      
+      |
+      <a href="_sources/quickstart.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
