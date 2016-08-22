@@ -1,3 +1,4 @@
+compiler_minimum_required(3,0,0);
 project('FMake a build tool for (free) pascal');
 
 //compile the fmake units

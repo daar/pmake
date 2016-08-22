@@ -33,6 +33,8 @@ procedure add_library(pkgname: string; srcfiles, depends: array of const);
 
 procedure install(directory, destination, pattern, depends: string);
 procedure add_custom_command(pkgname, executable, parameters: string; depends: array of const);
+
+procedure compiler_minimum_required(major, minor, revision: integer);
 procedure project(name: string);
 
 procedure message(mode: msgMode; msg: string);
@@ -315,6 +317,33 @@ begin
   if BasePath = '' then
     BasePath := path;
   ActivePath := path;
+end;
+
+procedure compiler_minimum_required(major, minor, revision: integer);
+var
+  ver: TStrings;
+  isOK: boolean = false;
+begin
+  ver := TStringList.Create;
+  ver.Delimiter := '.';
+  ver.DelimitedText := CompilerVersion;
+
+  //check version numbers
+  if StrToInt(ver[0]) > major then
+    isOK := true
+  else
+    if (StrToInt(ver[0]) = major) and (StrToInt(ver[1]) > minor) then
+      isOK := true
+    else
+      if (StrToInt(ver[0]) = major) and (StrToInt(ver[1]) = minor) and (StrToInt(ver[2]) >= revision) then
+        isOK := true;
+
+  ver.Free;
+
+  if not isOK then begin
+    writeln('error: minimum compiler version required is ', major, '.', minor, '.', revision, ', got ', CompilerVersion);
+    halt(1);
+  end;
 end;
 
 procedure project(name: string);
@@ -803,5 +832,6 @@ end;
 
 initialization
   fpc := ExeSearch(ExpandMacros('fpc$(EXE)'), SysUtils.GetEnvironmentVariable('PATH'));
+  CompilerDefaults;
 
 end.
