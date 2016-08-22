@@ -48,13 +48,14 @@ function RunCommand(Executable: string; Parameters: TStrings): TStrings;
 procedure check_options(tool: TCmdTool);
 procedure usage(tool: TCmdTool);
 
-function BuildCPU: TCpu;
-function BuildOS: TOS;
 function UnitsOutputDir(BasePath: string; ACPU: TCPU; AOS: TOS): string;
 function BinOutputDir(BasePath: string; ACPU: TCPU; AOS: TOS): string;
 
 var
   fpc: string;
+  CPU: TCPU;
+  OS: TOS;
+  CompilerVersion: string;
   verbose: boolean = False;
 
 implementation
@@ -76,7 +77,6 @@ const
     );
 
 var
-  //active_package: pPackage;
   ActivePath: string;
   BasePath: string = '';
   RunMode: TRunMode;
@@ -86,14 +86,42 @@ var
   projname: string;
   cmd_count: integer = 0;
 
-function BuildCPU: TCpu;
+function GetCompilerInfo(const ACompiler, AOptions: string; ReadStdErr: boolean): string;
+const
+  BufSize = 1024;
+var
+  S: TProcess;
+  Buf: array [0..BufSize - 1] of char;
+  Count: longint;
 begin
-  Result := StringToCPU({$I %FPCTARGETCPU%});
+  S := TProcess.Create(Nil);
+  S.Commandline := ACompiler + ' ' + AOptions;
+  S.Options := [poUsePipes];
+  S.execute;
+  Count := s.output.read(buf, BufSize);
+  if (count = 0) and ReadStdErr then
+    Count := s.Stderr.read(buf, BufSize);
+  S.Free;
+  SetLength(Result, Count);
+  Move(Buf, Result[1], Count);
 end;
 
-function BuildOS: TOS;
+procedure CompilerDefaults;
+var
+  infoSL: TStringList;
 begin
-  Result := StringToOS({$I %FPCTARGETOS%});
+  // Detect compiler version/target from -i option
+  infosl := TStringList.Create;
+  infosl.Delimiter := ' ';
+  infosl.DelimitedText := GetCompilerInfo(fpc, '-iVTPTO', False);
+  if infosl.Count <> 3 then
+    raise EInstallerError.Create('Compiler returns invalid information, check if fpc -iV works');
+
+  CompilerVersion := infosl[0];
+  CPU := StringToCPU(infosl[1]);
+  OS := StringToOS(infosl[2]);
+
+  infosl.Free;
 end;
 
 function UnitsOutputDir(BasePath: string; ACPU: TCPU; AOS: TOS): string;
@@ -121,8 +149,10 @@ function ExpandMacros(str: string; pkg: pPackage = nil): string;
 var
   tmp: string = '';
 begin
-  tmp := StringReplace(str, '$(TargetOS)', OSToString(BuildOS), [rfReplaceAll]);
-  tmp := StringReplace(tmp, '$(TargetCPU)', CPUToString(BuildCPU), [rfReplaceAll]);
+  tmp := StringReplace(str, '$(TargetOS)', OSToString(OS), [rfReplaceAll]);
+  tmp := StringReplace(tmp, '$(TargetCPU)', CPUToString(CPU), [rfReplaceAll]);
+
+  tmp := StringReplace(tmp, '$(BASEDIR)', BasePath, [rfReplaceAll]);
 
   if pkg <> nil then
   begin

@@ -105,8 +105,8 @@ begin
 
     pkg^.resolved := false;
     pkg^.activepath := ActivePath;
-    pkg^.unitsoutput := UnitsOutputDir(ActivePath, BuildCPU, BuildOS);;
-    pkg^.binoutput := BinOutputDir(ActivePath, BuildCPU, BuildOS);
+    pkg^.unitsoutput := UnitsOutputDir(ActivePath, CPU, OS);;
+    pkg^.binoutput := BinOutputDir(ActivePath, CPU, OS);
 
     pkglist.Add(pkg);
   end;

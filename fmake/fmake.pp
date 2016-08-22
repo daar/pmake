@@ -151,7 +151,7 @@ begin
   make := TStringList.Create;
 
   make.Add('program make;');
-  make.Add('uses ufmake;');
+  make.Add('uses ufmake, fpmkunit;');
   make.Add('begin');
   make.Add('  check_options(ctMake);');
   make.Add('  init_make;');
