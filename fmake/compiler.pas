@@ -12,6 +12,13 @@ type
     mNote, mOption, mUnitInfo, mUnknown, mWarning);
   TMessages = set of TMessage;
 
+  TFMakeItem = record
+    fname: string;
+    startpos: integer;
+    endpos: integer;
+  end;
+  PFMakeItem = ^TFMakeItem;
+
   TFPCOutput = record
     msgno: integer;
     msgtype: TMessage;
@@ -29,6 +36,9 @@ type
   PFPCMessage = ^TFPCMessage;
 
 const
+  AllMessages = [mCompiling, mDebug, mError, mFail, mHint, mInformation, mLinking,
+    mNote, mOption, mUnitInfo, mUnknown, mWarning];
+
   MsgCol: array [TMessage] of TFPCColor = (
   (msgtype: mCompiling; msgcol: Green),
   (msgtype: mDebug; msgcol: LightGray),
@@ -46,10 +56,11 @@ const
 //to add more FPC versions, ifdef this include file
 {$i fpc300.inc}
 
+procedure UpdateFMakePostions(var FPCMsgs: TFPList; fName: string);
 function GetFPCMsgType(msgidx: integer): TMessage;
 procedure WriteFPCCommand(FPCMsgs: TFPList; ShowMsg: TMessages; progress: double = -1);
 function ParseFPCCommand(FPCOutput: TStrings; BasePath: string): TFPList;
-function RunCompilerCommand(Parameters: TStrings): TStrings;
+function RunCompilerCommand(ExeName, SrcName: string): TStrings;
 
 function CompilerCommandLine(pkg: pPackage; cmd: pointer): TStringList;
 
@@ -57,6 +68,56 @@ implementation
 
 uses
   SysUtils, ufmake;
+
+procedure UpdateFMakePostions(var FPCMsgs: TFPList; fName: string);
+var
+  i: integer;
+  fpc_msg: PFPCMessage;
+  fpc_msgtype: TMessage;
+  from_file: string;
+  sep: integer;
+  lineno, j: integer;
+  fitem: PFMakeItem;
+  found: boolean;
+  tmp: string;
+begin
+  from_file := ExtractFileName(fName);
+
+  for i := 0 to FPCMsgs.Count - 1 do
+  begin
+    fpc_msg := PFPCMessage(FPCMsgs[i]);
+    fpc_msgtype := GetFPCMsgType(fpc_msg^.msgidx);
+    if fpc_msgtype in [mError, mFail] then
+    begin
+      sep := pos(',', fpc_msg^.Text);
+      if sep > 0 then
+      begin
+        sep := sep - length(from_file) - 2;
+        lineno := StrToInt(copy(fpc_msg^.Text, length(from_file) + 2, sep));
+
+        //find the line no
+        for j := 0 to fmakelist.Count - 1 do
+        begin
+          fitem := PFMakeItem(fmakelist[j]);
+          found := False;
+          if (fitem^.startpos <= lineno) and (fitem^.endpos >= lineno) then
+          begin
+            found := True;
+            break;
+          end;
+        end;
+
+        if found then
+        begin
+          sep := pos(',', fpc_msg^.Text);
+          tmp := copy(fpc_msg^.Text, sep, length(fpc_msg^.Text) - sep + 1);
+          fpc_msg^.Text :=
+            format('%s(%d%s', [fitem^.fname, lineno - fitem^.startpos, tmp]);
+        end;
+      end;
+    end;
+  end;
+end;
 
 function GetFPCMsgType(msgidx: integer): TMessage;
 begin
@@ -139,9 +200,25 @@ begin
   end;
 end;
 
-function RunCompilerCommand(Parameters: TStrings): TStrings;
+function RunCompilerCommand(ExeName, SrcName: string): TStrings;
+var
+  param: TStrings;
 begin
-  Result := RunCommand(fpc, Parameters);
+  param := TStringList.Create;
+
+  param.Add('-viq');
+{$ifdef debug}
+  param.Add('-gh');
+{$endif}
+  //add the unit search path where the fmake executable is locate
+  param.Add('-FU' + ExtractFilePath(ParamStr(0)));
+  param.Add(SrcName);
+  //based on the app extension of fmake, add the same extension to make
+  param.Add(ExpandMacros('-o' + ExeName));
+
+  Result := RunCommand(fpc, param);
+
+  param.Free;
 end;
 
 function CompilerCommandLine(pkg: pPackage; cmd: pointer): TStringList;

@@ -2,10 +2,9 @@ compiler_minimum_required(3,0,0);
 project('FMake a build tool for (free) pascal');
 
 //compile the fmake units
-add_library('lib_fmake', ['compiler.pas']);
-add_library('lib_fmake', ['depsolver.pas']);
-add_library('lib_fmake', ['ufmake.pas']);
+add_library('lib_fmake', ['compiler.pas', 'depsolver.pas', 'ufmake.pas']);
 
+//compile the fmake executable
 add_executable('fmake', 'fmake', 'fmake.pp', ['lib_fmake']);
 
 //install the compiled units and the fmake executable

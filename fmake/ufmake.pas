@@ -8,7 +8,7 @@ uses
   {$IFDEF UNIX}
   cthreads,
   {$ENDIF}
-  Classes, fpmkunit;
+  Classes, fpmkunit, depsolver, compiler;
 
 type
   TCmdTool = (ctFMake, ctMake);
@@ -46,12 +46,18 @@ procedure init_make;
 procedure run_make;
 procedure free_make;
 
+procedure create_fmakecache;
+function fmake_changed: boolean;
+procedure build_make2;
+procedure run_make2;
+
 function RunCommand(Executable: string; Parameters: TStrings): TStrings;
 procedure check_options(tool: TCmdTool);
 procedure usage(tool: TCmdTool);
 
 function UnitsOutputDir(BasePath: string; ACPU: TCPU; AOS: TOS): string;
 function BinOutputDir(BasePath: string; ACPU: TCPU; AOS: TOS): string;
+function ExpandMacros(str: string; pkg: pPackage = nil): string;
 
 var
   fpc: string;
@@ -59,11 +65,13 @@ var
   OS: TOS;
   CompilerVersion: string;
   verbose: boolean = False;
+  fmakelist: TFPList;
+  ShowMsg: TMessages = [mFail, mError];
 
 implementation
 
 uses
-  Crt, SysUtils, Process, depsolver, compiler;
+  Crt, SysUtils, Process, crc;
 
 type
   TRunMode = (rmBuild, rmInstall, rmClean);
@@ -87,6 +95,7 @@ var
   depcache: TFPList;
   projname: string;
   cmd_count: integer = 0;
+  fmakefiles: TStrings;
 
 function GetCompilerInfo(const ACompiler, AOptions: string; ReadStdErr: boolean): string;
 const
@@ -175,19 +184,184 @@ begin
     end;
   end;
 
-  {$ifdef unix}
+{$ifdef unix}
   tmp := StringReplace(tmp, '$(EXE)', '', [rfReplaceAll]);
-  {$else}
+{$else}
   tmp := StringReplace(tmp, '$(EXE)', '.exe', [rfReplaceAll]);
-  {$endif}
+{$endif}
 
-  {$ifdef windows}
+{$ifdef windows}
   tmp := StringReplace(tmp, '$(DLL)', '.dll', [rfReplaceAll]);
-  {$else}
+{$else}
   tmp := StringReplace(tmp, '$(DLL)', '.so', [rfReplaceAll]);
-  {$endif}
+{$endif}
 
   Result := tmp;
+end;
+
+procedure search_fmake(const path: string);
+var
+  info: TSearchRec;
+begin
+  if FindFirst(path + '*', faAnyFile, info) = 0 then
+  begin
+    try
+      repeat
+        if (info.Attr and faDirectory) = 0 then
+        begin
+          //add FMake.txt to the file list
+          if info.Name = 'FMake.txt' then
+            fmakefiles.Add(path + info.Name);
+        end
+        else
+        //start the recursive search
+        if (info.Name <> '.') and (info.Name <> '..') then
+          search_fmake(IncludeTrailingBackSlash(path + info.Name));
+
+      until FindNext(info) <> 0
+    finally
+      FindClose(info);
+    end;
+  end;
+end;
+
+procedure create_fmakecache;
+var
+  cache: TStringList;
+  fmakecrc: cardinal;
+  f: TStrings;
+  i: Integer;
+  tmp: string;
+begin
+  cache := TStringList.Create;
+
+  //write data to cache
+  f := TStringList.Create;
+  for i := 0 to fmakefiles.Count - 1 do
+  begin
+    f.LoadFromFile(fmakefiles[i]);
+    fmakecrc := crc32(0, @f.Text[1], length(f.Text));
+    str(fmakecrc: 10, tmp);
+    cache.Add(Format('%s %s', [tmp, fmakefiles[i]]));
+  end;
+  f.Free;
+
+  cache.SaveToFile('FMakeCache.txt');
+  cache.Free;
+end;
+
+function fmake_changed: boolean;
+var
+  cache: TStrings;
+  i, idx: Integer;
+  f: TStrings;
+  fmakecrc: Cardinal;
+  tmp: string;
+begin
+  if not FileExists('FMakeCache.txt') then
+    exit(true);
+
+  cache := TStringList.Create;
+  cache.LoadFromFile('FMakeCache.txt');
+
+  //return true if the FMake.txt is count is different
+  if cache.Count <> fmakefiles.Count then
+  begin
+    cache.Free;
+    exit(true);
+  end;
+
+  //return true if a crc / FMake.txt combination is not found
+  f := TStringList.Create;
+  for i := 0 to fmakefiles.Count - 1 do
+  begin
+    f.LoadFromFile(fmakefiles[i]);
+    fmakecrc := crc32(0, @f.Text[1], length(f.Text));
+
+    str(fmakecrc: 10, tmp);
+    idx := cache.IndexOf(Format('%s %s', [tmp, fmakefiles[i]]));
+
+    if idx = -1 then
+    begin
+      f.Free;
+      cache.Free;
+      exit(true);
+    end;
+  end;
+
+  f.Free;
+  cache.Free;
+  exit(false);
+end;
+
+procedure build_make2;
+var
+  make2, f, fpc_out: TStrings;
+  fname: String;
+  fpc_msg: TFPList;
+  i: Integer;
+begin
+  create_fmakecache;
+
+  make2 := TStringList.Create;
+
+  make2.Add('program make2;');
+  make2.Add('uses ufmake, fpmkunit;');
+  make2.Add('begin');
+  make2.Add('  check_options(ctMake);');
+  make2.Add('  init_make;');
+
+  make2.Add('  add_subdirectory(''' + BasePath + ''');');
+
+  //insert code from FMake.txt files
+  f := TStringList.Create;
+  for i := 0 to fmakefiles.Count - 1 do
+  begin
+    f.LoadFromFile(fmakefiles[i]);
+    make2.Add(f.Text);
+  end;
+  f.Free;
+
+  make2.Add('  run_make;');
+  make2.Add('  free_make;');
+  make2.Add('end.');
+
+  fname := GetTempFileName('.', 'fmake');
+  make2.SaveToFile(fname);
+
+  fpc_out := RunCompilerCommand(ExpandMacros('make2$(EXE)'), fname);
+  fpc_msg := ParseFPCCommand(fpc_out, BasePath);
+  UpdateFMakePostions(fpc_msg, fname);
+  WriteFPCCommand(fpc_msg, ShowMsg);
+
+  fpc_out.Free;
+  fpc_msg.Free;
+
+  //remove the object and source files
+  if verbose then
+    writeln('-- Deleting temporary files');
+
+{$ifndef debug}
+  DeleteFile(fname);
+{$endif}
+  DeleteFile(ChangeFileExt(fname, '.o'));
+end;
+
+procedure run_make2;
+var
+  AProcess: TProcess;
+  i: Integer;
+begin
+  writeln('-- Executing make2');
+  AProcess := TProcess.Create(nil);
+  AProcess.Executable:= ExpandMacros('make2$(EXE)');
+
+  for i := 1 to ParamCount do
+    AProcess.Parameters.Add(ParamStr(i));
+
+  //AProcess.Options := AProcess.Options + [poWaitOnExit];
+  AProcess.Execute;
+  AProcess.Free;
 end;
 
 function RunCommand(Executable: string; Parameters: TStrings): TStrings;
@@ -203,14 +377,19 @@ begin
   for i := 1 to BUF_SIZE do
     Buffer[i] := 0;
 
-  Parameters.Delimiter := ' ';
+  if Parameters <> nil then
+    Parameters.Delimiter := ' ';
 
   if verbose then
-    writeln(Executable, ' ', Parameters.DelimitedText);
+    if Parameters<>nil then
+      writeln(Executable, ' ', Parameters.DelimitedText)
+    else
+      writeln(Executable);
 
   AProcess := TProcess.Create(nil);
   AProcess.Executable := Executable;
-  AProcess.Parameters.AddStrings(Parameters);
+  if Parameters <> nil then
+    AProcess.Parameters.AddStrings(Parameters);
   AProcess.Options := [poUsePipes];
   AProcess.Execute;
 
@@ -228,7 +407,7 @@ begin
   OutputStream.Position := 0;
   Result.LoadFromStream(OutputStream);
 
-  // Clean up
+  //clean up
   OutputStream.Free;
 end;
 
@@ -410,7 +589,7 @@ begin
           begin
             param := CompilerCommandLine(pkg, cmd);
 
-            fpc_out := RunCompilerCommand(param);
+            fpc_out := RunCommand(fpc, param);
             param.Free;
 
             fpc_msg := ParseFPCCommand(fpc_out, BasePath);
@@ -833,5 +1012,12 @@ end;
 initialization
   fpc := ExeSearch(ExpandMacros('fpc$(EXE)'), SysUtils.GetEnvironmentVariable('PATH'));
   CompilerDefaults;
+
+  fmakefiles := TStringList.Create;
+  BasePath := IncludeTrailingBackSlash(GetCurrentDir);
+  search_fmake(BasePath);  //get the FMake.txt file list
+
+finalization
+  fmakefiles.Free;
 
 end.
