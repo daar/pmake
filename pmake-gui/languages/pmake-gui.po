@@ -1,0 +1,153 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+#: taboutform.applicationtitlelabel.caption
+msgid "a pascal build tool"
+msgstr ""
+
+#: taboutform.caption
+msgid "AboutForm"
+msgstr ""
+
+#: taboutform.closebutton.caption
+msgid "Close"
+msgstr ""
+
+#: taboutform.compilerlabel.caption
+msgid "Compiler"
+msgstr ""
+
+#: taboutform.copyrightlabel.caption
+msgid "Copyright © 2016 by Darius Blaszyk"
+msgstr ""
+
+#: taboutform.creditsbutton.caption
+msgid "Credits"
+msgstr ""
+
+#: taboutform.licensebutton.caption
+msgid "License"
+msgstr ""
+
+#: taboutform.repositorylabel.caption
+msgid "Found on GitHub"
+msgstr ""
+
+#: tpmakeguiform.binarylocationlabel.caption
+msgid "Binary location"
+msgstr ""
+
+#: tpmakeguiform.browsebuildbutton.caption
+msgid "Browse build"
+msgstr ""
+
+#: tpmakeguiform.browsesourcebutton.caption
+msgid "Browse source"
+msgstr ""
+
+#: tpmakeguiform.caption
+msgctxt "TPMAKEGUIFORM.CAPTION"
+msgid "PMake"
+msgstr ""
+
+#: tpmakeguiform.configurebutton.caption
+msgctxt "tpmakeguiform.configurebutton.caption"
+msgid "Configure"
+msgstr ""
+
+#: tpmakeguiform.configuremenuitem.caption
+msgctxt "TPMAKEGUIFORM.CONFIGUREMENUITEM.CAPTION"
+msgid "Configure"
+msgstr ""
+
+#: tpmakeguiform.dutchmenuitem.caption
+msgctxt "TPMAKEGUIFORM.DUTCHMENUITEM.CAPTION"
+msgid "Dutch"
+msgstr ""
+
+#: tpmakeguiform.englishmenuitem.caption
+msgid "English (default)"
+msgstr ""
+
+#: tpmakeguiform.generatebutton.caption
+msgctxt "tpmakeguiform.generatebutton.caption"
+msgid "Generate"
+msgstr ""
+
+#: tpmakeguiform.groupedcheckbox.caption
+msgid "Grouped"
+msgstr ""
+
+#: tpmakeguiform.languagesmenuitem.caption
+msgid "Languages"
+msgstr ""
+
+#: tpmakeguiform.menuitem1.caption
+msgid "&File"
+msgstr ""
+
+#: tpmakeguiform.menuitem10.caption
+msgctxt "TPMAKEGUIFORM.MENUITEM10.CAPTION"
+msgid "Generate"
+msgstr ""
+
+#: tpmakeguiform.menuitem11.caption
+msgid "Find in output"
+msgstr ""
+
+#: tpmakeguiform.menuitem12.caption
+msgid "Find Next"
+msgstr ""
+
+#: tpmakeguiform.menuitem13.caption
+msgid "Find Previous"
+msgstr ""
+
+#: tpmakeguiform.menuitem14.caption
+msgid "Warning messages"
+msgstr ""
+
+#: tpmakeguiform.menuitem15.caption
+msgid "Collapse Grouped Entries"
+msgstr ""
+
+#: tpmakeguiform.menuitem16.caption
+msgid "Expand Grouped Entries"
+msgstr ""
+
+#: tpmakeguiform.menuitem18.caption
+msgid "About"
+msgstr ""
+
+#: tpmakeguiform.menuitem19.caption
+msgid "Help"
+msgstr ""
+
+#: tpmakeguiform.menuitem2.caption
+msgid "&Tools"
+msgstr ""
+
+#: tpmakeguiform.menuitem3.caption
+msgid "&Options"
+msgstr ""
+
+#: tpmakeguiform.menuitem4.caption
+msgid "&Help"
+msgstr ""
+
+#: tpmakeguiform.menuitem5.caption
+msgid "Exit"
+msgstr ""
+
+#: tpmakeguiform.menuitem6.caption
+msgid "Reload cache"
+msgstr ""
+
+#: tpmakeguiform.menuitem7.caption
+msgid "Delete cache"
+msgstr ""
+
+#: tpmakeguiform.sourcetreelocationlabel.caption
+msgid "Source tree location"
+msgstr ""
+

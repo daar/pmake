@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <ProjectSession>
+    <PathDelim Value="\"/>
+    <Version Value="9"/>
+    <BuildModes Active="Default"/>
+    <Units Count="11">
+      <Unit0>
+        <Filename Value="pmakegui.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <UsageCount Value="65"/>
+      </Unit0>
+      <Unit1>
+        <Filename Value="Main.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="PMakeGUIForm"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <IsVisibleTab Value="True"/>
+        <CursorPos X="9" Y="10"/>
+        <UsageCount Value="65"/>
+        <Loaded Value="True"/>
+        <LoadedDesigner Value="True"/>
+      </Unit1>
+      <Unit2>
+        <Filename Value="About.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="AboutForm"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <EditorIndex Value="4"/>
+        <TopLine Value="62"/>
+        <CursorPos X="14" Y="70"/>
+        <UsageCount Value="64"/>
+        <Loaded Value="True"/>
+        <LoadedDesigner Value="True"/>
+      </Unit2>
+      <Unit3>
+        <Filename Value="License.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="LicenseForm"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <EditorIndex Value="5"/>
+        <UsageCount Value="64"/>
+        <Loaded Value="True"/>
+      </Unit3>
+      <Unit4>
+        <Filename Value="C:\Work\develop\fpc-2.6.4.source\fpc-2.6.4\rtl\objpas\sysutils\finah.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="13"/>
+        <CursorPos X="10" Y="27"/>
+        <UsageCount Value="32"/>
+      </Unit4>
+      <Unit5>
+        <Filename Value="..\fmake\ufmake.pas"/>
+        <EditorIndex Value="2"/>
+        <TopLine Value="100"/>
+        <CursorPos X="29" Y="114"/>
+        <UsageCount Value="32"/>
+        <Loaded Value="True"/>
+      </Unit5>
+      <Unit6>
+        <Filename Value="C:\Work\develop\lazarus\lcl\include\customedit.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="516"/>
+        <CursorPos Y="530"/>
+        <UsageCount Value="26"/>
+      </Unit6>
+      <Unit7>
+        <Filename Value="..\fmake\compiler.pas"/>
+        <EditorIndex Value="3"/>
+        <TopLine Value="159"/>
+        <CursorPos X="18" Y="208"/>
+        <UsageCount Value="26"/>
+        <Loaded Value="True"/>
+      </Unit7>
+      <Unit8>
+        <Filename Value="C:\Work\develop\fpc-2.6.4.source\fpc-2.6.4\packages\fpmkunit\src\fpmkunit.pp"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="1759"/>
+        <CursorPos Y="1786"/>
+        <UsageCount Value="26"/>
+      </Unit8>
+      <Unit9>
+        <Filename Value="C:\Work\develop\fpc-2.6.4.source\fpc-2.6.4\rtl\objpas\typinfo.pp"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="344"/>
+        <CursorPos X="10" Y="358"/>
+        <UsageCount Value="26"/>
+      </Unit9>
+      <Unit10>
+        <Filename Value="C:\lazarus\lcl\defaulttranslator.pas"/>
+        <UnitName Value="DefaultTranslator"/>
+        <EditorIndex Value="1"/>
+        <TopLine Value="13"/>
+        <CursorPos X="16" Y="31"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit10>
+    </Units>
+    <JumpHistory Count="13" HistoryIndex="12">
+      <Position1>
+        <Filename Value="..\fmake\ufmake.pas"/>
+        <Caret Line="102" Column="25" TopLine="98"/>
+      </Position1>
+      <Position2>
+        <Filename Value="..\fmake\ufmake.pas"/>
+        <Caret Line="129" Column="42" TopLine="106"/>
+      </Position2>
+      <Position3>
+        <Filename Value="..\fmake\ufmake.pas"/>
+        <Caret Line="102" Column="25" TopLine="88"/>
+      </Position3>
+      <Position4>
+        <Filename Value="..\fmake\ufmake.pas"/>
+        <Caret Line="129" Column="42" TopLine="106"/>
+      </Position4>
+      <Position5>
+        <Filename Value="..\fmake\ufmake.pas"/>
+        <Caret Line="102" Column="25" TopLine="88"/>
+      </Position5>
+      <Position6>
+        <Filename Value="About.pas"/>
+        <Caret Line="78" Column="15" TopLine="63"/>
+      </Position6>
+      <Position7>
+        <Filename Value="About.pas"/>
+        <Caret Line="77" Column="15" TopLine="62"/>
+      </Position7>
+      <Position8>
+        <Filename Value="About.pas"/>
+        <Caret Line="79" Column="43" TopLine="62"/>
+      </Position8>
+      <Position9>
+        <Filename Value="Main.pas"/>
+        <Caret Line="102" Column="37" TopLine="83"/>
+      </Position9>
+      <Position10>
+        <Filename Value="About.pas"/>
+        <Caret Line="70" Column="14" TopLine="62"/>
+      </Position10>
+      <Position11>
+        <Filename Value="Main.pas"/>
+        <Caret Line="133" Column="8" TopLine="119"/>
+      </Position11>
+      <Position12>
+        <Filename Value="..\fmake\ufmake.pas"/>
+        <Caret Line="114" Column="29" TopLine="100"/>
+      </Position12>
+      <Position13>
+        <Filename Value="Main.pas"/>
+        <Caret Line="9" Column="57"/>
+      </Position13>
+    </JumpHistory>
+  </ProjectSession>
+</CONFIG>

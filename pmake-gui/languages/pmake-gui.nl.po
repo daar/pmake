@@ -1,0 +1,153 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+#: taboutform.applicationtitlelabel.caption
+msgid "a pascal build tool"
+msgstr "een pascal compileerhulpmiddel"
+
+#: taboutform.caption
+msgid "AboutForm"
+msgstr "AboutForm"
+
+#: taboutform.closebutton.caption
+msgid "Close"
+msgstr "Sluiten"
+
+#: taboutform.compilerlabel.caption
+msgid "Compiler"
+msgstr ""
+
+#: taboutform.copyrightlabel.caption
+msgid "Copyright © 2016 by Darius Blaszyk"
+msgstr "Copyright © 2016 door Darius Blaszyk"
+
+#: taboutform.creditsbutton.caption
+msgid "Credits"
+msgstr "Credits"
+
+#: taboutform.licensebutton.caption
+msgid "License"
+msgstr "Licentie"
+
+#: taboutform.repositorylabel.caption
+msgid "Found on GitHub"
+msgstr "Te vinden op GitHub"
+
+#: tpmakeguiform.binarylocationlabel.caption
+msgid "Binary location"
+msgstr "Binaire locatie"
+
+#: tpmakeguiform.browsebuildbutton.caption
+msgid "Browse build"
+msgstr "Blader bouwen"
+
+#: tpmakeguiform.browsesourcebutton.caption
+msgid "Browse source"
+msgstr "Bladeren bron"
+
+#: tpmakeguiform.caption
+msgctxt "TPMAKEGUIFORM.CAPTION"
+msgid "PMake"
+msgstr "PMake"
+
+#: tpmakeguiform.configurebutton.caption
+msgctxt "tpmakeguiform.configurebutton.caption"
+msgid "Configure"
+msgstr "Configureer"
+
+#: tpmakeguiform.configuremenuitem.caption
+msgctxt "TPMAKEGUIFORM.CONFIGUREMENUITEM.CAPTION"
+msgid "Configure"
+msgstr "Configureer"
+
+#: tpmakeguiform.dutchmenuitem.caption
+msgctxt "tpmakeguiform.dutchmenuitem.caption"
+msgid "Dutch"
+msgstr "Nederlands"
+
+#: tpmakeguiform.englishmenuitem.caption
+msgid "English (default)"
+msgstr "Engels (standaard)"
+
+#: tpmakeguiform.generatebutton.caption
+msgctxt "tpmakeguiform.generatebutton.caption"
+msgid "Generate"
+msgstr "Genereer"
+
+#: tpmakeguiform.groupedcheckbox.caption
+msgid "Grouped"
+msgstr "Gegroepeerd"
+
+#: tpmakeguiform.languagesmenuitem.caption
+msgid "Languages"
+msgstr "Talen"
+
+#: tpmakeguiform.menuitem1.caption
+msgid "&File"
+msgstr "&Bestand"
+
+#: tpmakeguiform.menuitem10.caption
+msgctxt "TPMAKEGUIFORM.MENUITEM10.CAPTION"
+msgid "Generate"
+msgstr "Genereer"
+
+#: tpmakeguiform.menuitem11.caption
+msgid "Find in output"
+msgstr "Zoek in uitvoer"
+
+#: tpmakeguiform.menuitem12.caption
+msgid "Find Next"
+msgstr "Vind Volgende"
+
+#: tpmakeguiform.menuitem13.caption
+msgid "Find Previous"
+msgstr "Vind Vorige"
+
+#: tpmakeguiform.menuitem14.caption
+msgid "Warning messages"
+msgstr "Waarschuwingen"
+
+#: tpmakeguiform.menuitem15.caption
+msgid "Collapse Grouped Entries"
+msgstr "Sluit Gegroepeerde Entries"
+
+#: tpmakeguiform.menuitem16.caption
+msgid "Expand Grouped Entries"
+msgstr "Open Gegroepeerd Entries"
+
+#: tpmakeguiform.menuitem18.caption
+msgid "About"
+msgstr "Over"
+
+#: tpmakeguiform.menuitem19.caption
+msgid "Help"
+msgstr "Helpen"
+
+#: tpmakeguiform.menuitem2.caption
+msgid "&Tools"
+msgstr "&Gereedschappen"
+
+#: tpmakeguiform.menuitem3.caption
+msgid "&Options"
+msgstr "&Opties"
+
+#: tpmakeguiform.menuitem4.caption
+msgid "&Help"
+msgstr "&Hulp"
+
+#: tpmakeguiform.menuitem5.caption
+msgid "Exit"
+msgstr "Verlaten"
+
+#: tpmakeguiform.menuitem6.caption
+msgid "Reload cache"
+msgstr "Laad cache opnieuw"
+
+#: tpmakeguiform.menuitem7.caption
+msgid "Delete cache"
+msgstr "Verwijder cache"
+
+#: tpmakeguiform.sourcetreelocationlabel.caption
+msgid "Source tree location"
+msgstr "Bronbestanden locatie"
+
