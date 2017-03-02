@@ -1,4 +1,4 @@
-unit ufmake;
+unit upmake;
 
 {$mode objfpc}{$H+}
 
@@ -11,7 +11,7 @@ uses
   Classes, fpmkunit, depsolver, compiler;
 
 type
-  TCmdTool = (ctFMake, ctMake);
+  TCmdTool = (ctPMake, ctMake);
   TCmdTools = set of TCmdTool;
 
   TCmdOption = record
@@ -24,7 +24,7 @@ type
     FATAL_ERROR, DEPRECATION);
 
 const
-  FMakeVersion = '0.01';
+  PMakeVersion = '0.01';
 
 procedure add_executable(pkgname, executable, srcfile: string; depends: array of const);
 
@@ -46,8 +46,8 @@ procedure init_make;
 procedure run_make;
 procedure free_make;
 
-procedure create_fmakecache;
-function fmake_changed: boolean;
+procedure create_pmakecache;
+function pmake_changed: boolean;
 procedure build_make2;
 procedure run_make2;
 
@@ -65,7 +65,7 @@ var
   OS: TOS;
   CompilerVersion: string;
   verbose: boolean = False;
-  fmakelist: TFPList;
+  pmakelist: TFPList;
   ShowMsg: TMessages = [mFail, mError];
 
 implementation
@@ -81,9 +81,9 @@ const
     (name: 'build'; descr: 'Build all targets in the project.'; tools: [ctMake]),
     (name: 'clean'; descr: 'Clean all units and folders in the project'; tools: [ctMake]),
     (name: 'install'; descr: 'Install all targets in the project.'; tools: [ctMake]),
-    (name: '--compiler'; descr: 'Use indicated binary as compiler'; tools: [ctMake, ctFMake]),
-    (name: '--help'; descr: 'This message.'; tools: [ctMake, ctFMake]),
-    (name: '--verbose'; descr: 'Be more verbose.'; tools: [ctMake, ctFMake])
+    (name: '--compiler'; descr: 'Use indicated binary as compiler'; tools: [ctMake, ctPMake]),
+    (name: '--help'; descr: 'This message.'; tools: [ctMake, ctPMake]),
+    (name: '--verbose'; descr: 'Be more verbose.'; tools: [ctMake, ctPMake])
     );
 
 var
@@ -95,7 +95,7 @@ var
   depcache: TFPList;
   projname: string;
   cmd_count: integer = 0;
-  fmakefiles: TStrings;
+  pmakefiles: TStrings;
 
 function GetCompilerInfo(const ACompiler, AOptions: string; ReadStdErr: boolean): string;
 const
@@ -199,7 +199,7 @@ begin
   Result := tmp;
 end;
 
-procedure search_fmake(const path: string);
+procedure search_pmake(const path: string);
 var
   info: TSearchRec;
 begin
@@ -209,14 +209,14 @@ begin
       repeat
         if (info.Attr and faDirectory) = 0 then
         begin
-          //add FMake.txt to the file list
-          if info.Name = 'FMake.txt' then
-            fmakefiles.Add(path + info.Name);
+          //add PMake.txt to the file list
+          if info.Name = 'PMake.txt' then
+            pmakefiles.Add(path + info.Name);
         end
         else
         //start the recursive search
         if (info.Name <> '.') and (info.Name <> '..') then
-          search_fmake(IncludeTrailingBackSlash(path + info.Name));
+          search_pmake(IncludeTrailingBackSlash(path + info.Name));
 
       until FindNext(info) <> 0
     finally
@@ -225,10 +225,10 @@ begin
   end;
 end;
 
-procedure create_fmakecache;
+procedure create_pmakecache;
 var
   cache: TStringList;
-  fmakecrc: cardinal;
+  pmakecrc: cardinal;
   f: TStrings;
   i: Integer;
   tmp: string;
@@ -237,49 +237,49 @@ begin
 
   //write data to cache
   f := TStringList.Create;
-  for i := 0 to fmakefiles.Count - 1 do
+  for i := 0 to pmakefiles.Count - 1 do
   begin
-    f.LoadFromFile(fmakefiles[i]);
-    fmakecrc := crc32(0, @f.Text[1], length(f.Text));
-    str(fmakecrc: 10, tmp);
-    cache.Add(Format('%s %s', [tmp, fmakefiles[i]]));
+    f.LoadFromFile(pmakefiles[i]);
+    pmakecrc := crc32(0, @f.Text[1], length(f.Text));
+    str(pmakecrc: 10, tmp);
+    cache.Add(Format('%s %s', [tmp, pmakefiles[i]]));
   end;
   f.Free;
 
-  cache.SaveToFile('FMakeCache.txt');
+  cache.SaveToFile('PMakeCache.txt');
   cache.Free;
 end;
 
-function fmake_changed: boolean;
+function pmake_changed: boolean;
 var
   cache: TStrings;
   i, idx: Integer;
   f: TStrings;
-  fmakecrc: Cardinal;
+  pmakecrc: Cardinal;
   tmp: string;
 begin
-  if not FileExists('FMakeCache.txt') then
+  if not FileExists('PMakeCache.txt') then
     exit(true);
 
   cache := TStringList.Create;
-  cache.LoadFromFile('FMakeCache.txt');
+  cache.LoadFromFile('PMakeCache.txt');
 
-  //return true if the FMake.txt is count is different
-  if cache.Count <> fmakefiles.Count then
+  //return true if the PMake.txt is count is different
+  if cache.Count <> pmakefiles.Count then
   begin
     cache.Free;
     exit(true);
   end;
 
-  //return true if a crc / FMake.txt combination is not found
+  //return true if a crc / PMake.txt combination is not found
   f := TStringList.Create;
-  for i := 0 to fmakefiles.Count - 1 do
+  for i := 0 to pmakefiles.Count - 1 do
   begin
-    f.LoadFromFile(fmakefiles[i]);
-    fmakecrc := crc32(0, @f.Text[1], length(f.Text));
+    f.LoadFromFile(pmakefiles[i]);
+    pmakecrc := crc32(0, @f.Text[1], length(f.Text));
 
-    str(fmakecrc: 10, tmp);
-    idx := cache.IndexOf(Format('%s %s', [tmp, fmakefiles[i]]));
+    str(pmakecrc: 10, tmp);
+    idx := cache.IndexOf(Format('%s %s', [tmp, pmakefiles[i]]));
 
     if idx = -1 then
     begin
@@ -301,23 +301,23 @@ var
   fpc_msg: TFPList;
   i: Integer;
 begin
-  create_fmakecache;
+  create_pmakecache;
 
   make2 := TStringList.Create;
 
   make2.Add('program make2;');
-  make2.Add('uses ufmake, fpmkunit;');
+  make2.Add('uses upmake, fpmkunit;');
   make2.Add('begin');
   make2.Add('  check_options(ctMake);');
   make2.Add('  init_make;');
 
   make2.Add('  add_subdirectory(''' + BasePath + ''');');
 
-  //insert code from FMake.txt files
+  //insert code from PMake.txt files
   f := TStringList.Create;
-  for i := 0 to fmakefiles.Count - 1 do
+  for i := 0 to pmakefiles.Count - 1 do
   begin
-    f.LoadFromFile(fmakefiles[i]);
+    f.LoadFromFile(pmakefiles[i]);
     make2.Add(f.Text);
   end;
   f.Free;
@@ -326,12 +326,12 @@ begin
   make2.Add('  free_make;');
   make2.Add('end.');
 
-  fname := GetTempFileName('.', 'fmake');
+  fname := GetTempFileName('.', 'pmake');
   make2.SaveToFile(fname);
 
   fpc_out := RunCompilerCommand(ExpandMacros('make2$(EXE)'), fname);
   fpc_msg := ParseFPCCommand(fpc_out, BasePath);
-  UpdateFMakePostions(fpc_msg, fname);
+  UpdatePMakePostions(fpc_msg, fname);
   WriteFPCCommand(fpc_msg, ShowMsg);
 
   fpc_out.Free;
@@ -864,7 +864,7 @@ var
   i: integer;
   First: boolean;
 begin
-  writeln('FMake the freepascal build tool. Version ', FMakeVersion, ' [', {$I %DATE%}, '] for ', {$I %FPCTARGETCPU%});
+  writeln('PMake the freepascal build tool. Version ', PMakeVersion, ' [', {$I %DATE%}, '] for ', {$I %FPCTARGETCPU%});
   writeln('Copyright (c) 2016 by Darius Blaszyk');
   writeln;
   writeln('usage: ', ParamStr(0), ' <subcommand> [options] [args]');
@@ -1013,11 +1013,11 @@ initialization
   fpc := ExeSearch(ExpandMacros('fpc$(EXE)'), SysUtils.GetEnvironmentVariable('PATH'));
   CompilerDefaults;
 
-  fmakefiles := TStringList.Create;
+  pmakefiles := TStringList.Create;
   BasePath := IncludeTrailingBackSlash(GetCurrentDir);
-  search_fmake(BasePath);  //get the FMake.txt file list
+  search_pmake(BasePath);  //get the PMake.txt file list
 
 finalization
-  fmakefiles.Free;
+  pmakefiles.Free;
 
 end.

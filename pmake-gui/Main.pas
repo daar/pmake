@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls,
   ComCtrls, EditBtn, ButtonPanel, ExtCtrls, Menus, LCLTranslator, DefaultTranslator,
-  ufmake;
+  upmake;
 
 type
 
@@ -97,12 +97,12 @@ begin
   BrowseSource := IncludeTrailingPathDelimiter(BrowseSourceEdit.Text);
   BrowseBuildEdit.Text := ExpandFileName(BrowseSource + '..' + PathDelim + 'build');
 
-  fmakefiles.Clear;
-  search_fmake(BrowseSource);
+  pmakefiles.Clear;
+  search_pmake(BrowseSource);
 
-  for i := 0 to fmakefiles.Count - 1 do
+  for i := 0 to pmakefiles.Count - 1 do
   begin
-    OptionsTreeView.Items.Add(nil, fmakefiles[i]);
+    OptionsTreeView.Items.Add(nil, pmakefiles[i]);
   end;
 end;
 
@@ -140,7 +140,7 @@ procedure TPMakeGUIForm.FormCreate(Sender: TObject);
 //var
 //  menuItem : TMenuItem;
 begin
-  Caption := Format('PMake %s', [FMakeVersion]);
+  Caption := Format('PMake %s', [PMakeVersion]);
 
   //menuItem := TMenuItem.Create(LanguagesMenuItem) ;
   //menuItem.Caption := 'Dutch';

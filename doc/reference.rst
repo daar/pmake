@@ -1,4 +1,4 @@
-FMake reference
+PMake reference
 ------------------
 
 .. code:: pascal
@@ -37,7 +37,7 @@ An example of how to use the executable command is shown below;
 
   install('$(BINOUTPUTDIR)', '.\release\$(TargetCPU)-$(TargetOS)', 'helloworld$(EXE)');
 
-This command will install the helloworld executable (helloworld.exe on windows) from the binary output folder of the package to the .\\release\\$(TargetCPU)-$(TargetOS) folder, relative to the folder from which fmake was invoked from and where make.exe is generated. For the file pattern it is also possible to use wildcard characters such as;
+This command will install the helloworld executable (helloworld.exe on windows) from the binary output folder of the package to the .\\release\\$(TargetCPU)-$(TargetOS) folder, relative to the folder from which pmake was invoked from and where make.exe is generated. For the file pattern it is also possible to use wildcard characters such as;
 
 \* 
   match zero or more characters

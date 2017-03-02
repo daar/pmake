@@ -68,7 +68,7 @@ function dep_resolve(pkglist: TFPList): TFPList;
 implementation
 
 uses
-  ufmake;
+  upmake;
 
 function find_pkg_by_name(pkglist: TFPList; name: string): pPackage;
 var

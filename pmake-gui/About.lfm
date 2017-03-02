@@ -10,7 +10,7 @@ object AboutForm: TAboutForm
   Color = clWhite
   OnCreate = FormCreate
   Position = poScreenCenter
-  LCLVersion = '1.7'
+  LCLVersion = '1.6.0.4'
   object ApplicationLogoImage: TImage
     Left = 6
     Height = 250
@@ -685,7 +685,7 @@ object AboutForm: TAboutForm
   end
   object ApplicationTitleLabel: TLabel
     Left = 0
-    Height = 16
+    Height = 15
     Top = 262
     Width = 394
     Align = alTop
@@ -698,8 +698,8 @@ object AboutForm: TAboutForm
   end
   object CopyrightLabel: TLabel
     Left = 0
-    Height = 16
-    Top = 284
+    Height = 15
+    Top = 283
     Width = 394
     Align = alTop
     Alignment = taCenter
@@ -716,7 +716,7 @@ object AboutForm: TAboutForm
     AnchorSideTop.Side = asrBottom
     Left = 20
     Height = 25
-    Top = 358
+    Top = 354
     Width = 75
     BorderSpacing.Left = 20
     Caption = 'Credits'
@@ -731,7 +731,7 @@ object AboutForm: TAboutForm
     AnchorSideTop.Side = asrBottom
     Left = 160
     Height = 25
-    Top = 358
+    Top = 354
     Width = 75
     Caption = 'License'
     OnClick = LicenseButtonClick
@@ -744,7 +744,7 @@ object AboutForm: TAboutForm
     AnchorSideRight.Side = asrBottom
     Left = 299
     Height = 25
-    Top = 358
+    Top = 354
     Width = 75
     Anchors = [akTop, akRight]
     BorderSpacing.Right = 20
@@ -755,8 +755,8 @@ object AboutForm: TAboutForm
   end
   object RepositoryLabel: TLabel
     Left = 6
-    Height = 16
-    Top = 336
+    Height = 15
+    Top = 333
     Width = 382
     Align = alTop
     Alignment = taCenter
@@ -773,8 +773,8 @@ object AboutForm: TAboutForm
   end
   object CompilerLabel: TLabel
     Left = 0
-    Height = 16
-    Top = 314
+    Height = 15
+    Top = 312
     Width = 394
     Align = alTop
     Alignment = taCenter

@@ -39,7 +39,7 @@ var
 implementation
 
 uses
-  SysUtils, ufmake, fpmkunit;
+  SysUtils, upmake, fpmkunit;
 
 {$R *.lfm}
 

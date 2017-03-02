@@ -1,13 +1,13 @@
 compiler_minimum_required(3,0,0);
-project('FMake a build tool for (free) pascal');
+project('PMake a build tool for (free) pascal');
 
-//compile the fmake units
-add_library('lib_fmake', ['compiler.pas', 'depsolver.pas', 'ufmake.pas']);
+//compile the pmake units
+add_library('lib_pmake', ['compiler.pas', 'depsolver.pas', 'upmake.pas']);
 
-//compile the fmake executable
-add_executable('fmake', 'fmake', 'fmake.pp', ['lib_fmake']);
+//compile the pmake executable
+add_executable('pmake', 'pmake', 'pmake.pp', ['lib_pmake']);
 
-//install the compiled units and the fmake executable
-install('$(BINOUTPUTDIR)', '$(BASEDIR)..\build\', 'fmake$(EXE)', 'fmake');
-install('$(UNITSOUTPUTDIR)', '$(BASEDIR)..\build\', '*.o', 'lib_fmake');
-install('$(UNITSOUTPUTDIR)', '$(BASEDIR)..\build\', '*.ppu', 'lib_fmake');
+//install the compiled units and the pmake executable
+install('$(BINOUTPUTDIR)', '$(BASEDIR)..\build\', 'pmake$(EXE)', 'pmake');
+install('$(UNITSOUTPUTDIR)', '$(BASEDIR)..\build\', '*.o', 'lib_pmake');
+install('$(UNITSOUTPUTDIR)', '$(BASEDIR)..\build\', '*.ppu', 'lib_pmake');

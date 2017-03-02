@@ -4,11 +4,11 @@
     <PathDelim Value="\"/>
     <Version Value="9"/>
     <BuildModes Active="Default"/>
-    <Units Count="11">
+    <Units Count="16">
       <Unit0>
         <Filename Value="pmakegui.lpr"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="65"/>
+        <UsageCount Value="68"/>
       </Unit0>
       <Unit1>
         <Filename Value="Main.pas"/>
@@ -17,8 +17,9 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <IsVisibleTab Value="True"/>
-        <CursorPos X="9" Y="10"/>
-        <UsageCount Value="65"/>
+        <TopLine Value="134"/>
+        <CursorPos X="9" Y="135"/>
+        <UsageCount Value="68"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
       </Unit1>
@@ -28,12 +29,9 @@
         <ComponentName Value="AboutForm"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <EditorIndex Value="4"/>
-        <TopLine Value="62"/>
-        <CursorPos X="14" Y="70"/>
-        <UsageCount Value="64"/>
-        <Loaded Value="True"/>
-        <LoadedDesigner Value="True"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="68" Y="4"/>
+        <UsageCount Value="67"/>
       </Unit2>
       <Unit3>
         <Filename Value="License.pas"/>
@@ -41,9 +39,8 @@
         <ComponentName Value="LicenseForm"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <EditorIndex Value="5"/>
-        <UsageCount Value="64"/>
-        <Loaded Value="True"/>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="67"/>
       </Unit3>
       <Unit4>
         <Filename Value="C:\Work\develop\fpc-2.6.4.source\fpc-2.6.4\rtl\objpas\sysutils\finah.inc"/>
@@ -54,11 +51,10 @@
       </Unit4>
       <Unit5>
         <Filename Value="..\fmake\ufmake.pas"/>
-        <EditorIndex Value="2"/>
+        <EditorIndex Value="-1"/>
         <TopLine Value="100"/>
         <CursorPos X="29" Y="114"/>
         <UsageCount Value="32"/>
-        <Loaded Value="True"/>
       </Unit5>
       <Unit6>
         <Filename Value="C:\Work\develop\lazarus\lcl\include\customedit.inc"/>
@@ -69,11 +65,10 @@
       </Unit6>
       <Unit7>
         <Filename Value="..\fmake\compiler.pas"/>
-        <EditorIndex Value="3"/>
+        <EditorIndex Value="-1"/>
         <TopLine Value="159"/>
         <CursorPos X="18" Y="208"/>
         <UsageCount Value="26"/>
-        <Loaded Value="True"/>
       </Unit7>
       <Unit8>
         <Filename Value="C:\Work\develop\fpc-2.6.4.source\fpc-2.6.4\packages\fpmkunit\src\fpmkunit.pp"/>
@@ -92,66 +87,82 @@
       <Unit10>
         <Filename Value="C:\lazarus\lcl\defaulttranslator.pas"/>
         <UnitName Value="DefaultTranslator"/>
-        <EditorIndex Value="1"/>
+        <EditorIndex Value="-1"/>
         <TopLine Value="13"/>
         <CursorPos X="16" Y="31"/>
         <UsageCount Value="10"/>
-        <Loaded Value="True"/>
       </Unit10>
+      <Unit11>
+        <Filename Value="..\pmake\pmake.pp"/>
+        <UnitName Value="fmake"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="16"/>
+        <CursorPos X="18" Y="69"/>
+        <UsageCount Value="10"/>
+      </Unit11>
+      <Unit12>
+        <Filename Value="..\README.md"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="165" Y="7"/>
+        <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="None"/>
+      </Unit12>
+      <Unit13>
+        <Filename Value="..\doc\introduction.rst"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="297" Y="8"/>
+        <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="None"/>
+      </Unit13>
+      <Unit14>
+        <Filename Value="..\doc\index.rst"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="3" Y="9"/>
+        <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="None"/>
+      </Unit14>
+      <Unit15>
+        <Filename Value="pmakegui.lps"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="87"/>
+        <CursorPos X="35" Y="91"/>
+        <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="XML"/>
+      </Unit15>
     </Units>
-    <JumpHistory Count="13" HistoryIndex="12">
+    <JumpHistory Count="8" HistoryIndex="7">
       <Position1>
-        <Filename Value="..\fmake\ufmake.pas"/>
-        <Caret Line="102" Column="25" TopLine="98"/>
-      </Position1>
-      <Position2>
-        <Filename Value="..\fmake\ufmake.pas"/>
-        <Caret Line="129" Column="42" TopLine="106"/>
-      </Position2>
-      <Position3>
-        <Filename Value="..\fmake\ufmake.pas"/>
-        <Caret Line="102" Column="25" TopLine="88"/>
-      </Position3>
-      <Position4>
-        <Filename Value="..\fmake\ufmake.pas"/>
-        <Caret Line="129" Column="42" TopLine="106"/>
-      </Position4>
-      <Position5>
-        <Filename Value="..\fmake\ufmake.pas"/>
-        <Caret Line="102" Column="25" TopLine="88"/>
-      </Position5>
-      <Position6>
-        <Filename Value="About.pas"/>
-        <Caret Line="78" Column="15" TopLine="63"/>
-      </Position6>
-      <Position7>
-        <Filename Value="About.pas"/>
-        <Caret Line="77" Column="15" TopLine="62"/>
-      </Position7>
-      <Position8>
-        <Filename Value="About.pas"/>
-        <Caret Line="79" Column="43" TopLine="62"/>
-      </Position8>
-      <Position9>
         <Filename Value="Main.pas"/>
         <Caret Line="102" Column="37" TopLine="83"/>
-      </Position9>
-      <Position10>
-        <Filename Value="About.pas"/>
-        <Caret Line="70" Column="14" TopLine="62"/>
-      </Position10>
-      <Position11>
+      </Position1>
+      <Position2>
         <Filename Value="Main.pas"/>
         <Caret Line="133" Column="8" TopLine="119"/>
-      </Position11>
-      <Position12>
-        <Filename Value="..\fmake\ufmake.pas"/>
-        <Caret Line="114" Column="29" TopLine="100"/>
-      </Position12>
-      <Position13>
+      </Position2>
+      <Position3>
         <Filename Value="Main.pas"/>
         <Caret Line="9" Column="57"/>
-      </Position13>
+      </Position3>
+      <Position4>
+        <Filename Value="Main.pas"/>
+        <Caret Line="10" Column="13" TopLine="3"/>
+      </Position4>
+      <Position5>
+        <Filename Value="Main.pas"/>
+        <Caret Line="105" Column="41" TopLine="90"/>
+      </Position5>
+      <Position6>
+        <Filename Value="Main.pas"/>
+        <Caret Line="138" Column="41" TopLine="133"/>
+      </Position6>
+      <Position7>
+        <Filename Value="Main.pas"/>
+        <Caret Line="5" Column="29"/>
+      </Position7>
+      <Position8>
+        <Filename Value="Main.pas"/>
+        <Caret Line="105" Column="41" TopLine="89"/>
+      </Position8>
     </JumpHistory>
   </ProjectSession>
 </CONFIG>

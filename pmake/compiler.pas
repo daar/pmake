@@ -12,12 +12,12 @@ type
     mNote, mOption, mUnitInfo, mUnknown, mWarning);
   TMessages = set of TMessage;
 
-  TFMakeItem = record
+  TPMakeItem = record
     fname: string;
     startpos: integer;
     endpos: integer;
   end;
-  PFMakeItem = ^TFMakeItem;
+  PPMakeItem = ^TPMakeItem;
 
   TFPCOutput = record
     msgno: integer;
@@ -56,7 +56,7 @@ const
 //to add more FPC versions, ifdef this include file
 {$i fpc300.inc}
 
-procedure UpdateFMakePostions(var FPCMsgs: TFPList; fName: string);
+procedure UpdatePMakePostions(var FPCMsgs: TFPList; fName: string);
 function GetFPCMsgType(msgidx: integer): TMessage;
 procedure WriteFPCCommand(FPCMsgs: TFPList; ShowMsg: TMessages; progress: double = -1);
 function ParseFPCCommand(FPCOutput: TStrings; BasePath: string): TFPList;
@@ -67,9 +67,9 @@ function CompilerCommandLine(pkg: pPackage; cmd: pointer): TStringList;
 implementation
 
 uses
-  SysUtils, ufmake;
+  SysUtils, upmake;
 
-procedure UpdateFMakePostions(var FPCMsgs: TFPList; fName: string);
+procedure UpdatePMakePostions(var FPCMsgs: TFPList; fName: string);
 var
   i: integer;
   fpc_msg: PFPCMessage;
@@ -77,7 +77,7 @@ var
   from_file: string;
   sep: integer;
   lineno, j: integer;
-  fitem: PFMakeItem;
+  fitem: PPMakeItem;
   found: boolean;
   tmp: string;
 begin
@@ -96,9 +96,9 @@ begin
         lineno := StrToInt(copy(fpc_msg^.Text, length(from_file) + 2, sep));
 
         //find the line no
-        for j := 0 to fmakelist.Count - 1 do
+        for j := 0 to pmakelist.Count - 1 do
         begin
-          fitem := PFMakeItem(fmakelist[j]);
+          fitem := PPMakeItem(pmakelist[j]);
           found := False;
           if (fitem^.startpos <= lineno) and (fitem^.endpos >= lineno) then
           begin
@@ -210,10 +210,10 @@ begin
 {$ifdef debug}
   param.Add('-gh');
 {$endif}
-  //add the unit search path where the fmake executable is locate
+  //add the unit search path where the pmake executable is locate
   param.Add('-FU' + ExtractFilePath(ParamStr(0)));
   param.Add(SrcName);
-  //based on the app extension of fmake, add the same extension to make
+  //based on the app extension of pmake, add the same extension to make
   param.Add(ExpandMacros('-o' + ExeName));
 
   Result := RunCommand(fpc, param);

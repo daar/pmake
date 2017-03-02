@@ -1,4 +1,4 @@
-program fmake;
+program pmake;
 
 {$mode objfpc}{$H+}
 { $define debug}
@@ -11,7 +11,7 @@ uses
   HeapTrc, 
 {$endif}
   Classes, SysUtils,
-  ufmake, compiler;
+  upmake, compiler;
 
 procedure create_and_build_make;
 var
@@ -25,21 +25,21 @@ begin
     exit;
 
   BasePath := IncludeTrailingBackSlash(GetCurrentDir);
-  fname := GetTempFileName('.', 'fmake');
+  fname := GetTempFileName('.', 'pmake');
 
   writeln('-- Creating makefile');
 
   tmp := TStringList.Create;
 
   tmp.Add('program make;');
-  tmp.Add('uses ufmake;');
+  tmp.Add('uses upmake;');
   tmp.Add('begin');
-  tmp.Add('  if fmake_changed then');
+  tmp.Add('  if pmake_changed then');
   tmp.Add('    build_make2;');
   tmp.Add('  run_make2;');
   tmp.Add('end.');
 
-  fname := GetTempFileName('.', 'fmake');
+  fname := GetTempFileName('.', 'pmake');
   tmp.SaveToFile(fname);
 
   fpc_out := RunCompilerCommand(ExpandMacros('make$(EXE)'), fname);
@@ -58,7 +58,7 @@ begin
 end;
 
 begin
-  check_options(ctFMake);
+  check_options(ctPMake);
 
   if verbose then
     writeln('-- FPC compiler ', fpc);
@@ -66,7 +66,7 @@ begin
   if (fpc = '') or (not FileExists(fpc)) then
   begin
     writeln('error: cannot find the FPC compiler');
-    usage(ctFMake);
+    usage(ctPMake);
   end;
 
   if verbose then

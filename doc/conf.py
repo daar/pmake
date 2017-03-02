@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# fmake documentation build configuration file, created by
+# pmake documentation build configuration file, created by
 # sphinx-quickstart on Sat May  7 09:56:31 2016.
 #
 # This file is execfile()d with the current directory set to its
@@ -48,7 +48,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'fmake'
+project = 'pmake'
 copyright = '2016, Darius Blaszyk'
 author = 'Darius Blaszyk'
 
@@ -123,7 +123,7 @@ html_theme = 'alabaster'
 
 # The name for this set of Sphinx documents.
 # "<project> v<release> documentation" by default.
-#html_title = 'fmake v0.01'
+#html_title = 'pmake v0.01'
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
 #html_short_title = None
@@ -205,7 +205,7 @@ html_static_path = ['_static']
 #html_search_scorer = 'scorer.js'
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'fmakedoc'
+htmlhelp_basename = 'pmakedoc'
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -227,7 +227,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'fmake.tex', 'fmake Documentation',
+    (master_doc, 'pmake.tex', 'pmake Documentation',
      'Darius Blaszyk', 'manual'),
 ]
 
@@ -257,7 +257,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'fmake', 'fmake Documentation',
+    (master_doc, 'pmake', 'pmake Documentation',
      [author], 1)
 ]
 
@@ -271,8 +271,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'fmake', 'fmake Documentation',
-     author, 'fmake', 'One line description of project.',
+    (master_doc, 'pmake', 'pmake Documentation',
+     author, 'pmake', 'One line description of project.',
      'Miscellaneous'),
 ]
 
