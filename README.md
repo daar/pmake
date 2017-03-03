@@ -2,7 +2,7 @@
 
 <img src="https://github.com/daar/pmake/blob/master/logo/pmake_logo.png" alt="PMake" width="50%" height="50%"/>
 
-a build tool for (free) pascal
+*a build tool for (free)pascal*
 
 PMake is a minimalistic build tool for (free) pascal. It mimics to some extent the commands from CMake yet only targets pascal compilers. The inner working of pmake are relatively simple as the compiler does all the hard work. The developer can define with simple commands which targets are present in the project and what the dependencies between these targets are. A target can either be a library (no executable, only object files) or an executable.
 
