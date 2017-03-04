@@ -1,11 +1,11 @@
 Architecture
 ------------
 
-When using *pmake* it is important to understand the architecture of the software in order to be able to create a proper buildscript. The basic concepts of the *pmake* build tool are targets and packages. A package is a collection of commands that belong to each other. In the PMake.txt build scripts one can define how these packages are linked to each other (dependencies) and of which commands they exist. There are a number of different commands like *executable*, *unit*, *install* and *custom*. A target is a specific overall command that is going to be executed. This target is specified from the commandline by the developer. The predefined targets for *pmake* are;
-  
+When using PMake it is important to understand the architecture of the software in order to be able to create a proper build script. The basic concepts of the PMake build tool are targets and packages. A package is a collection of commands that belong to each other. In the PMake.txt build scripts one can define how these packages are linked to each other (dependencies) and of which commands they exist. There are a number of different commands like *executable*, *unit*, *install* and *custom*. A target is a specific overall command that is going to be executed. This target is specified from the command-line by the developer. The predefined targets for PMake are;
+
 Build
 =====
-The build target will compile and link all source code that is defined by the build scripts in the source tree. It will create if needed an output folder for the object (*.o) and compiled pascal unit files (*.ppu). The default output folder for compiled units is *.\\units\\$(TargetCPU)-$(TargetOS)*, while for binary executables the output folder is: *.\\bin\\$(TargetCPU)-$(TargetOS)*. These folders will be created in the locations where the PMake.txt files are placed. Build is also the default tagret. This means that it does not need to be supplied, but by default it will assume the build target is called for.
+The build target will compile and link all source code that is defined by the build scripts in the source tree. It will create if needed an output folder for the object (*.o) and compiled pascal unit files (*.ppu). The default output folder for compiled units is *.\\units\\$(TargetCPU)-$(TargetOS)*, while for binary executables the output folder is: *.\\bin\\$(TargetCPU)-$(TargetOS)*. These folders will be created in the locations where the PMake.txt files are placed. Build is also the default target. This means that it does not need to be supplied, but by default it will assume the build target is called for.
 
 Clean
 =====
@@ -21,26 +21,26 @@ Please go to the reference page for a complete description of the functions.
 
 executable command
 ==================
-The executable command will define an executbale to be added to a package. It is possible to add one or more executables to a single package. In case there are dependencies between packages the user will need to specify them.
+The executable command will define an executable to be added to a package. It is possible to add one or more executables to a single package. In case there are dependencies between packages the user will need to specify them.
 
 
 unit command
 ============
-The unit command is used to add units to a package. Multiple units can be added to a single package. For now *pmake* will not work out the unit interdependencies. This is left over to the compiler. But please be aware that the compiler will not be able to find interdependencies between packages. This is work for the developer instead.
+The unit command is used to add units to a package. Multiple units can be added to a single package. For now PMake will not work out the unit interdependencies. This is left over to the compiler. But please be aware that the compiler will not be able to find interdependencies between packages. This is work for the developer instead.
 
 
-install command 
+install command
 ===============
 The install command is a special command as it will copy files from one location to another location. This command can be used to install the files to a location relative to the source folder (for instance to create a release folder) or to an absolute folder to install the program, including any additional files on the desired location according to the platform specifications. The install command is initiated by using the following procedure prototype in PMake.txt
 
 
 custom command
 ==============
-The custom command is a special command that invokes an executable with parameters and adds a dependency to this invokation. This command is used for instance to generate source files (for example lex and yacc) or other files needed for the release of the project. A custom command is always located in a separate package so it can be a dependency for other packages. The custom command is initiated by using the following procedure prototype in PMake.txt
+The custom command is a special command that invokes an executable with parameters and adds a dependency to this invocation. This command is used for instance to generate source files (for example lex and yacc) or other files needed for the release of the project. A custom command is always located in a separate package so it can be a dependency for other packages. The custom command is initiated by using the following procedure prototype in PMake.txt
 
 
 Inner workings
 ==============
-When running *pmake* the whole source folder is recursively searched for PMake.txt files. In principle PMake.txt files are executing parts of the *make* program. Upon collection, *pmake* will merge all PMake.txt files into a single program file which is then compiled into the *make* executable.
+When running PMake the whole source folder is recursively searched for PMake.txt files. In principle PMake.txt files are executing parts of the *make* program. Upon collection, PMake will merge all PMake.txt files into a single program file which is then compiled into the *make* executable.
 
 Each PMake.txt file defines one or more packages

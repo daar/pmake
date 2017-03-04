@@ -1,17 +1,17 @@
 Quick start
 -----------
 
-Here's a quick start on how to install *pmake* and create a simple working project, compilable and installable by *pmake*.
+Here's a quick start on how to install PMake and create a simple working project, compilable and installable by PMake.
 
-Install pmake
+Install PMake
 =============
 There are two ways to get and install PMake on your machine. One way is to download and install the binary from GitHub (https://github.com/daar/pmake/releases). The release files are zip files and need to be copied to a location on your machine that is accessible from the command line. So either copy the folder contents to such a location or add the folder location which contains the binary and unit files to the PATH environment.
 
 .. NOTE::
-  Make sure you copy the location of the upmake folder relative to the *pmake* executable, so *pmake* can find them when compiling the build scripts.
+  Make sure you copy the location of the upmake folder relative to the PMake executable, so PMake can find them when compiling the build scripts.
 
 .. NOTE::
-  It's more convenient to use the install target of *pmake* to install the build tool to the correct location on your machine. See below for a detailed explanation on how to do it.
+  It's more convenient to use the install target of PMake to install the build tool to the correct location on your machine. See below for a detailed explanation on how to do it.
 
 
 The other way to download the sources from https://github.com/daar/pmake/ via either GIT or SVN.
@@ -34,20 +34,20 @@ Then you can compile PMake by doing
   cd pmake
   fpc pmake
 
-To install *pmake* you need to invoke *pmake* to create *make* and then do a *make install*;
+To install PMake you need to invoke PMake to create *make* and then do a *make install*;
 
 .. code:: bash
 
   ./pmake
   sudo ./make install
 
-This command will allow you to install *pmake* to the correct platform specific location. On \*nix platforms you will need to provide the administrator password to have rights to install the files, hence *sudo*.
+This command will allow you to install PMake to the correct platform specific location. On \*nix platforms you will need to provide the administrator password to have rights to install the files, hence *sudo*.
 
 Simple example
 ==============
-Once *pmake* is installed you can start using it in your projects.
+Once PMake is installed you can start using it in your projects.
 
-The following example demonstrates some concept ideas of *pmake*. For this example you need two source files and one PMake.txt. The executable *hellodemo* is built by linking to the library hello_pkg that is built first.
+The following example demonstrates some concept ideas of PMake. For this example you need two source files and one PMake.txt. The executable *hellodemo* is built by linking to the library hello_pkg that is built first.
 
 The first, top-level directory contains the following PMake.txt file.
 

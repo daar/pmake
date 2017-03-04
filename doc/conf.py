@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# pmake documentation build configuration file, created by
+# PMake documentation build configuration file, created by
 # sphinx-quickstart on Sat May  7 09:56:31 2016.
 #
 # This file is execfile()d with the current directory set to its
@@ -48,7 +48,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'pmake'
+project = 'PMake'
 copyright = '2016, Darius Blaszyk'
 author = 'Darius Blaszyk'
 
@@ -111,7 +111,7 @@ todo_include_todos = False
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'alabaster'
+html_theme = 'sphinx_rtd_theme'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -123,7 +123,7 @@ html_theme = 'alabaster'
 
 # The name for this set of Sphinx documents.
 # "<project> v<release> documentation" by default.
-#html_title = 'pmake v0.01'
+#html_title = 'PMake v0.01'
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
 #html_short_title = None
@@ -227,7 +227,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'pmake.tex', 'pmake Documentation',
+    (master_doc, 'pmake.tex', 'PMake Documentation',
      'Darius Blaszyk', 'manual'),
 ]
 
@@ -257,7 +257,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'pmake', 'pmake Documentation',
+    (master_doc, 'pmake', 'PMake Documentation',
      [author], 1)
 ]
 
@@ -271,8 +271,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'pmake', 'pmake Documentation',
-     author, 'pmake', 'One line description of project.',
+    (master_doc, 'pmake', 'PMake Documentation',
+     author, 'pmake', 'a build tool for (free)pascal.',
      'Miscellaneous'),
 ]
 
