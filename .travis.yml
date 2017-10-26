@@ -11,7 +11,6 @@ install:
 
 script:
   - fpc pmake/pmake.pp 
-  - pmake/pmake
 
 notifications:
   email:
