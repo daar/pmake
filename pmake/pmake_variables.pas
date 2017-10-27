@@ -4,92 +4,14 @@ unit pmake_variables;
 
 interface
 
-uses
-  XMLConf;
-
 const
-  _ON = True;
-  _OFF = False;
+  _ON              = True;
+  _OFF             = False;
 
-  UNKNOWN = $00;
-  DEBUG = $01;
-  Release = $02;
+  UNKNOWN          = $00;
+  DEBUG            = $01;
+  RELEASE          = $02;
 
-{  (* INFORMATION *)
-  //PMAKE_ARGC: string = '';
-  //PMAKE_ARGV0: string = '';
-  //PMAKE_AR: string = '';
-
-  //if you are building in-source, this is the same as PMAKE_SOURCE_DIR, otherwise this is the top level directory of your build tree
-  PMAKE_BINARY_DIR: string = '';
-
-  //PMAKE_CACHEFILE_DIR: string = '';
-  //PMAKE_CACHE_MAJOR_VERSION: string = '';
-  //PMAKE_CACHE_MINOR_VERSION: string = '';
-  //PMAKE_CACHE_PATCH_VERSION: string = '';
-  //PMAKE_CFG_INTDIR: string = '';
-
-  //this is the complete path of the pmake which runs currently (e.g. /usr/local/bin/pmake). Note that if you have custom commands that invoke pmake -E, it is very important to use PMAKE_COMMAND as the PMake executable, because PMake might not be on the system PATH.
-  //PMAKE_COMMAND : string = '';
-
-  //PMAKE_CROSSCOMPILING: boolean = False;
-  //PMAKE_CTEST_COMMAND: string = '';
-
-  //if you are building in-source, this is the same as PMAKE_CURRENT_SOURCE_DIR, otherwise this is the directory where the compiled or generated files from the current PMakeLists.txt will go to.
-  //PMAKE_CURRENT_BINARY_DIR : string = '';
-
-  //PMAKE_CURRENT_LIST_DIR: string = '';
-  //PMAKE_CURRENT_LIST_FILE: string = '';
-  //PMAKE_CURRENT_LIST_LINE: string = '';
-  PMAKE_CURRENT_SOURCE_DIR: string = '';
-  //PMAKE_DL_LIBS: string = '';
-  //PMAKE_EDIT_COMMAND: string = '';
-  //PMAKE_EXECUTABLE_SUFFIX: string = '';
-  //PMAKE_EXTRA_GENERATOR: string = '';
-  //PMAKE_EXTRA_SHARED_LIBRARY_SUFFIXES: string = '';
-  //PMAKE_GENERATOR: string = '';
-  //PMAKE_GENERATOR_TOOLSET: string = '';
-  //PMAKE_HOME_DIRECTORY: string = '';
-  //PMAKE_IMPORT_LIBRARY_PREFIX: string = '';
-  //PMAKE_IMPORT_LIBRARY_SUFFIX: string = '';
-  //PMAKE_JOB_POOL_COMPILE: string = '';
-  //PMAKE_JOB_POOL_LINK: string = '';
-  //PMAKE_LINK_LIBRARY_SUFFIX: string = '';
-  //PMAKE_MAKE_PROGRAM: string = '';
-  //PMAKE_MINIMUM_REQUIRED_VERSION: string = '';
-  //PMAKE_PARENT_LIST_FILE: string = '';
-  PMAKE_PROJECT_Name: string255 = '';
-  //PMAKE_RANLIB: string = '';
-  //PMAKE_ROOT: string = '';
-  //PMAKE_SCRIPT_MODE_FILE: string = '';
-  //PMAKE_SHARED_LIBRARY_PREFIX: string = '';
-  //PMAKE_SHARED_LIBRARY_SUFFIX: string = '';
-  //PMAKE_SHARED_MODULE_PREFIX: string = '';
-  //PMAKE_SHARED_MODULE_SUFFIX: string = '';
-  //PMAKE_SIZEOF_VOID_P: string = '';
-  //PMAKE_SKIP_INSTALL_RULES: string = '';
-  //PMAKE_SKIP_RPATH: string = '';
-  PMAKE_SOURCE_DIR: string = '';
-  //PMAKE_STANDARD_LIBRARIES: string = '';
-  //PMAKE_STATIC_LIBRARY_PREFIX: string = '';
-  //PMAKE_STATIC_LIBRARY_SUFFIX: string = '';
-  //PMAKE_TOOLCHAIN_FILE: string = '';
-  //PMAKE_VERBOSE_MAKEFILE: string = '';
-  //PMAKE_VS_DEVENV_COMMAND: string = '';
-  //PMAKE_VS_INTEL_Fortran_PROJECT_VERSION: string = '';
-  //PMAKE_VS_MSBUILD_COMMAND: string = '';
-  //PMAKE_VS_MSDEV_COMMAND: string = '';
-  //PMAKE_VS_PLATFORM_TOOLSET: string = '';
-  //PMAKE_XCODE_PLATFORM_TOOLSET: string = '';
-  //PROJECT_BINARY_DIR: string = '';
-  //PROJECT_Name: string255 = '';
-  //PROJECT_SOURCE_DIR: string = '';
-  PROJECT_VERSION: string = '';
-  PROJECT_VERSION_MAJOR: integer = 0;
-  PROJECT_VERSION_MINOR: integer = 0;
-  PROJECT_VERSION_PATCH: integer = 0;
-  PROJECT_VERSION_TWEAK: integer = 0;
-}
 const
   //major version number for PMake, e.g. the "2" in PMake 2.4.3
   PMAKE_MAJOR_VERSION = 0;
@@ -103,198 +25,6 @@ const
 //The version number combined, eg. 2.8.4.20110222-ged5ba for a Nightly build. or 2.8.4 for a Release build.
 function PMAKE_VERSION: string; inline;
 
-{
-var
-  (*BEHAVIOR *)
-  //BUILD_SHARED_LIBS: string = '';
-  //PMAKE_ABSOLUTE_DESTINATION_FILES: string = '';
-  //PMAKE_APPBUNDLE_PATH: string = '';
-  //PMAKE_AUTOMOC_RELAXED_MODE: string = '';
-  //PMAKE_BACKWARDS_COMPATIBILITY: string = '';
-  PMAKE_BUILD_TYPE: byte = UNKNOWN;
-//PMAKE_COLOR_MAKEFILE: string = '';
-//PMAKE_CONFIGURATION_TYPES: string = '';
-//PMAKE_DEBUG_TARGET_PROPERTIES: string = '';
-//PMAKE_DISABLE_FIND_PACKAGE_<PackageName>: string = '';
-//PMAKE_ERROR_DEPRECATED: string = '';
-//PMAKE_ERROR_ON_ABSOLUTE_INSTALL_DESTINATION: string = '';
-//PMAKE_SYSROOT: string = '';
-//PMAKE_FIND_LIBRARY_PREFIXES: string = '';
-//PMAKE_FIND_LIBRARY_SUFFIXES: string = '';
-//PMAKE_FIND_NO_INSTALL_PREFIX: string = '';
-//PMAKE_FIND_PACKAGE_WARN_NO_MODULE: string = '';
-//PMAKE_FIND_ROOT_PATH: string = '';
-//PMAKE_FIND_ROOT_PATH_MODE_INCLUDE: string = '';
-//PMAKE_FIND_ROOT_PATH_MODE_LIBRARY: string = '';
-//PMAKE_FIND_ROOT_PATH_MODE_PACKAGE: string = '';
-//PMAKE_FIND_ROOT_PATH_MODE_PROGRAM: string = '';
-//PMAKE_FRAMEWORK_PATH: string = '';
-//PMAKE_IGNORE_PATH: string = '';
-//PMAKE_INCLUDE_PATH: string = '';
-//PMAKE_INCLUDE_DIRECTORIES_BEFORE: string = '';
-//PMAKE_INCLUDE_DIRECTORIES_PROJECT_BEFORE: string = '';
-//PMAKE_INSTALL_DEFAULT_COMPONENT_Name: string255 = '';
-//PMAKE_INSTALL_PREFIX: string = '';
-//PMAKE_LIBRARY_PATH: string = '';
-//PMAKE_MFC_FLAG: string = '';
-//PMAKE_MODULE_PATH: string = '';
-//PMAKE_NOT_USING_CONFIG_FLAGS: string = '';
-//PMAKE_POLICY_DEFAULT_CMP<NNNN>: string = '';
-//PMAKE_POLICY_WARNING_CMP<NNNN>: string = '';
-//PMAKE_PREFIX_PATH: string = '';
-//PMAKE_PROGRAM_PATH: string = '';
-//PMAKE_PROJECT_<PROJECT-name>_INCLUDE: string = '';
-//PMAKE_SKIP_INSTALL_ALL_DEPENDENCY: string = '';
-//PMAKE_STAGING_PREFIX: string = '';
-//PMAKE_SYSTEM_IGNORE_PATH: string = '';
-//PMAKE_SYSTEM_INCLUDE_PATH: string = '';
-//PMAKE_SYSTEM_LIBRARY_PATH: string = '';
-//PMAKE_SYSTEM_PREFIX_PATH: string = '';
-//PMAKE_SYSTEM_PROGRAM_PATH: string = '';
-//PMAKE_USER_MAKE_RULES_OVERRIDE: string = '';
-//PMAKE_WARN_DEPRECATED: string = '';
-//PMAKE_WARN_ON_ABSOLUTE_INSTALL_DESTINATION: string = '';
-
-(* SYSTEM *)
-//APPLE: string = '';
-//BORLAND: string = '';
-
-//is TRUE when using a FreePascal compiler
-function FREEPASCAL: boolean; inline;
-
-var
-//PMAKE_CL_64: string = '';
-//PMAKE_COMPILER_2005: string = '';
-//PMAKE_HOST_APPLE: string = '';
-PMAKE_HOST_SYSTEM_Name: string255 = '';
-PMAKE_HOST_SYSTEM_PROCESSOR: string = '';
-//PMAKE_HOST_SYSTEM: string = '';
-//PMAKE_HOST_SYSTEM_VERSION: string = '';
-//PMAKE_HOST_UNIX: string = '';
-//PMAKE_HOST_WIN32: string = '';
-//PMAKE_LIBRARY_ARCHITECTURE_REGEX: string = '';
-//PMAKE_LIBRARY_ARCHITECTURE: string = '';
-//PMAKE_OBJECT_PATH_MAX: string = '';
-//PMAKE_SYSTEM_Name: string255 = '';
-//PMAKE_SYSTEM_PROCESSOR: string = '';
-//PMAKE_SYSTEM: string = '';
-//PMAKE_SYSTEM_VERSION: string = '';
-//CYGWIN: string = '';
-//ENV: string = '';
-//MSVC10: string = '';
-//MSVC11: string = '';
-//MSVC12: string = '';
-//MSVC60: string = '';
-//MSVC70: string = '';
-//MSVC71: string = '';
-//MSVC80: string = '';
-//MSVC90: string = '';
-//MSVC_IDE: string = '';
-//MSVC: string = '';
-//MSVC_VERSION: string = '';
-//UNIX: string = '';
-//WIN32: string = '';
-//XCODE_VERSION: string = '';
-
-(* BUILD *)
-//PMAKE_ARCHIVE_OUTPUT_DIRECTORY: string = '';
-//PMAKE_AUTOMOC_MOC_OPTIONS: string = '';
-//PMAKE_AUTOMOC: string = '';
-//PMAKE_AUTORCC: string = '';
-//PMAKE_AUTORCC_OPTIONS: string = '';
-//PMAKE_AUTOUIC: string = '';
-//PMAKE_AUTOUIC_OPTIONS: string = '';
-//PMAKE_BUILD_WITH_INSTALL_RPATH: string = '';
-//PMAKE_<CONFIG>_POSTFIX: string = '';
-//PMAKE_DEBUG_POSTFIX: string = '';
-//PMAKE_EXE_LINKER_FLAGS_<CONFIG>: string = '';
-//PMAKE_EXE_LINKER_FLAGS: string = '';
-//PMAKE_Fortran_FORMAT: string = '';
-//PMAKE_Fortran_MODULE_DIRECTORY: string = '';
-//PMAKE_GNUtoMS: string = '';
-//PMAKE_INCLUDE_CURRENT_DIR_IN_INTERFACE: string = '';
-//PMAKE_INCLUDE_CURRENT_DIR: string = '';
-//PMAKE_INSTALL_Name_DIR: string = '';
-//PMAKE_INSTALL_RPATH: string = '';
-//PMAKE_INSTALL_RPATH_USE_LINK_PATH: string = '';
-//PMAKE_PAS_VISIBILITY_PRESET: string = '';
-//PMAKE_LIBRARY_OUTPUT_DIRECTORY: string = '';
-//PMAKE_LIBRARY_PATH_FLAG: string = '';
-//PMAKE_LINK_DEF_FILE_FLAG: string = '';
-//PMAKE_LINK_DEPENDS_NO_SHARED: string = '';
-//PMAKE_LINK_INTERFACE_LIBRARIES: string = '';
-//PMAKE_LINK_LIBRARY_FILE_FLAG: string = '';
-//PMAKE_LINK_LIBRARY_FLAG: string = '';
-//PMAKE_MACOSX_BUNDLE: string = '';
-//PMAKE_MACOSX_RPATH: string = '';
-//PMAKE_MAP_IMPORTED_CONFIG_<CONFIG>: string = '';
-//PMAKE_MODULE_LINKER_FLAGS_<CONFIG>: string = '';
-//PMAKE_MODULE_LINKER_FLAGS: string = '';
-//PMAKE_NO_BUILTIN_CHRPATH: string = '';
-//PMAKE_NO_SYSTEM_FROM_IMPORTED: string = '';
-//PMAKE_OSX_ARCHITECTURES: string = '';
-//PMAKE_OSX_DEPLOYMENT_TARGET: string = '';
-//PMAKE_OSX_SYSROOT: string = '';
-//PMAKE_PDB_OUTPUT_DIRECTORY: string = '';
-//PMAKE_PDB_OUTPUT_DIRECTORY_<CONFIG>: string = '';
-//PMAKE_POSITION_INDEPENDENT_CODE: string = '';
-//PMAKE_RUNTIME_OUTPUT_DIRECTORY: string = '';
-//PMAKE_SHARED_LINKER_FLAGS_<CONFIG>: string = '';
-//PMAKE_SHARED_LINKER_FLAGS: string = '';
-//PMAKE_SKIP_BUILD_RPATH: string = '';
-//PMAKE_SKIP_INSTALL_RPATH: string = '';
-//PMAKE_STATIC_LINKER_FLAGS_<CONFIG>: string = '';
-//PMAKE_STATIC_LINKER_FLAGS: string = '';
-//PMAKE_TRY_COMPILE_CONFIGURATION: string = '';
-//PMAKE_USE_RELATIVE_PATHS: string = '';
-//PMAKE_VISIBILITY_INLINES_HIDDEN: string = '';
-//PMAKE_WIN32_EXECUTABLE: string = '';
-//EXECUTABLE_OUTPUT_PATH: string = '';
-//LIBRARY_OUTPUT_PATH: string = '';
-
-(* LANGUAGE *)
-var
-//PMAKE_COMPILER_IS_GNUPAS: string = '';
-//PMAKE_Fortran_MODDIR_DEFAULT: string = '';
-//PMAKE_Fortran_MODDIR_FLAG: string = '';
-//PMAKE_Fortran_MODOUT_FLAG: string = '';
-//PMAKE_INTERNAL_PLATFORM_ABI: string = '';
-//PMAKE_PAS_ARCHIVE_APPEND: string = '';
-//PMAKE_PAS_ARCHIVE_CREATE: string = '';
-//PMAKE_PAS_ARCHIVE_FINISH: string = '';
-//PMAKE_PAS_COMPILE_OBJECT: string = '';
-//PMAKE_PAS_COMPILER_ABI: string = '';
-//PMAKE_PAS_COMPILER_ID: string = '';
-//PMAKE_PAS_COMPILER_LOADED: string = '';
-PMAKE_PAS_COMPILER: string = '';
-//PMAKE_PAS_COMPILER_EXTERNAL_TOOLCHAIN: string = '';
-//PMAKE_PAS_COMPILER_TARGET: string = '';
-PMAKE_PAS_COMPILER_VERSION: string = '';
-//PMAKE_PAS_CREATE_SHARED_LIBRARY: string = '';
-//PMAKE_PAS_CREATE_SHARED_MODULE: string = '';
-//PMAKE_PAS_CREATE_STATIC_LIBRARY: string = '';
-//PMAKE_PAS_FLAGS_DEBUG: string = '';
-//PMAKE_PAS_FLAGS_MINSIZEREL: string = '';
-//PMAKE_PAS_FLAGS_RELEASE: string = '';
-//PMAKE_PAS_FLAGS_RELWITHDEBINFO: string = '';
-//PMAKE_PAS_FLAGS: string = '';
-//PMAKE_PAS_IGNORE_EXTENSIONS: string = '';
-//PMAKE_PAS_IMPLICIT_INCLUDE_DIRECTORIES: string = '';
-//PMAKE_PAS_IMPLICIT_LINK_DIRECTORIES: string = '';
-//PMAKE_PAS_IMPLICIT_LINK_FRAMEWORK_DIRECTORIES: string = '';
-//PMAKE_PAS_IMPLICIT_LINK_LIBRARIES: string = '';
-//PMAKE_PAS_LIBRARY_ARCHITECTURE: string = '';
-//PMAKE_PAS_LINKER_PREFERENCE_PROPAGATES: string = '';
-//PMAKE_PAS_LINKER_PREFERENCE: string = '';
-//PMAKE_PAS_LINK_EXECUTABLE: string = '';
-//PMAKE_PAS_OUTPUT_EXTENSION: string = '';
-//PMAKE_PAS_PLATFORM_ID: string = '';
-//PMAKE_PAS_SIMULATE_ID: string = '';
-//PMAKE_PAS_SIMULATE_VERSION: string = '';
-//PMAKE_PAS_SIZEOF_DATA_PTR: string = '';
-//PMAKE_PAS_SOURCE_FILE_EXTENSIONS: string = '';
-//PMAKE_USER_MAKE_RULES_OVERRIDE_PAS: string = '';
-}
 type
   string255 = string[255];
 
@@ -313,13 +43,10 @@ procedure replace_variable_macros(var tmp: string);
 procedure pmakecache_write;
 procedure pmakecache_read;
 
-var
-  cache: TXMLConfig;
-
 implementation
 
 uses
-  Classes, SysUtils, crc, pmake_utilities;
+  Classes, SysUtils, crc, XMLConf, pmake_utilities;
 
 type
   PMK_type = (ptBoolean, ptInteger, ptString, ptDouble);
@@ -374,6 +101,7 @@ type
   end;
 
 var
+  cache: TXMLConfig;
   varlist: PMK_ListBase;
 
 function callocN(Size: PtrUInt): pointer;
