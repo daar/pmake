@@ -34,7 +34,7 @@ var
 implementation
 
 uses
-  Process, typinfo, pmake_variables, pmake_api;
+  Process, XMLConf, typinfo, pmake_variables, pmake_api;
 
 function UnitsOutputDir(BasePath: string): string;
 begin
@@ -255,6 +255,9 @@ end;
 
 procedure pmake_initialize;
 begin
+  cache := TXMLConfig.Create(nil);
+  cache.LoadFromFile('PMakeCache.txt');
+
   //for now we initialize the FPC compiler, but we will add more here later!!
   set_('PMAKE_PAS_COMPILER', ExeSearch(macros_expand('fpc$(EXE)'), SysUtils.GetEnvironmentVariable('PATH')));
 

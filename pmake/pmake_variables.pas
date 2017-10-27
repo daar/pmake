@@ -4,6 +4,9 @@ unit pmake_variables;
 
 interface
 
+uses
+  XMLConf;
+
 const
   _ON              = True;
   _OFF             = False;
@@ -12,7 +15,6 @@ const
   DEBUG            = $01;
   RELEASE          = $02;
 
-const
   //major version number for PMake, e.g. the "2" in PMake 2.4.3
   PMAKE_MAJOR_VERSION = 0;
   //minor version number for PMake, e.g. the "4" in PMake 2.4.3
@@ -43,10 +45,13 @@ procedure replace_variable_macros(var tmp: string);
 procedure pmakecache_write;
 procedure pmakecache_read;
 
+var
+  cache: TXMLConfig;
+
 implementation
 
 uses
-  Classes, SysUtils, crc, XMLConf, pmake_utilities;
+  Classes, SysUtils, crc, pmake_utilities;
 
 type
   PMK_type = (ptBoolean, ptInteger, ptString, ptDouble);
@@ -101,7 +106,6 @@ type
   end;
 
 var
-  cache: TXMLConfig;
   varlist: PMK_ListBase;
 
 function callocN(Size: PtrUInt): pointer;
@@ -335,13 +339,12 @@ begin
       ptBoolean:
         tmp := StringReplace(tmp, '$(' + v^.name + ')', BoolToStr(v^.value), [rfReplaceAll]);
       ptInteger:
-        tmp := StringReplace(tmp, '$(' + v^.name + ')', IntToStr(pPMK_integer(v)^.value),
-          [rfReplaceAll]);
+        tmp := StringReplace(tmp, '$(' + v^.name + ')', IntToStr(pPMK_integer(v)^.value), [rfReplaceAll]);
       ptString:
-        tmp := StringReplace(tmp, '$(' + v^.name + ')', pPMK_string(v)^.value, [rfReplaceAll]);
-      ptDouble:
-        tmp := StringReplace(tmp, '$(' + v^.name + ')', FloatToStr(pPMK_double(v)^.value),
+        tmp := StringReplace(tmp, '$(' + v^.name + ')', pPMK_string(v)^.value,
           [rfReplaceAll]);
+      ptDouble:
+        tmp := StringReplace(tmp, '$(' + v^.name + ')', FloatToStr(pPMK_double(v)^.value), [rfReplaceAll]);
     end;
 
     v := v^.next;
@@ -360,7 +363,7 @@ end;
 
 function FREEPASCAL: boolean; inline;
 begin
-  exit(true);
+  exit(True);
   {$note need to implement!}
 end;
 
@@ -370,13 +373,42 @@ var
   f: TStrings;
   i: integer;
   tmp: string;
+  v: pPMK_boolean;
 begin
-  cache := TXMLConfig.Create(nil);
-
-  cache.FileName := 'PMakeCache.txt';
   cache.Clear;
 
-  //write PMake.txt data to cache
+  //write all variables to cache
+  v := varlist.first;
+
+  while v <> nil do
+  begin
+    case v^.type_ of
+      ptBoolean:
+      begin
+        cache.Getvalue(v^.name + '/type', 'boolean');
+        cache.Getvalue(v^.name + '/value', v^.value);
+      end;
+      ptInteger:
+      begin
+        cache.Getvalue(v^.name + '/type', 'integer');
+        cache.Setvalue(v^.name + '/value', pPMK_integer(v)^.value);
+      end;
+      ptString:
+      begin
+        cache.Getvalue(v^.name + '/type', 'string');
+        cache.Setvalue(v^.name + '/value', pPMK_string(v)^.value);
+      end;
+      ptDouble:
+      begin
+        cache.Getvalue(v^.name + '/type', 'double');
+        cache.Setvalue(v^.name + '/value', FloatToStr(pPMK_double(v)^.value));
+      end;
+    end;
+
+    v := v^.next;
+  end;
+
+  //todo: rewrite this part
   if pmakefiles <> nil then
   begin
     cache.Setvalue('PMake/count', pmakefiles.Count);
@@ -387,33 +419,19 @@ begin
       pmakecrc := crc32(0, @f.Text[1], length(f.Text));
       str(pmakecrc: 10, tmp);
 
-      cache.Setvalue(Format('PMake/item%s/path', [i + 1]), pmakefiles[i]);
-      cache.Setvalue(Format('PMake/item%s/crc', [i + 1]), pmakecrc);
+      cache.Setvalue(Format('PMake/item%d/path', [i + 1]), pmakefiles[i]);
+      cache.Setvalue(Format('PMake/item%d/crc', [i + 1]), pmakecrc);
     end;
     f.Free;
   end;
 
-  cache.Setvalue('PMAKE_SOURCE_DIR/value', val_('PMAKE_SOURCE_DIR'));
-  cache.Setvalue('PMAKE_BINARY_DIR/value', val_('PMAKE_BINARY_DIR'));
-
-  cache.Setvalue('PMAKE_PAS_COMPILER_VERSION/value', val_('PMAKE_PAS_COMPILER_VERSION'));
-  cache.Setvalue('PMAKE_HOST_SYSTEM_PROCESSOR/value', val_('PMAKE_HOST_SYSTEM_PROCESSOR'));
-  cache.Setvalue('PMAKE_HOST_SYSTEM_NAME/value', val_('PMAKE_HOST_SYSTEM_NAME'));
-
   cache.Flush;
-  cache.Free;
 end;
 
 procedure pmakecache_read;
-var
-  pmakecrc: cardinal;
-  f: TStrings;
-  i: integer;
-  tmp: string;
 begin
-  cache := TXMLConfig.Create(nil);
-  cache.LoadFromFile('PMakeCache.txt');
-
+  //todo: rewrite this part, see pmakecache_write
+  //see: http://wiki.lazarus.freepascal.org/XML_Tutorial#Usage_Examples
   set_('PMAKE_SOURCE_DIR', cache.Getvalue('PMAKE_SOURCE_DIR/value', ''));
   set_('PMAKE_CURRENT_SOURCE_DIR', cache.Getvalue('PMAKE_SOURCE_DIR/value', ''));
 
@@ -423,8 +441,6 @@ begin
   set_('PMAKE_PAS_COMPILER_VERSION', cache.Getvalue('PMAKE_PAS_COMPILER_VERSION/value', ''));
   set_('PMAKE_HOST_SYSTEM_PROCESSOR', cache.Getvalue('PMAKE_HOST_SYSTEM_PROCESSOR/value', ''));
   set_('PMAKE_HOST_SYSTEM_NAME', cache.Getvalue('PMAKE_HOST_SYSTEM_NAME/value', ''));
-
-  cache.Free;
 end;
 
 end.

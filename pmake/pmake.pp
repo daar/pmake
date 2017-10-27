@@ -1,5 +1,7 @@
 program pmake;
 
+{$mode objfpc}{$H+}
+
 uses
 {$IFDEF UNIX}
   cthreads,
@@ -12,7 +14,6 @@ uses
 
 var
   str: TStrings;
-  linecount: integer = 1;
   verbose: boolean = False;
 
   //parsing FPC output
@@ -23,14 +24,10 @@ var
     str.Text := str.Text + line;
 
     while str.Count > 0 do
-    begin
-      writeln(linecount, str[0]);
-      Inc(linecount);
-      str.Delete(0);
-    end;
+      writeln(str[0]);
 
     if (str.Count > 0) and (line = '') then
-      writeln(linecount, str[0]);
+      writeln(str[0]);
     end;
   end;
 
@@ -78,7 +75,7 @@ var
     DeleteFile(ChangeFileExt(src_name, '.o'));
 
     if exit_code <> 0 then
-      message(FATAL_ERROR, 'fatal error: cannot compile ' + macros_expand('-omake$(EXE)'));
+      message(FATAL_ERROR, 'fatal error: cannot compile ' + macros_expand('make$(EXE)'));
   end;
 
   procedure parse_commandline;

@@ -110,6 +110,9 @@ begin
             param := CompilerCommandLine(pkg, cmd);
             exit_code := command_execute(val_('PMAKE_PAS_COMPILER'), param, @command_callback);
             param.Free;
+
+            if exit_code <> 0 then
+              message(FATAL_ERROR, 'fatal error: cannot compile ' + pUnitCommand(cmd)^.filename);
           end;
           ctCustom:
           begin
@@ -239,9 +242,7 @@ var
 begin
   //test to make sure the project is well defined
   if val_('PMAKE_PROJECT_NAME') = '' then
-  begin
     message(FATAL_ERROR, 'fatal error: no project defined');
-  end;
 
   //add all dependencies for all packages. we do this only here to make sure all
   //packages are created first. if a package is not found then something must
