@@ -67,7 +67,7 @@ function CompilerCommandLine(pkg: pPackage; cmd: pointer): TStringList;
 implementation
 
 uses
-  SysUtils, upmake;
+  SysUtils, pmake_api;
 
 procedure UpdatePMakePostions(var FPCMsgs: TFPList; fName: string);
 var
@@ -81,42 +81,42 @@ var
   found: boolean;
   tmp: string;
 begin
-  from_file := ExtractFileName(fName);
-
-  for i := 0 to FPCMsgs.Count - 1 do
-  begin
-    fpc_msg := PFPCMessage(FPCMsgs[i]);
-    fpc_msgtype := GetFPCMsgType(fpc_msg^.msgidx);
-    if fpc_msgtype in [mError, mFail] then
-    begin
-      sep := pos(',', fpc_msg^.Text);
-      if sep > 0 then
-      begin
-        sep := sep - length(from_file) - 2;
-        lineno := StrToInt(copy(fpc_msg^.Text, length(from_file) + 2, sep));
-
-        //find the line no
-        for j := 0 to pmakelist.Count - 1 do
-        begin
-          fitem := PPMakeItem(pmakelist[j]);
-          found := False;
-          if (fitem^.startpos <= lineno) and (fitem^.endpos >= lineno) then
-          begin
-            found := True;
-            break;
-          end;
-        end;
-
-        if found then
-        begin
-          sep := pos(',', fpc_msg^.Text);
-          tmp := copy(fpc_msg^.Text, sep, length(fpc_msg^.Text) - sep + 1);
-          fpc_msg^.Text :=
-            format('%s(%d%s', [fitem^.fname, lineno - fitem^.startpos, tmp]);
-        end;
-      end;
-    end;
-  end;
+  //from_file := ExtractFileName(fName);
+  //
+  //for i := 0 to FPCMsgs.Count - 1 do
+  //begin
+  //  fpc_msg := PFPCMessage(FPCMsgs[i]);
+  //  fpc_msgtype := GetFPCMsgType(fpc_msg^.msgidx);
+  //  if fpc_msgtype in [mError, mFail] then
+  //  begin
+  //    sep := pos(',', fpc_msg^.Text);
+  //    if sep > 0 then
+  //    begin
+  //      sep := sep - length(from_file) - 2;
+  //      lineno := StrToInt(copy(fpc_msg^.Text, length(from_file) + 2, sep));
+  //
+  //      //find the line no
+  //      for j := 0 to pmakelist.Count - 1 do
+  //      begin
+  //        fitem := PPMakeItem(pmakelist[j]);
+  //        found := False;
+  //        if (fitem^.startpos <= lineno) and (fitem^.endpos >= lineno) then
+  //        begin
+  //          found := True;
+  //          break;
+  //        end;
+  //      end;
+  //
+  //      if found then
+  //      begin
+  //        sep := pos(',', fpc_msg^.Text);
+  //        tmp := copy(fpc_msg^.Text, sep, length(fpc_msg^.Text) - sep + 1);
+  //        fpc_msg^.Text :=
+  //          format('%s(%d%s', [fitem^.fname, lineno - fitem^.startpos, tmp]);
+  //      end;
+  //    end;
+  //  end;
+  //end;
 end;
 
 function GetFPCMsgType(msgidx: integer): TMessage;
@@ -204,21 +204,21 @@ function RunCompilerCommand(ExeName, SrcName: string): TStrings;
 var
   param: TStrings;
 begin
-  param := TStringList.Create;
-
-  param.Add('-viq');
-{$ifdef debug}
-  param.Add('-gh');
-{$endif}
-  //add the unit search path where the pmake executable is locate
-  param.Add('-FU' + ExtractFilePath(ParamStr(0)));
-  param.Add(SrcName);
-  //based on the app extension of pmake, add the same extension to make
-  param.Add(ExpandMacros('-o' + ExeName));
-
-  Result := RunCommand(fpc, param);
-
-  param.Free;
+//  param := TStringList.Create;
+//
+//  param.Add('-viq');
+//{$ifdef debug}
+//  param.Add('-gh');
+//{$endif}
+//  //add the unit search path where the pmake executable is locate
+//  param.Add('-FU' + ExtractFilePath(ParamStr(0)));
+//  param.Add(SrcName);
+//  //based on the app extension of pmake, add the same extension to make
+//  param.Add(macros_expand('-o' + ExeName));
+//
+//  Result := RunCommand(fpc, param);
+//
+//  param.Free;
 end;
 
 function CompilerCommandLine(pkg: pPackage; cmd: pointer): TStringList;
@@ -245,10 +245,7 @@ begin
     dep := pkg^.dependency[i];
 
     if dep = nil then
-    begin
-      writeln('fail: cannot find dependency ', pPackage(pkg^.dependency[i])^.name);
-      halt(1);
-    end;
+      message(FATAL_ERROR, 'fatal error: cannot find dependency ' + pPackage(pkg^.dependency[i])^.name);
 
     Result.Add('-Fu' + dep^.unitsoutput);
   end;
