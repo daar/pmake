@@ -256,7 +256,10 @@ end;
 procedure pmake_initialize;
 begin
   cache := TXMLConfig.Create(nil);
-  cache.LoadFromFile('PMakeCache.txt');
+  if FileExists('PMakeCache.txt') then
+    cache.LoadFromFile('PMakeCache.txt')
+  else
+    cache.Filename := 'PMakeCache.txt';
 
   //for now we initialize the FPC compiler, but we will add more here later!!
   set_('PMAKE_PAS_COMPILER', ExeSearch(macros_expand('fpc$(EXE)'), SysUtils.GetEnvironmentVariable('PATH')));
