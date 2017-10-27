@@ -1,82 +1,103 @@
 program pmake;
 
-{$mode objfpc}{$H+}
-{ $define debug}
-
-uses 
+uses
 {$IFDEF UNIX}
-  cthreads, 
-{$ENDIF} 
-{$ifdef debug}
-  HeapTrc, 
-{$endif}
-  Classes, SysUtils,
-  upmake, compiler;
+  cthreads,
+{$ENDIF}
+  Classes,
+  SysUtils,
+  pmake_variables,
+  pmake_utilities,
+  pmake_api;
 
-procedure create_and_build_make;
 var
-  BasePath: string = '';
-  tmp: TStringList;
-  fpc_out: TStrings;
-  fname: string;
-  fpc_msg: TFPList;
-begin
-  if FileExists(ExpandMacros('make$(EXE)')) then
-    exit;
+  str: TStrings;
+  linecount: integer = 1;
+  verbose: boolean = False;
 
-  BasePath := IncludeTrailingBackSlash(GetCurrentDir);
-  fname := GetTempFileName('.', 'pmake');
-
-  writeln('-- Creating makefile');
-
-  tmp := TStringList.Create;
-
-  tmp.Add('program make;');
-  tmp.Add('uses upmake;');
-  tmp.Add('begin');
-  tmp.Add('  if pmake_changed then');
-  tmp.Add('    build_make2;');
-  tmp.Add('  run_make2;');
-  tmp.Add('end.');
-
-  fname := GetTempFileName('.', 'pmake');
-  tmp.SaveToFile(fname);
-
-  fpc_out := RunCompilerCommand(ExpandMacros('make$(EXE)'), fname);
-  fpc_msg := ParseFPCCommand(fpc_out, BasePath);
-  WriteFPCCommand(fpc_msg, ShowMsg);
-
-  fpc_out.Free;
-  tmp.Free;
-
-  //remove the object and source files
-  if verbose then
-    writeln('-- Deleting temporary files');
-
-  DeleteFile(fname);
-  DeleteFile(ChangeFileExt(fname, '.o'));
-end;
-
-begin
-  check_options(ctPMake);
-
-  if verbose then
-    writeln('-- FPC compiler ', fpc);
-
-  if (fpc = '') or (not FileExists(fpc)) then
+  //parsing FPC output
+  procedure command_callback(line: string);
   begin
-    writeln('error: cannot find the FPC compiler');
-    usage(ctPMake);
+    if verbose then
+    begin
+    str.Text := str.Text + line;
+
+    while str.Count > 0 do
+    begin
+      writeln(linecount, str[0]);
+      Inc(linecount);
+      str.Delete(0);
+    end;
+
+    if (str.Count > 0) and (line = '') then
+      writeln(linecount, str[0]);
+    end;
   end;
 
-  if verbose then
-    ShowMsg := AllMessages;
+  procedure create_and_build_make;
+  var
+    tmp: TStrings;
+    param: TStrings;
+    src_name: string;
+    exit_code: Integer;
+  begin
+    writeln('-- Creating makefile');
 
-  create_and_build_make;
+    tmp := TStringList.Create;
 
-  if not FileExists(ExpandMacros('make2$(EXE)')) then
-    build_make2;
+    tmp.Add('program make;');
+    tmp.Add('uses {$IFDEF UNIX} cthreads, {$ENDIF} make_main;');
+    tmp.Add('begin');
+    tmp.Add('  make_execute;');
+    tmp.Add('end.');
 
-  writeln('-- Generating done');
-  writeln('-- Build file has been written to: ', ExpandFileName('make' + ExtractFileExt(ParamStr(0))));
+    src_name := GetTempFileName('.', 'pmake');
+    tmp.SaveToFile(src_name);
+    tmp.Free;
+
+    param := TStringList.Create;
+    param.Add('-viq');
+    //add the unit search path to the pmake source directory
+    param.Add('-FU' + UnitsOutputDir(val_('PMAKE_BINARY_DIR')));
+    param.Add('-Fu' + val_('PMAKE_SOURCE_DIR'));
+    param.Add(src_name);
+    param.Add(macros_expand('-omake$(EXE)'));
+
+    if verbose then
+      writeln('-- Executing ', val_('PMAKE_PAS_COMPILER'), ' ', param.Text);
+
+    str := TStringList.Create;
+    exit_code := command_execute(val_('PMAKE_PAS_COMPILER'), param, @command_callback);
+    str.Free;
+
+    //remove the object and source files
+    if verbose then
+      writeln('-- Deleting temporary files');
+
+    DeleteFile(src_name);
+    DeleteFile(ChangeFileExt(src_name, '.o'));
+
+    if exit_code <> 0 then
+      message(FATAL_ERROR, 'fatal error: cannot compile ' + macros_expand('-omake$(EXE)'));
+  end;
+
+  procedure parse_commandline;
+  begin
+    //need to implement a propoper command line parser here
+
+    set_('PMAKE_SOURCE_DIR', IncludeTrailingPathDelimiter(ExpandFileName(ParamStr(1))));
+    set_('PMAKE_BINARY_DIR', IncludeTrailingPathDelimiter(ExtractFilePath(ParamStr(0))));
+
+    verbose := True;
+  end;
+
+begin
+  pmake_initialize;
+
+  parse_commandline;
+
+  if not FileExists(macros_expand('make$(EXE)')) then
+    create_and_build_make;
+
+  pmakecache_write;
 end.
