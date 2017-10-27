@@ -17,7 +17,6 @@ uses
 
 var
   sline: TStrings;
-  linecount: longint = 1;
   verbose: boolean = False;
 
 //parsing FPC output
@@ -27,13 +26,12 @@ begin
 
   while sline.Count > 0 do
   begin
-    writeln(linecount, sline[0]);
-    Inc(linecount);
+    writeln(sline[0]);
     sline.Delete(0);
   end;
 
   if (sline.Count > 0) and (line = '') then
-    writeln(linecount, sline[0]);
+    writeln(sline[0]);
 end;
 
 function check_rebuild_make2: boolean;
@@ -42,34 +40,36 @@ var
   f: TStrings;
   pmakecrc: cardinal;
   tmp: string;
+  p: string;
+  c: cardinal;
 begin
   if not FileExists('PMakeCache.txt') then
     exit(True);
 
   //return true if the PMake.txt is count is different
-  if cache.GetValue('PMake/count',0) <> pmakefiles.Count then
-  begin
+  if cache.GetValue('PMake/count', 0) <> pmakefiles.Count then
     exit(True);
-  end;
 
-  //todo: implement
-  ////return true if a crc / PMake.txt combination is not found
-  //f := TStringList.Create;
-  //for i := 0 to pmakefiles.Count - 1 do
-  //begin
-  //  f.LoadFromFile(pmakefiles[i]);
-  //  pmakecrc := crc32(0, @f.Text[1], length(f.Text));
-  //
-  //  str(pmakecrc: 10, tmp);
-  //  idx := cache.GetValue(Format('%s %s', [tmp, pmakefiles[i]]));
-  //
-  //  if idx = -1 then
-  //  begin
-  //    f.Free;
-  //    exit(True);
-  //  end;
-  //end;
-  //f.Free;
+  //return true if a crc / PMake.txt combination is not found
+  f := TStringList.Create;
+  for i := 0 to pmakefiles.Count - 1 do
+  begin
+    p := cache.GetValue(Format('PMake/item%d/path', [i + 1]), '');
+    c := cache.GetValue(Format('PMake/item%d/crc', [i + 1]), 0);
+
+    f.LoadFromFile(p);
+    pmakecrc := crc32(0, @f.Text[1], length(f.Text));
+
+    idx := pmakefiles.IndexOf(p);
+
+    //either the PMake.tx file does not exist, or the crc changed
+    if (idx = -1) or (c <> pmakecrc) then
+    begin
+      f.Free;
+      exit(True);
+    end;
+  end;
+  f.Free;
 
   exit(False);
 end;
@@ -140,8 +140,9 @@ begin
   param.Add(src_name);
   param.Add(macros_expand('-omake2$(EXE)'));
 
+  param.Delimiter := ' ';
   if verbose then
-    writeln('-- Executing ', val_('PMAKE_PAS_COMPILER'), ' ', param.Text);
+    writeln('-- Executing ', val_('PMAKE_PAS_COMPILER'), ' ', param.DelimitedText);
 
   sline := TStringList.Create;
   exit_code := command_execute(val_('PMAKE_PAS_COMPILER'), param, @command_callback);
@@ -170,6 +171,8 @@ begin
 end;
 
 procedure make_execute;
+var
+  exit_code: integer;
 begin
   pmake_initialize;
   pmakecache_read;
@@ -182,11 +185,16 @@ begin
   if check_rebuild_make2 then
     make2_build;
 
+  pmakecache_write;
+
   sline := TStringList.Create;
-  command_execute(macros_expand('make2$(EXE)', nil), nil, @command_callback);
+  exit_code := command_execute(macros_expand('make2$(EXE)', nil), nil, @command_callback);
   sline.Free;
 
   pmakefiles.Free;
+
+  if exit_code <> 0 then
+    message(FATAL_ERROR, 'fatal error: cannot compile ' + macros_expand('make2$(EXE)'));
 end;
 
 end.

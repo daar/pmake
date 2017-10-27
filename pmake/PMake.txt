@@ -2,7 +2,7 @@ compiler_minimum_required(3,0,0);
 project('PMake a build tool for (free) pascal');
 
 //compile the pmake units
-add_library('lib_pmake', ['compiler.pas', 'depsolver.pas', 'upmake.pas']);
+add_library('lib_pmake', ['compiler.pas', 'depsolver.pas']);
 
 //compile the pmake executable
 add_executable('pmake', 'pmake', 'pmake.pp', ['lib_pmake']);
