@@ -21,13 +21,16 @@ var
   begin
     if verbose then
     begin
-    str.Text := str.Text + line;
+      str.Text := str.Text + line;
 
-    while str.Count > 0 do
-      writeln(str[0]);
+      while str.Count > 0 do
+      begin
+        writeln(str[0]);
+        str.Delete(0);
+      end;
 
-    if (str.Count > 0) and (line = '') then
-      writeln(str[0]);
+      if (str.Count > 0) and (line = '') then
+        writeln(str[0]);
     end;
   end;
 
