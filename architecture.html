@@ -1,147 +1,272 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Architecture &mdash; fmake 0.01 documentation</title>
-    
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '0.01',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
-      };
-    </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="fmake 0.01 documentation" href="index.html" />
-    <link rel="next" title="Macro’s" href="macro.html" />
-    <link rel="prev" title="Quick start" href="quickstart.html" />
-   
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Architecture &mdash; PMake reference manual</title>
+  
 
-  </head>
-  <body role="document">  
+  
+  
+  
+  
+    <link rel="canonical" href="http://daar.github.io/pmake/architecture.html"/>
+  
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="PMake reference manual" href="index.html"/>
+        <link rel="next" title="Macro’s" href="macro.html"/>
+        <link rel="prev" title="Quick start" href="quickstart.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> PMake 0.02 Reference Manual
+          
+
+          
+            
+            <img src="_static/pmake_logo.png" class="logo" />
+          
+          </a>
+
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick start</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Architecture</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#targets">Targets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#commands">Commands</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#inner-workings">Inner workings</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="macro.html">Macro&#8217;s</a></li>
+<li class="toctree-l1"><a class="reference internal" href="projectsetup.html">Project setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference.html">PMake reference</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">PMake 0.02 Reference Manual</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Architecture</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/architecture.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
             
   <div class="section" id="architecture">
 <h1>Architecture<a class="headerlink" href="#architecture" title="Permalink to this headline">¶</a></h1>
-<p>When using <em>fmake</em> it is important to understand the architecture of the software in order to be able to create a proper buildscript. The basic concepts of the <em>fmake</em> build tool are targets and packages. A package is a collection of commands that belong to each other. In the FMake.txt build scripts one can define how these packages are linked to each other (dependencies) and of which commands they exist. There are a number of different commands like <em>executable</em>, <em>unit</em>, <em>install</em> and <em>custom</em>. A target is a specific overall command that is going to be executed. This target is specified from the commandline by the developer. The predefined targets for <em>fmake</em> are;</p>
-<div class="section" id="build">
-<h2>Build<a class="headerlink" href="#build" title="Permalink to this headline">¶</a></h2>
-<p>The build target will compile and link all source code that is defined by the build scripts in the source tree. It will create if needed an output folder for the object (<em>.o) and compiled pascal unit files (</em>.ppu). The default output folder for compiled units is <em>.\units\$(TargetCPU)-$(TargetOS)</em>, while for binary executables the output folder is: <em>.\bin\$(TargetCPU)-$(TargetOS)</em>. These folders will be created in the locations where the FMake.txt files are placed. Build is also the default tagret. This means that it does not need to be supplied, but by default it will assume the build target is called for.</p>
+<p>When using PMake it is important to understand the architecture of the software in order to be able to create a proper build script. The basic concepts of the PMake build tool are targets and packages. A package is a collection of commands that belong to each other. In the PMake.txt build scripts one can define how these packages are linked to each other (dependencies) and of which commands they exist. There are a number of different commands like <em>executable</em>, <em>unit</em>, <em>install</em> and <em>custom</em>. A target is a specific overall command that is going to be executed. This target is specified from the command-line by the developer. The predefined targets for PMake are;</p>
+<div class="section" id="targets">
+<h2>Targets<a class="headerlink" href="#targets" title="Permalink to this headline">¶</a></h2>
+<p><strong>Build</strong>
+The build target is the default target and therefore does not need to explicitly set on the command line. It will compile and link all source code that is defined by the build scripts in the source tree. Output folders will be created if needed for the object (<em>.o) and compiled pascal unit files (</em>.ppu). The default output folder for compiled units is <em>.\units\$(PMAKE_HOST_SYSTEM_PROCESSOR)-$(PMAKE_HOST_SYSTEM_NAME)</em>, while for binary executables the output folder is: <em>.\bin\$(PMAKE_HOST_SYSTEM_PROCESSOR)-$(PMAKE_HOST_SYSTEM_NAME)</em>. These folders will be created in the locations where the PMake.txt files are placed.</p>
+<p><strong>Clean</strong>
+The clean target will delete all the create output folders, including the contents.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Please keep this in mind not to keep any other files in the <cite>units</cite> folders or they will get lost.</p>
 </div>
-<div class="section" id="clean">
-<h2>Clean<a class="headerlink" href="#clean" title="Permalink to this headline">¶</a></h2>
-<p>The clean target will delete all the create output folders, including the contents. Please keep this in mind and do not copy any files in there yourself or they will get lost.</p>
+<p><strong>Install</strong>
+The install target will copy the designated files into a directory. One can use this target to install the compiled files to any folder, either relative to the source folder (for instance to create a release folder) or to an absolute folder to install the program, including any additional files on the desired location according to the platform specifications. Please note that install will not automatically call for build. This means that build needs to be invoked separately.</p>
 </div>
-<div class="section" id="install">
-<h2>Install<a class="headerlink" href="#install" title="Permalink to this headline">¶</a></h2>
-<p>The install target will copy the designated files into a directory. One can use this target to install the compiled files to any folder, either relative to the source folder (for instance to create a release folder) or to an absolute folder to install the program, including any additional files on the desired location according to the platform specifications. Please note that install will not automatically call for build. This means that build needs to be invoked separately.</p>
-<p>The packages are defined in the FMake.txt files which are located in the source tree. In each FMake.txt the commands for each package are defined. A package can have a combination of the commands <em>executable</em>, <em>unit</em>, <em>install</em> and <em>custom</em>. The dependency resolving algorithm will try to interpret the package commands and try to determine the order in which the packages are processed. Please note that withing a package, thus the package command order is the responsibility of the developer. In case a command has a dependency with another command within the same package and this needs to be resolved automatically, it is advised to create a new package within the same FMake.txt. The dependencies for units within a package are handled by the compiler. So it is perfectly possible to add unit A before unit B, while unit B depends on unit A. In that case unit A will be compiled two times as the first time unit A will be compiled because the compiler requires it for unit B and the second time unit A will be compiled because it was added via FMake.txt. File references within FMake.txt files can be references relatively or absolute, although the latter is not recommended.</p>
-<p>Please go to the reference page for a complete description of the functions.</p>
-</div>
-<div class="section" id="executable-command">
-<h2>executable command<a class="headerlink" href="#executable-command" title="Permalink to this headline">¶</a></h2>
-<p>The executable command will define an executbale to be added to a package. It is possible to add one or more executables to a single package. In case there are dependencies between packages the user will need to specify them.</p>
-</div>
-<div class="section" id="unit-command">
-<h2>unit command<a class="headerlink" href="#unit-command" title="Permalink to this headline">¶</a></h2>
-<p>The unit command is used to add units to a package. Multiple units can be added to a single package. For now <em>fmake</em> will not work out the unit interdependencies. This is left over to the compiler. But please be aware that the compiler will not be able to find interdependencies between packages. This is work for the developer instead.</p>
-</div>
-<div class="section" id="install-command">
-<h2>install command<a class="headerlink" href="#install-command" title="Permalink to this headline">¶</a></h2>
-<p>The install command is a special command as it will copy files from one location to another location. This command can be used to install the files to a location relative to the source folder (for instance to create a release folder) or to an absolute folder to install the program, including any additional files on the desired location according to the platform specifications. The install command is initiated by using the following procedure prototype in FMake.txt</p>
-</div>
-<div class="section" id="custom-command">
-<h2>custom command<a class="headerlink" href="#custom-command" title="Permalink to this headline">¶</a></h2>
-<p>The custom command is a special command that invokes an executable with parameters and adds a dependency to this invokation. This command is used for instance to generate source files (for example lex and yacc) or other files needed for the release of the project. A custom command is always located in a separate package so it can be a dependency for other packages. The custom command is initiated by using the following procedure prototype in FMake.txt</p>
+<div class="section" id="commands">
+<h2>Commands<a class="headerlink" href="#commands" title="Permalink to this headline">¶</a></h2>
+<p>The packages are defined within the PMake.txt files that are located in the source tree. In each PMake.txt the commands for each package are defined. Multiple commands can have a dependency on a single or multiple packages like: <em>executable</em>, <em>unit</em>, <em>install</em> and <em>custom</em>. The dependency resolving algorithm will try to interpret the commands and try to determine the order in which the packages should be processed. In case a command has a dependency with another command within the same package and this needs to be resolved automatically, it is advised to create a new package within the same PMake.txt. The dependencies for units within a package are handled by the compiler. So it is perfectly possible to add unit A before unit B, while unit B depends on unit A. In that case unit A will be compiled two times as the first time unit A will be compiled because the compiler requires it for unit B and the second time unit A will be compiled because it was added via PMake.txt. File references within PMake.txt files can be references relatively or absolute, although the latter is not recommended for obvious reasons.</p>
+<p>Please go to the <a class="reference internal" href="reference.html"><span class="doc">PMake reference</span></a> page for a more comprehensive description of the functions.</p>
+<p><strong>executable command</strong>
+The executable command will define an executable to be added to a package. It is possible to add one or more executables to a single package. In case there are dependencies between packages the user will need to specify them.</p>
+<p><strong>unit command</strong>
+The unit command is used to add units to a package. Multiple units can be added to a single package. For now PMake will not work out the unit interdependencies. This is left over to the compiler. But please be aware that the compiler will not be able to find interdependencies between packages. This is work for the developer instead.</p>
+<p><strong>install command</strong>
+The install command is a special command as it will copy files from one location to another location. This command can be used to install the files to a location relative to the source folder (for instance to create a release folder) or to an absolute folder to install the program, including any additional files on the desired location according to the platform specifications.</p>
+<p><strong>custom command</strong>
+The custom command is a special command that invokes an executable with parameters and adds a dependency to this invocation. This command is used for instance to generate source files (for example lex and yacc) or other files needed for the release of the project. A custom command is always located in a separate package so it can be a dependency for other packages.</p>
 </div>
 <div class="section" id="inner-workings">
 <h2>Inner workings<a class="headerlink" href="#inner-workings" title="Permalink to this headline">¶</a></h2>
-<p>When running <em>fmake</em> the whole source folder is recursively searched for FMake.txt files. In principle FMake.txt files are executing parts of the <em>make</em> program. Upon collection, <em>fmake</em> will merge all FMake.txt files into a single program file which is then compiled into the <em>make</em> executable.</p>
-<p>Each FMake.txt file defines one or more packages</p>
+<p>When running PMake the whole source folder is recursively searched for PMake.txt files. In principle PMake.txt files are assembled together to create the <em>make</em> program. Upon collection, PMake will merge all PMake.txt files into a single program file which is then compiled into the <em>make</em> executable.</p>
 </div>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
+           </div>
           </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="macro.html" class="btn btn-neutral float-right" title="Macro’s" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="quickstart.html" class="btn btn-neutral" title="Quick start" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016-2017, Darius Blaszyk.
+
+    </p>
+  </div> 
+
+</footer>
+
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table Of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">Architecture</a><ul>
-<li><a class="reference internal" href="#build">Build</a></li>
-<li><a class="reference internal" href="#clean">Clean</a></li>
-<li><a class="reference internal" href="#install">Install</a></li>
-<li><a class="reference internal" href="#executable-command">executable command</a></li>
-<li><a class="reference internal" href="#unit-command">unit command</a></li>
-<li><a class="reference internal" href="#install-command">install command</a></li>
-<li><a class="reference internal" href="#custom-command">custom command</a></li>
-<li><a class="reference internal" href="#inner-workings">Inner workings</a></li>
-</ul>
-</li>
-</ul>
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="quickstart.html" title="previous chapter">Quick start</a></li>
-      <li>Next: <a href="macro.html" title="next chapter">Macro&#8217;s</a></li>
-  </ul></li>
-</ul>
-</div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/architecture.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
-      </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="footer">
-      &copy;2016, Darius Blaszyk.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
-      
-      |
-      <a href="_sources/architecture.txt"
-          rel="nofollow">Page source</a>
-    </div>
 
-    
+    </section>
 
-    
-  </body>
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.02',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
 </html>

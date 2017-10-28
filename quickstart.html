@@ -1,85 +1,208 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Quick start &mdash; fmake 0.01 documentation</title>
-    
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '0.01',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
-      };
-    </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="fmake 0.01 documentation" href="index.html" />
-    <link rel="next" title="Architecture" href="architecture.html" />
-    <link rel="prev" title="Introduction" href="introduction.html" />
-   
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Quick start &mdash; PMake reference manual</title>
+  
 
-  </head>
-  <body role="document">  
+  
+  
+  
+  
+    <link rel="canonical" href="http://daar.github.io/pmake/quickstart.html"/>
+  
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="PMake reference manual" href="index.html"/>
+        <link rel="next" title="Architecture" href="architecture.html"/>
+        <link rel="prev" title="Introduction" href="introduction.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> PMake 0.02 Reference Manual
+          
+
+          
+            
+            <img src="_static/pmake_logo.png" class="logo" />
+          
+          </a>
+
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Quick start</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#install-pmake">Install PMake</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#simple-example">Simple example</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="macro.html">Macro&#8217;s</a></li>
+<li class="toctree-l1"><a class="reference internal" href="projectsetup.html">Project setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference.html">PMake reference</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">PMake 0.02 Reference Manual</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Quick start</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/quickstart.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
             
   <div class="section" id="quick-start">
 <h1>Quick start<a class="headerlink" href="#quick-start" title="Permalink to this headline">¶</a></h1>
-<p>Here&#8217;s a quick start on how to install <em>fmake</em> and create a simple working project, compilable and installable by <em>fmake</em>.</p>
-<div class="section" id="install-fmake">
-<h2>Install fmake<a class="headerlink" href="#install-fmake" title="Permalink to this headline">¶</a></h2>
-<p>There are two ways to get and install fmake on your machine. One way is to download and install the binary from GitHub (<a class="reference external" href="https://github.com/daar/fmake/releases">https://github.com/daar/fmake/releases</a>). The release files are zip files and need to be copied to a location on your machine that is accessible from the command line. So either copy the folder contents to such a location or add the folder location which contains the binary and unit files to the PATH environment.</p>
+<p>Here&#8217;s a quick start on how to install PMake and create a simple working project, compilable and installable by PMake.</p>
+<div class="section" id="install-pmake">
+<h2>Install PMake<a class="headerlink" href="#install-pmake" title="Permalink to this headline">¶</a></h2>
+<p>There are two ways to get and install PMake on your machine. One way is to download and install the binary from GitHub (<a class="reference external" href="https://github.com/daar/pmake/releases">https://github.com/daar/pmake/releases</a>). The release files are zip files and need to be copied to a location on your machine that is accessible from the command line. So either copy the folder contents to such a location or add the folder location which contains the binary and unit files to the PATH environment.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">Make sure you copy the location of the ufmake folder relative to the <em>fmake</em> executable, so <em>fmake</em> can find them when compiling the build scripts.</p>
+<p class="last">Make sure you copy all files in the distribution, so PMake can find them when compiling the build scripts.</p>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">It&#8217;s more convenient to use the install target of <em>fmake</em> to install the build tool to the correct location on your machine. See below for a detailed explanation on how to do it.</p>
+<p class="last">It&#8217;s more convenient to use the install target of PMake to install the build tool to the correct location on your machine. See below for a detailed explanation on how to do it.</p>
 </div>
-<p>The other way to download the sources from <a class="reference external" href="https://github.com/daar/fmake/">https://github.com/daar/fmake/</a> via either GIT or SVN.</p>
-<div class="code bash highlight-default"><div class="highlight"><pre><span></span><span class="n">svn</span> <span class="n">co</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">daar</span><span class="o">/</span><span class="n">fmake</span><span class="o">/</span>
+<p>The other way to download the sources from <a class="reference external" href="https://github.com/daar/pmake/">https://github.com/daar/pmake/</a> via either GIT or SVN.</p>
+<div class="code bash highlight-default"><div class="highlight"><pre><span></span>$ svn co https://github.com/daar/pmake.git
 </pre></div>
 </div>
 <p>or</p>
-<div class="code bash highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">pull</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">daar</span><span class="o">/</span><span class="n">fmake</span><span class="o">/</span>
+<div class="code bash highlight-default"><div class="highlight"><pre><span></span>$ git clone https://github.com/daar/pmake
 </pre></div>
 </div>
-<p>Then you can compile fmake by doing</p>
-<div class="code bash highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">fmake</span><span class="o">.</span><span class="n">git</span>
-<span class="n">cd</span> <span class="n">trunk</span>
-<span class="n">cd</span> <span class="n">fmake</span>
-<span class="n">fpc</span> <span class="n">fmake</span>
+<p>Then you can compile PMake by doing the following, assuming you just cloned the repository.</p>
+<div class="code bash highlight-default"><div class="highlight"><pre><span></span>$ cd pmake
+$ cd pmake
+$ fpc pmake
 </pre></div>
 </div>
-<p>To install <em>fmake</em> you need to invoke <em>fmake</em> to create <em>make</em> and then do a <em>make install</em>;</p>
-<div class="code bash highlight-default"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">fmake</span>
-<span class="n">sudo</span> <span class="o">./</span><span class="n">make</span> <span class="n">install</span>
+<p>To install PMake you need to invoke PMake to create <em>make</em> and then do a <em>make install</em>;</p>
+<div class="code bash highlight-default"><div class="highlight"><pre><span></span>$ ./pmake
+$ sudo ./make install
 </pre></div>
 </div>
-<p>This command will allow you to install <em>fmake</em> to the correct platform specific location. On *nix platforms you will need to provide the administrator password to have rights to install the files, hence <em>sudo</em>.</p>
+<p>This command will allow you to install PMake to the correct platform specific location. On *nix platforms you will need to provide the administrator password to have rights to install the files, hence <em>sudo</em>.</p>
 </div>
 <div class="section" id="simple-example">
 <h2>Simple example<a class="headerlink" href="#simple-example" title="Permalink to this headline">¶</a></h2>
-<p>Once <em>fmake</em> is installed you can start using it in your projects.</p>
-<p>The following example demonstrates some concept ideas of <em>fmake</em>. For this example you need two source files and one FMake.txt. The executable <em>hellodemo</em> is built by linking to the library hello_pkg that is built first.</p>
-<p>The first, top-level directory contains the following FMake.txt file.</p>
-<div class="code pascal highlight-default"><div class="highlight"><pre><span></span><span class="o">//</span><span class="n">root</span> <span class="n">folder</span> <span class="n">FMake</span><span class="o">.</span><span class="n">txt</span>
+<p>Once PMake is installed you can start using it in your projects.</p>
+<p>The following example demonstrates some concept ideas of PMake. For this example you need two source files and one PMake.txt. The executable <em>hellodemo</em> is built by linking to the library hello_pkg that is built first.</p>
+<p>The first, top-level directory contains the following PMake.txt file.</p>
+<div class="code pascal highlight-default"><div class="highlight"><pre><span></span><span class="o">//</span><span class="n">root</span> <span class="n">folder</span> <span class="n">PMake</span><span class="o">.</span><span class="n">txt</span>
 <span class="n">project</span><span class="p">(</span><span class="s1">&#39;HELLO&#39;</span><span class="p">);</span>
 
 <span class="n">add_library</span><span class="p">(</span><span class="s1">&#39;hello_pkg&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;uhello.pas&#39;</span><span class="p">])</span>
@@ -115,72 +238,88 @@
 </pre></div>
 </div>
 <p>Now the project can be compiled by using the following commands;</p>
-<div class="code bash highlight-default"><div class="highlight"><pre><span></span><span class="o">&gt;./</span><span class="n">fmake</span>
-<span class="o">&gt;./</span><span class="n">make</span> <span class="n">install</span>
+<div class="code bash highlight-default"><div class="highlight"><pre><span></span>$ pmake
+$ ./make
 </pre></div>
 </div>
-<p>If all went well there will be two folders created in the root folder ./bin/x86_64-win64 and ./units/x86_64-win64 (in case you are working on a 64bit windows machine, using the 64bit FPC compiler). In the bin folder you will find an executable called hellodemo.exe.</p>
+<p>If all went well there will be two folders created in the root folder. In case you are working on a 64bit windows machine, using the 64bit FPC compiler you will see:</p>
+<div class="code bash highlight-default"><div class="highlight"><pre><span></span><span class="o">./</span><span class="nb">bin</span><span class="o">/</span><span class="n">x86_64</span><span class="o">-</span><span class="n">win64</span>
+<span class="o">./</span><span class="n">units</span><span class="o">/</span><span class="n">x86_64</span><span class="o">-</span><span class="n">win64</span>
+</pre></div>
+</div>
+<p>The bin folder will contain the executable called <cite>hellodemo.exe</cite>, while the units folder will contain the compiled units.</p>
 </div>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
+           </div>
           </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="architecture.html" class="btn btn-neutral float-right" title="Architecture" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="introduction.html" class="btn btn-neutral" title="Introduction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016-2017, Darius Blaszyk.
+
+    </p>
+  </div> 
+
+</footer>
+
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table Of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">Quick start</a><ul>
-<li><a class="reference internal" href="#install-fmake">Install fmake</a></li>
-<li><a class="reference internal" href="#simple-example">Simple example</a></li>
-</ul>
-</li>
-</ul>
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="introduction.html" title="previous chapter">Introduction</a></li>
-      <li>Next: <a href="architecture.html" title="next chapter">Architecture</a></li>
-  </ul></li>
-</ul>
-</div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/quickstart.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
-      </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="footer">
-      &copy;2016, Darius Blaszyk.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
-      
-      |
-      <a href="_sources/quickstart.txt"
-          rel="nofollow">Page source</a>
-    </div>
 
-    
+    </section>
 
-    
-  </body>
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.02',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
 </html>

@@ -1,44 +1,164 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>FMake reference &mdash; fmake 0.01 documentation</title>
-    
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '0.01',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
-      };
-    </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="fmake 0.01 documentation" href="index.html" />
-    <link rel="prev" title="Project setup" href="projectsetup.html" />
-   
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>PMake reference &mdash; PMake reference manual</title>
+  
 
-  </head>
-  <body role="document">  
+  
+  
+  
+  
+    <link rel="canonical" href="http://daar.github.io/pmake/reference.html"/>
+  
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="PMake reference manual" href="index.html"/>
+        <link rel="prev" title="Project setup" href="projectsetup.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> PMake 0.02 Reference Manual
+          
+
+          
             
-  <div class="section" id="fmake-reference">
-<h1>FMake reference<a class="headerlink" href="#fmake-reference" title="Permalink to this headline">¶</a></h1>
+            <img src="_static/pmake_logo.png" class="logo" />
+          
+          </a>
+
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="macro.html">Macro&#8217;s</a></li>
+<li class="toctree-l1"><a class="reference internal" href="projectsetup.html">Project setup</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">PMake reference</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">PMake 0.02 Reference Manual</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>PMake reference</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/reference.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="pmake-reference">
+<h1>PMake reference<a class="headerlink" href="#pmake-reference" title="Permalink to this headline">¶</a></h1>
 <div class="code pascal highlight-default"><div class="highlight"><pre><span></span><span class="n">add_executable</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">executable</span><span class="p">,</span> <span class="n">srcfile</span><span class="p">:</span> <span class="n">string</span><span class="p">;</span> <span class="n">depends</span><span class="p">:</span> <span class="n">array</span> <span class="n">of</span> <span class="n">const</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -46,7 +166,7 @@
 <div class="code pascal highlight-default"><div class="highlight"><pre><span></span><span class="n">add_executable</span><span class="p">(</span><span class="s1">&#39;pkg_helloworld&#39;</span><span class="p">,</span> <span class="s1">&#39;helloworld$(EXE)&#39;</span><span class="p">,</span> <span class="s1">&#39;hello.pp&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;lib_hello&#39;</span><span class="p">]);</span>
 </pre></div>
 </div>
-<p>This command indicates that the executabale <em>helloworld$(EXE)</em> that belongs to the package <em>pkg_helloworld</em> is compiled from the source file hello.pp. In turn this source file depends on the package <em>lib_hello</em>. Please note that the helloworld executable makes use of the macro $(EXE) that resolves to .exe for platforms other than unix platforms. Please go to the macro page to get an overview of the supported macro&#8217;s.</p>
+<p>This command indicates that the executable <em>helloworld$(EXE)</em> that belongs to the package <em>pkg_helloworld</em> is compiled from the source file hello.pp. In turn this source file depends on the package <em>lib_hello</em>. Please note that the helloworld executable makes use of the macro $(EXE) that resolves to .exe for platforms other than unix platforms. Please go to the macro page to get an overview of the supported macro&#8217;s.</p>
 <p>With this command it is also possible to compile shared libraries. Instead of the $(EXE) macro then please use the $(DLL) macro.</p>
 <div class="code pascal highlight-default"><div class="highlight"><pre><span></span><span class="n">add_library</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="n">string</span><span class="p">;</span> <span class="n">srcfiles</span><span class="p">,</span> <span class="n">depends</span><span class="p">:</span> <span class="n">array</span> <span class="n">of</span> <span class="n">const</span><span class="p">)</span>
 </pre></div>
@@ -60,15 +180,17 @@
 </pre></div>
 </div>
 <p>An example of how to use the executable command is shown below;</p>
-<div class="code pascal highlight-default"><div class="highlight"><pre><span></span><span class="n">install</span><span class="p">(</span><span class="s1">&#39;$(BINOUTPUTDIR)&#39;</span><span class="p">,</span> <span class="s1">&#39;.</span><span class="se">\r</span><span class="s1">elease\$(TargetCPU)-$(TargetOS)&#39;</span><span class="p">,</span> <span class="s1">&#39;helloworld$(EXE)&#39;</span><span class="p">);</span>
+<div class="code pascal highlight-default"><div class="highlight"><pre><span></span><span class="n">install</span><span class="p">(</span><span class="s1">&#39;$(BINOUTPUTDIR)&#39;</span><span class="p">,</span> <span class="s1">&#39;.</span><span class="se">\r</span><span class="s1">elease\$(PMAKE_HOST_SYSTEM_PROCESSOR)-$(PMAKE_HOST_SYSTEM_NAME)&#39;</span><span class="p">,</span> <span class="s1">&#39;helloworld$(EXE)&#39;</span><span class="p">);</span>
 </pre></div>
 </div>
-<p>This command will install the helloworld executable (helloworld.exe on windows) from the binary output folder of the package to the .\release\$(TargetCPU)-$(TargetOS) folder, relative to the folder from which fmake was invoked from and where make.exe is generated. For the file pattern it is also possible to use wildcard characters such as;</p>
+<p>This command will install the helloworld executable (helloworld.exe on windows) from the binary output folder of the package to the</p>
+<div class="code bash highlight-default"><div class="highlight"><pre><span></span>.\release\$(PMAKE_HOST_SYSTEM_PROCESSOR)-$(PMAKE_HOST_SYSTEM_NAME)
+</pre></div>
+</div>
+<p>folder, relative to the folder from which PMake was invoked from and where make.exe is generated. For the file pattern it is also possible to use wildcard characters such as;</p>
 <dl class="docutils">
 <dt>*</dt>
 <dd>match zero or more characters</dd>
-</dl>
-<dl class="docutils">
 <dt>?</dt>
 <dd>match one character</dd>
 </dl>
@@ -77,60 +199,79 @@
 </pre></div>
 </div>
 <p>An example of how to use the install command is shown below;</p>
-<div class="code pascal highlight-default"><div class="highlight"><pre><span></span><span class="n">add_custom_command</span><span class="p">(</span><span class="s1">&#39;exec_helloworld&#39;</span><span class="p">,</span> <span class="s1">&#39;.</span><span class="se">\b</span><span class="s1">in\$(TargetCPU)-$(TargetOS)\helloworld$(EXE)&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;pkg_helloworld&#39;</span><span class="p">]);</span>
+<div class="code pascal highlight-default"><div class="highlight"><pre><span></span><span class="n">add_custom_command</span><span class="p">(</span><span class="s1">&#39;exec_helloworld&#39;</span><span class="p">,</span> <span class="s1">&#39;$(BINOUTPUTDIR)\helloworld$(EXE)&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;pkg_helloworld&#39;</span><span class="p">]);</span>
 </pre></div>
 </div>
 <p>This command will execute the hello world executable located in the bin folder with no additional parameters. This command is part of the exec_helloworld package and has a dependency on <em>pkg_helloworld</em>. This means that this package needs to be built and linked first before the custom command is executed.</p>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
+           </div>
           </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="projectsetup.html" class="btn btn-neutral" title="Project setup" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016-2017, Darius Blaszyk.
+
+    </p>
+  </div> 
+
+</footer>
+
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper"><div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="projectsetup.html" title="previous chapter">Project setup</a></li>
-  </ul></li>
-</ul>
-</div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/reference.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
-      </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="footer">
-      &copy;2016, Darius Blaszyk.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
-      
-      |
-      <a href="_sources/reference.txt"
-          rel="nofollow">Page source</a>
-    </div>
 
-    
+    </section>
 
-    
-  </body>
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.02',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
 </html>

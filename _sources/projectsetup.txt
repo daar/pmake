@@ -1,5 +1,0 @@
-Project setup
--------------
-The nice thing about *fmake* is that it does not enforce you to a certain fixed project setup. It does expect an in-source build, however the way you structure your project is entirely up to you. There is even no real need to keep track of the relative location of the packages as they are detemined by *fmake*. This means you can simply reorganize your source tree and only need to invoke *fmake* from the root folder to generate a new *make* executable.
-Each FMake.txt file can refer to a single package, although even this is not mandatory, but rather more practical. As demonstrated in the sample project in this documentation, one can even define multiple packages within a single FMake.txt file. Unlike CMake there is no need to create FMake.txt files simply to forward the build chain over the different folders. Instead you only put FMake.txt files where it's appropriate and let *fmake* find them recursively. The most important thing to remember here is to invoke *fmake* from the root location of the source tree. If you call *fmake* higher up in the source tree then you might miss on some of the dependencies and building might fail.
-
