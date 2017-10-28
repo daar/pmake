@@ -29,6 +29,10 @@ msgstr "Credits"
 msgid "License"
 msgstr "Licentie"
 
+#: taboutform.pmakeversionlabel.caption
+msgid "PMake version"
+msgstr ""
+
 #: taboutform.repositorylabel.caption
 msgid "Found on GitHub"
 msgstr "Te vinden op GitHub"

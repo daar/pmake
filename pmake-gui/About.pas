@@ -13,6 +13,7 @@ type
 
   TAboutForm = class(TForm)
     CompilerLabel: TLabel;
+    PMakeVersionLabel: TLabel;
     CreditsButton: TButton;
     LicenseButton: TButton;
     CloseButton: TButton;
@@ -39,7 +40,7 @@ var
 implementation
 
 uses
-  SysUtils, upmake, fpmkunit;
+  SysUtils, pmake_variables;
 
 {$R *.lfm}
 
@@ -52,7 +53,7 @@ end;
 
 procedure TAboutForm.RepositoryLabelClick(Sender: TObject);
 begin
-  OpenURL('https://github.com/daar/pmake');
+  OpenURL('http://daar.github.io/pmake');
 end;
 
 procedure TAboutForm.RepositoryLabelMouseEnter(Sender: TObject);
@@ -73,7 +74,8 @@ end;
 
 procedure TAboutForm.FormCreate(Sender: TObject);
 begin
-  CompilerLabel.Caption := Format('Current compiler: FPC %s %s-%s', [CompilerVersion, CPUToString(CPU), OSToString(OS)]);
+  PMakeVersionLabel.Caption := Format('PMake version: %s-%s', [PMAKE_VERSION, {$i git.inc}]);
+  CompilerLabel.Caption := Format('Compiled with: FPC %s %s-%s', [{$I %FPCVERSION%}, {$I %FPCTARGETCPU%}, {$I %FPCTARGETOS%}]);
 end;
 
 procedure TAboutForm.LicenseButtonClick(Sender: TObject);

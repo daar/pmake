@@ -11,12 +11,12 @@
    xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="328.46915mm"
-   height="228.60945mm"
-   viewBox="0 0 1163.8672 810.03333"
+   width="328.46921mm"
+   height="198.44698mm"
+   viewBox="0 0 1163.8674 703.15844"
    id="svg2"
    version="1.1"
-   inkscape:version="0.91 r13725"
+   inkscape:version="0.92.2 (5c3e80d, 2017-08-06)"
    sodipodi:docname="pmake_logo_ver.svg"
    inkscape:export-filename="/home/darius/pmake_logo_ver.png"
    inkscape:export-xdpi="84.378723"
@@ -150,21 +150,22 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.25000001"
-     inkscape:cx="130.49047"
-     inkscape:cy="-227.22632"
+     inkscape:zoom="0.3535534"
+     inkscape:cx="445.97977"
+     inkscape:cy="579.12741"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:window-width="1309"
-     inkscape:window-height="747"
-     inkscape:window-x="57"
-     inkscape:window-y="21"
+     inkscape:window-width="1299"
+     inkscape:window-height="713"
+     inkscape:window-x="67"
+     inkscape:window-y="27"
      inkscape:window-maximized="1"
      fit-margin-top="10"
      fit-margin-left="10"
      fit-margin-right="10"
-     fit-margin-bottom="10" />
+     fit-margin-bottom="10"
+     showguides="false" />
   <metadata
      id="metadata7">
     <rdf:RDF>
@@ -181,54 +182,55 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-63.325025,-1740.6474)">
+     transform="translate(-63.325033,-1740.6473)">
     <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:100;font-stretch:normal;font-size:364.7250061px;line-height:125%;font-family:Trench;-inkscape-font-specification:'Trench, Thin';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#535353;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       style="font-style:normal;font-variant:normal;font-weight:100;font-stretch:normal;line-height:0%;font-family:Trench;-inkscape-font-specification:'Trench, Thin';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#535353;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        x="98.758102"
-       y="2514.8831"
+       y="2408.0081"
        id="text6274"
-       sodipodi:linespacing="125%"><tspan
+       inkscape:export-xdpi="28.852634"
+       inkscape:export-ydpi="28.852634"><tspan
          sodipodi:role="line"
          id="tspan6276"
          x="98.758102"
-         y="2514.8831"
+         y="2408.0081"
          style="font-style:normal;font-variant:normal;font-weight:100;font-stretch:normal;font-size:364.7250061px;line-height:125%;font-family:Trench;-inkscape-font-specification:'Trench, Thin';text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#535353;fill-opacity:1">PMAKE</tspan></text>
     <g
        id="g5081"
        inkscape:export-filename="/home/darius/Documents/pmake/logo.png"
        inkscape:export-xdpi="28.852634"
        inkscape:export-ydpi="28.852634"
-       transform="translate(585.81445,-1704.0002)">
+       transform="translate(583.64446,-1704.0002)">
       <path
          inkscape:connector-curvature="0"
          id="path4351-2-9"
-         d="m -124.30181,3550.9193 201.5,288.5 0,0"
+         d="m -124.30181,3550.9193 201.5,288.5 v 0"
          style="fill:#999999;fill-rule:evenodd;stroke:#9c9c9c;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
       <path
          inkscape:connector-curvature="0"
          id="path4355-9-0"
-         d="m -18.30181,3481.4193 277,140 0,0"
+         d="m -18.30181,3481.4193 277,140 v 0"
          style="fill:#999999;fill-rule:evenodd;stroke:#9c9c9c;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
       <path
          inkscape:connector-curvature="0"
          id="path4353-3-5"
-         d="m -71.30181,3516.9193 244,207.5 0,0"
+         d="m -71.30181,3516.9193 244,207.5 v 0"
          style="fill:#999999;fill-rule:evenodd;stroke:#9c9c9c;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
       <path
          inkscape:connector-curvature="0"
          id="path4357-6-1"
-         d="m 207.19819,3542.4193 -242,298 0,0"
+         d="m 207.19819,3542.4193 -242,298 v 0"
          style="fill:#999999;fill-rule:evenodd;stroke:#9c9c9c;stroke-width:3.50000048;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
       <path
          inkscape:connector-curvature="0"
          id="path4359-5-7"
-         d="m -103.80181,3742.4193 257.5,-227.5 0,0"
+         d="m -103.80181,3742.4193 257.5,-227.5 v 0"
          style="fill:#999999;fill-rule:evenodd;stroke:#9c9c9c;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
       <path
          inkscape:connector-curvature="0"
          id="path4361-7-1"
-         d="m 103.19819,3488.9193 -238.5,162.5 0,0"
+         d="m 103.19819,3488.9193 -238.5,162.5 v 0"
          style="fill:#999999;fill-rule:evenodd;stroke:#9c9c9c;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
       <circle
          r="31.25141"

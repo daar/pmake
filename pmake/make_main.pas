@@ -8,6 +8,7 @@ uses
   Classes, SysUtils;
 
 procedure make_execute;
+procedure search_pmake(const path: string);
 
 implementation
 

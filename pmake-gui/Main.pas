@@ -6,8 +6,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls,
-  ComCtrls, EditBtn, ButtonPanel, ExtCtrls, Menus, LCLTranslator, DefaultTranslator,
-  upmake;
+  ComCtrls, EditBtn, ButtonPanel, ExtCtrls, Menus, LCLTranslator, DefaultTranslator;
 
 type
 
@@ -79,7 +78,7 @@ implementation
 {$R *.lfm}
 
 uses
-  About;
+  About, pmake_variables, make_main, pmake_utilities;
 
 { TPMakeGUIForm }
 
@@ -140,7 +139,7 @@ procedure TPMakeGUIForm.FormCreate(Sender: TObject);
 //var
 //  menuItem : TMenuItem;
 begin
-  Caption := Format('PMake %s', [PMakeVersion]);
+  Caption := Format('PMake %s', [PMAKE_VERSION]);
 
   //menuItem := TMenuItem.Create(LanguagesMenuItem) ;
   //menuItem.Caption := 'Dutch';

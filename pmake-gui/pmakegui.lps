@@ -2,7 +2,7 @@
 <CONFIG>
   <ProjectSession>
     <PathDelim Value="\"/>
-    <Version Value="9"/>
+    <Version Value="10"/>
     <BuildModes Active="Default"/>
     <Units Count="16">
       <Unit0>
@@ -16,12 +16,9 @@
         <ComponentName Value="PMakeGUIForm"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <IsVisibleTab Value="True"/>
-        <TopLine Value="134"/>
         <CursorPos X="9" Y="135"/>
         <UsageCount Value="68"/>
         <Loaded Value="True"/>
-        <LoadedDesigner Value="True"/>
       </Unit1>
       <Unit2>
         <Filename Value="About.pas"/>
@@ -29,9 +26,11 @@
         <ComponentName Value="AboutForm"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <EditorIndex Value="-1"/>
-        <CursorPos X="68" Y="4"/>
+        <EditorIndex Value="1"/>
+        <TopLine Value="33"/>
+        <CursorPos X="11" Y="42"/>
         <UsageCount Value="67"/>
+        <Loaded Value="True"/>
       </Unit2>
       <Unit3>
         <Filename Value="License.pas"/>
@@ -123,14 +122,16 @@
       </Unit14>
       <Unit15>
         <Filename Value="pmakegui.lps"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="87"/>
-        <CursorPos X="35" Y="91"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="2"/>
+        <TopLine Value="65"/>
+        <CursorPos X="78" Y="74"/>
         <UsageCount Value="10"/>
+        <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="XML"/>
       </Unit15>
     </Units>
-    <JumpHistory Count="8" HistoryIndex="7">
+    <JumpHistory Count="10" HistoryIndex="9">
       <Position1>
         <Filename Value="Main.pas"/>
         <Caret Line="102" Column="37" TopLine="83"/>
@@ -163,6 +164,14 @@
         <Filename Value="Main.pas"/>
         <Caret Line="105" Column="41" TopLine="89"/>
       </Position8>
+      <Position9>
+        <Filename Value="About.pas"/>
+        <Caret Line="4" Column="68"/>
+      </Position9>
+      <Position10>
+        <Filename Value="pmakegui.lps"/>
+        <Caret Line="91" Column="35" TopLine="87"/>
+      </Position10>
     </JumpHistory>
   </ProjectSession>
 </CONFIG>
