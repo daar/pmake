@@ -1,6 +1,6 @@
 unit depsolver;
 
-{$mode objfpc}{$H+}
+{$mode objfpc}{$H-}
 
 interface
 

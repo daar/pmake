@@ -1,6 +1,6 @@
 unit pmake_utilities;
 
-{$mode objfpc}{$H+}
+{$mode objfpc}{$H-}
 
 interface
 
@@ -52,22 +52,27 @@ begin
     message(FATAL_ERROR, 'fatal error: failed to create directory "' + Result + '"');
 end;
 
-function GetCompilerInfo(const ACompiler, AOptions: string; ReadStdErr: boolean): string;
+function GetCompilerInfo(const ACompiler, AOptions: string): string;
 const
   BufSize = 1024;
 var
-  S: TProcess;
+  AProcess: TProcess;
   Buf: array [0..BufSize - 1] of char;
   Count: longint;
 begin
-  S := TProcess.Create(nil);
-  S.Commandline := ACompiler + ' ' + AOptions;
-  S.Options := [poUsePipes];
-  S.Execute;
-  Count := s.output.Read(buf, BufSize);
-  if (Count = 0) and ReadStdErr then
-    Count := s.Stderr.Read(buf, BufSize);
-  S.Free;
+  AProcess := TProcess.Create(nil);
+  AProcess.Executable := ACompiler;
+
+  if AOptions <> '' then
+    AProcess.Parameters.DelimitedText := AOptions;
+
+  AProcess.Options := [poUsePipes];
+  AProcess.Execute;
+
+  Count := AProcess.Output.Read(buf, BufSize);
+
+  AProcess.Free;
+
   SetLength(Result, Count);
   Move(Buf, Result[1], Count);
 end;
@@ -75,13 +80,12 @@ end;
 procedure CompilerDefaults;
 var
   infoSL: TStringList;
-  s: string;
 begin
   // Detect compiler version/target from -i option
   infosl := TStringList.Create;
   infosl.Delimiter := ' ';
 
-  infosl.DelimitedText := GetCompilerInfo(val_('PMAKE_PAS_COMPILER'), '-iVTPTO', False);
+  infosl.DelimitedText := GetCompilerInfo(val_('PMAKE_PAS_COMPILER'), '-iVTPTO');
 
   if infosl.Count <> 3 then
     message(FATAL_ERROR, 'fatal error: compiler returns invalid information, check if fpc -iV works');
@@ -120,7 +124,10 @@ begin
     BytesRead := AProcess.Output.Read(Buffer, BUF_SIZE);
     sStream.Write(Buffer, BytesRead);
     sStream.Position := 0;
-    callback(sStream.DataString);
+
+    if callback <> nil then
+      callback(sStream.DataString);
+
     sStream.Size := 0;
   until BytesRead = 0;
 

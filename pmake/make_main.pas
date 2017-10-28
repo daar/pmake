@@ -1,6 +1,6 @@
 unit make_main;
 
-{$mode objfpc}{$H+}
+{$mode objfpc}{$H-}
 
 interface
 

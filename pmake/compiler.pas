@@ -1,6 +1,6 @@
 unit compiler;
 
-{$mode objfpc}{$H+}
+{$mode objfpc}{$H-}
 
 interface
 

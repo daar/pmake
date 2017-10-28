@@ -1,6 +1,6 @@
 program pmake;
 
-{$mode objfpc}{$H+}
+{$mode objfpc}{$H-}
 
 uses
 {$IFDEF UNIX}

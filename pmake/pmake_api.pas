@@ -1,6 +1,6 @@
 unit pmake_api;
 
-{$mode objfpc}{$H+}
+{$mode objfpc}{$H-}
 
 interface
 
@@ -41,7 +41,7 @@ var
   i: integer;
 begin
   for i := Low(depends) to High(depends) do
-    add_dependency_to_cache(depcache, pkgname, string(depends[i].VAnsiString));
+    add_dependency_to_cache(depcache, pkgname, depends[i].VString^);
 end;
 
 procedure add_executable(pkgname, executable, srcfile: string; depends: array of const);
@@ -85,7 +85,7 @@ begin
     cmd := allocmem(sizeof(ExecutableCommand));
 
     cmd^.command := ctUnit;
-    cmd^.filename := string(srcfiles[i].VAnsiString);
+    cmd^.filename := srcfiles[i].VString^;
 
     //add the command to the package
     pkg^.commands.Add(cmd);

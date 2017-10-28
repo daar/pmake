@@ -1,6 +1,6 @@
 unit pmake_variables;
 
-{$mode objfpc}{$H+}
+{$mode objfpc}{$H-}
 
 interface
 
@@ -27,18 +27,15 @@ const
 //The version number combined, eg. 2.8.4.20110222-ged5ba for a Nightly build. or 2.8.4 for a Release build.
 function PMAKE_VERSION: string; inline;
 
-type
-  string255 = string[255];
+procedure set_(name: string; value: boolean);
+procedure set_(name: string; value: integer);
+procedure set_(name: string; value: string);
+procedure set_(name: string; value: double);
 
-procedure set_(name: string255; value: boolean);
-procedure set_(name: string255; value: integer);
-procedure set_(name: string255; value: string255);
-procedure set_(name: string255; value: double);
-
-function val_(name: string255): string255;
-function val_(name: string255): boolean;
-function val_(name: string255): integer;
-function val_(name: string255): double;
+function val_(name: string): string;
+function val_(name: string): boolean;
+function val_(name: string): integer;
+function val_(name: string): double;
 
 procedure replace_variable_macros(var tmp: string);
 
@@ -67,7 +64,7 @@ type
   PMK_boolean = record
     next, prev: pointer;
     type_: PMK_type;
-    name: string255;
+    name: string;
     value: boolean;
   end;
 
@@ -76,7 +73,7 @@ type
   PMK_integer = record
     next, prev: pointer;
     type_: PMK_type;
-    name: string255;
+    name: string;
     value: integer;
   end;
 
@@ -85,7 +82,7 @@ type
   PMK_string = record
     next, prev: pointer;
     type_: PMK_type;
-    name: string255;
+    name: string;
     value: string;
   end;
 
@@ -94,12 +91,10 @@ type
   PMK_double = record
     next, prev: pointer;
     type_: PMK_type;
-    name: string255;
+    name: string;
     value: double;
     Count: integer;
   end;
-
-  pPMK_ListBase = ^PMK_ListBase;
 
   PMK_ListBase = record
     first, last: pointer;
@@ -160,7 +155,7 @@ begin
   varlist.last := link;
 end;
 
-procedure delete_variable(name: string255);
+procedure delete_variable(name: string);
 var
   v: pPMK_boolean;
 begin
@@ -178,7 +173,7 @@ begin
   end;
 end;
 
-function find_variable(name: string255): pointer;
+function find_variable(name: string): pointer;
 var
   v: pPMK_boolean;
 begin
@@ -195,7 +190,7 @@ begin
   exit(nil);
 end;
 
-procedure set_(name: string255; value: boolean);
+procedure set_(name: string; value: boolean);
 var
   v: pPMK_boolean;
 begin
@@ -216,7 +211,7 @@ begin
   addtail(v);
 end;
 
-procedure set_(name: string255; value: integer);
+procedure set_(name: string; value: integer);
 var
   v: pPMK_integer;
 begin
@@ -237,7 +232,7 @@ begin
   addtail(v);
 end;
 
-procedure set_(name: string255; value: string255);
+procedure set_(name: string; value: string);
 var
   v: pPMK_string;
 begin
@@ -258,7 +253,7 @@ begin
   addtail(v);
 end;
 
-procedure set_(name: string255; value: double);
+procedure set_(name: string; value: double);
 var
   v: pPMK_double;
 begin
@@ -279,7 +274,7 @@ begin
   addtail(v);
 end;
 
-function val_(name: string255): boolean;
+function val_(name: string): boolean;
 var
   v: pPMK_boolean;
 begin
@@ -291,7 +286,7 @@ begin
     exit(False);
 end;
 
-function val_(name: string255): integer;
+function val_(name: string): integer;
 var
   v: pPMK_integer;
 begin
@@ -303,7 +298,7 @@ begin
     exit(0);
 end;
 
-function val_(name: string255): string255;
+function val_(name: string): string;
 var
   v: pPMK_string;
 begin
@@ -315,7 +310,7 @@ begin
     exit('');
 end;
 
-function val_(name: string255): double;
+function val_(name: string): double;
 var
   v: pPMK_double;
 begin
@@ -354,17 +349,9 @@ end;
 function PMAKE_VERSION: string; inline;
 begin
   if PMAKE_TWEAK_VERSION <> 0 then
-    PMAKE_VERSION := Format('%d.%d.%d.%d', [PMAKE_MAJOR_VERSION,
-      PMAKE_MINOR_VERSION, PMAKE_PATCH_VERSION, PMAKE_TWEAK_VERSION])
+    PMAKE_VERSION := Format('%d.%d.%d.%d', [PMAKE_MAJOR_VERSION, PMAKE_MINOR_VERSION, PMAKE_PATCH_VERSION, PMAKE_TWEAK_VERSION])
   else
-    PMAKE_VERSION := Format('%d.%d.%d', [PMAKE_MAJOR_VERSION,
-      PMAKE_MINOR_VERSION, PMAKE_PATCH_VERSION]);
-end;
-
-function FREEPASCAL: boolean; inline;
-begin
-  exit(True);
-  {$note need to implement!}
+    PMAKE_VERSION := Format('%d.%d.%d', [PMAKE_MAJOR_VERSION, PMAKE_MINOR_VERSION, PMAKE_PATCH_VERSION]);
 end;
 
 procedure pmakecache_write;
@@ -385,23 +372,23 @@ begin
     case v^.type_ of
       ptBoolean:
       begin
-        cache.Getvalue(v^.name + '/type', 'boolean');
-        cache.Getvalue(v^.name + '/value', v^.value);
+        cache.Getvalue(widestring(v^.name + '/type'), 'boolean');
+        cache.Getvalue(widestring(v^.name + '/value'), v^.value);
       end;
       ptInteger:
       begin
-        cache.Getvalue(v^.name + '/type', 'integer');
-        cache.Setvalue(v^.name + '/value', pPMK_integer(v)^.value);
+        cache.Getvalue(widestring(v^.name + '/type'), 'integer');
+        cache.Setvalue(widestring(v^.name + '/value'), pPMK_integer(v)^.value);
       end;
       ptString:
       begin
-        cache.Getvalue(v^.name + '/type', 'string');
-        cache.Setvalue(v^.name + '/value', pPMK_string(v)^.value);
+        cache.Getvalue(widestring(v^.name + '/type'), 'string');
+        cache.Setvalue(widestring(v^.name + '/value'), widestring(pPMK_string(v)^.value));
       end;
       ptDouble:
       begin
-        cache.Getvalue(v^.name + '/type', 'double');
-        cache.Setvalue(v^.name + '/value', FloatToStr(pPMK_double(v)^.value));
+        cache.Getvalue(widestring(v^.name + '/type'), 'double');
+        cache.Setvalue(widestring(v^.name + '/value'), widestring(FloatToStr(pPMK_double(v)^.value)));
       end;
     end;
 
@@ -419,8 +406,8 @@ begin
       pmakecrc := crc32(0, @f.Text[1], length(f.Text));
       str(pmakecrc: 10, tmp);
 
-      cache.Setvalue(Format('PMake/item%d/path', [i + 1]), pmakefiles[i]);
-      cache.Setvalue(Format('PMake/item%d/crc', [i + 1]), pmakecrc);
+      cache.Setvalue(widestring(Format('PMake/item%d/path', [i + 1])), widestring(pmakefiles[i]));
+      cache.Setvalue(widestring(Format('PMake/item%d/crc', [i + 1])), pmakecrc);
     end;
     f.Free;
   end;
@@ -432,15 +419,15 @@ procedure pmakecache_read;
 begin
   //todo: rewrite this part, see pmakecache_write
   //see: http://wiki.lazarus.freepascal.org/XML_Tutorial#Usage_Examples
-  set_('PMAKE_SOURCE_DIR', cache.Getvalue('PMAKE_SOURCE_DIR/value', ''));
-  set_('PMAKE_CURRENT_SOURCE_DIR', cache.Getvalue('PMAKE_SOURCE_DIR/value', ''));
+  set_('PMAKE_SOURCE_DIR', string(cache.Getvalue('PMAKE_SOURCE_DIR/value', '')));
+  set_('PMAKE_CURRENT_SOURCE_DIR', string(cache.Getvalue('PMAKE_SOURCE_DIR/value', '')));
 
-  set_('PMAKE_BINARY_DIR', cache.Getvalue('PMAKE_BINARY_DIR/value', ''));
-  set_('PMAKE_CURRENT_BINARY_DIR', cache.Getvalue('PMAKE_BINARY_DIR/value', ''));
+  set_('PMAKE_BINARY_DIR', string(cache.Getvalue('PMAKE_BINARY_DIR/value', '')));
+  set_('PMAKE_CURRENT_BINARY_DIR', string(cache.Getvalue('PMAKE_BINARY_DIR/value', '')));
 
-  set_('PMAKE_PAS_COMPILER_VERSION', cache.Getvalue('PMAKE_PAS_COMPILER_VERSION/value', ''));
-  set_('PMAKE_HOST_SYSTEM_PROCESSOR', cache.Getvalue('PMAKE_HOST_SYSTEM_PROCESSOR/value', ''));
-  set_('PMAKE_HOST_SYSTEM_NAME', cache.Getvalue('PMAKE_HOST_SYSTEM_NAME/value', ''));
+  set_('PMAKE_PAS_COMPILER_VERSION', string(cache.Getvalue('PMAKE_PAS_COMPILER_VERSION/value', '')));
+  set_('PMAKE_HOST_SYSTEM_PROCESSOR', string(cache.Getvalue('PMAKE_HOST_SYSTEM_PROCESSOR/value', '')));
+  set_('PMAKE_HOST_SYSTEM_NAME', string(cache.Getvalue('PMAKE_HOST_SYSTEM_NAME/value', '')));
 end;
 
 end.
