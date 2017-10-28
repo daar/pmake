@@ -8,7 +8,7 @@ Install PMake
 There are two ways to get and install PMake on your machine. One way is to download and install the binary from GitHub (https://github.com/daar/pmake/releases). The release files are zip files and need to be copied to a location on your machine that is accessible from the command line. So either copy the folder contents to such a location or add the folder location which contains the binary and unit files to the PATH environment.
 
 .. NOTE::
-  Make sure you copy the location of the upmake folder relative to the PMake executable, so PMake can find them when compiling the build scripts.
+  Make sure you copy all files in the distribution, so PMake can find them when compiling the build scripts.
 
 .. NOTE::
   It's more convenient to use the install target of PMake to install the build tool to the correct location on your machine. See below for a detailed explanation on how to do it.
@@ -18,28 +18,28 @@ The other way to download the sources from https://github.com/daar/pmake/ via ei
 
 .. code:: bash
 
-  svn co https://github.com/daar/pmake.git
+  $ svn co https://github.com/daar/pmake.git
 
 or
 
 .. code:: bash
 
-  git clone https://github.com/daar/pmake
+  $ git clone https://github.com/daar/pmake
 
-Then you can compile PMake by doing
+Then you can compile PMake by doing the following, assuming you just cloned the repository.
 
 .. code:: bash
 
-  cd pmake
-  cd pmake
-  fpc pmake
+  $ cd pmake
+  $ cd pmake
+  $ fpc pmake
 
 To install PMake you need to invoke PMake to create *make* and then do a *make install*;
 
 .. code:: bash
 
-  ./pmake
-  sudo ./make install
+  $ ./pmake
+  $ sudo ./make install
 
 This command will allow you to install PMake to the correct platform specific location. On \*nix platforms you will need to provide the administrator password to have rights to install the files, hence *sudo*.
 
@@ -95,7 +95,15 @@ Now the project can be compiled by using the following commands;
 
 .. code:: bash
 
-  >./pmake
-  >./make install
+  $ pmake
+  $ ./make
 
-If all went well there will be two folders created in the root folder ./bin/x86_64-win64 and ./units/x86_64-win64 (in case you are working on a 64bit windows machine, using the 64bit FPC compiler). In the bin folder you will find an executable called hellodemo.exe.
+If all went well there will be two folders created in the root folder. In case you are working on a 64bit windows machine, using the 64bit FPC compiler you will see:
+
+
+.. code:: bash
+
+    ./bin/x86_64-win64
+    ./units/x86_64-win64
+
+The bin folder will contain the executable called `hellodemo.exe`, while the units folder will contain the compiled units.

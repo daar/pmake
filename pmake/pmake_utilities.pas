@@ -39,7 +39,7 @@ uses
 function UnitsOutputDir(BasePath: string): string;
 begin
   Result := macros_expand(BasePath + 'units' + DirectorySeparator +
-    '$(TargetCPU)-$(TargetOS)' + DirectorySeparator);
+    '$(PMAKE_HOST_SYSTEM_PROCESSOR)-$(PMAKE_HOST_SYSTEM_NAME)' + DirectorySeparator);
   if not ForceDirectories(Result) then
     message(FATAL_ERROR, 'fatal error: failed to create directory "' + Result + '"');
 end;
@@ -47,7 +47,7 @@ end;
 function BinOutputDir(BasePath: string): string;
 begin
   Result := macros_expand(BasePath + 'bin' + DirectorySeparator +
-    '$(TargetCPU)-$(TargetOS)' + DirectorySeparator);
+    '$(PMAKE_HOST_SYSTEM_PROCESSOR)-$(PMAKE_HOST_SYSTEM_NAME)' + DirectorySeparator);
   if not ForceDirectories(Result) then
     message(FATAL_ERROR, 'fatal error: failed to create directory "' + Result + '"');
 end;
@@ -145,11 +145,6 @@ var
 begin
   tmp := str;
   replace_variable_macros(tmp);
-
-  tmp := StringReplace(str, '$(TargetOS)', val_('PMAKE_HOST_SYSTEM_NAME'), [rfReplaceAll]);
-  tmp := StringReplace(tmp, '$(TargetCPU)', val_('PMAKE_HOST_SYSTEM_PROCESSOR'), [rfReplaceAll]);
-
-  tmp := StringReplace(tmp, '$(BASEDIR)', val_('PMAKE_SOURCE_DIR'), [rfReplaceAll]);
 
   if pkg <> nil then
   begin

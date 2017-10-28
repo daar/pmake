@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to PMake's documentation!
-=================================
+PMake Reference Manual
+======================
 
 PMake is a minimalistic yet powerfull build tool for (free) pascal.
 
