@@ -12,12 +12,6 @@ uses
   pmake_utilities,
   pmake_api;
 
-type
-  TCmdOption = record
-    name: string;
-    descr: string;
-  end;
-
 var
   str: TStrings;
   verbose: boolean = False;

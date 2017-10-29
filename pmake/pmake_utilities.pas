@@ -10,6 +10,11 @@ uses
   depsolver;
 
 type
+  TCmdOption = record
+    name: string;
+    descr: string;
+  end;
+
   //callback function for the command_execute function
   PMAKECommandFun = procedure(line: string; active: boolean);
 
