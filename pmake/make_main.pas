@@ -13,7 +13,7 @@ procedure search_pmake(const path: string);
 implementation
 
 uses
-  crc,
+  crc16,
   pmake_utilities, pmake_variables, pmake_api;
 
 var
@@ -45,10 +45,9 @@ function check_rebuild_make2: boolean;
 var
   i, idx: integer;
   f: TStrings;
-  pmakecrc: cardinal;
-  tmp: string;
+  pmakecrc: word;
   p: string;
-  c: cardinal;
+  c: word;
 begin
   if not FileExists('PMakeCache.txt') then
     exit(True);
@@ -64,11 +63,11 @@ begin
   f := TStringList.Create;
   for i := 0 to pmakefiles.Count - 1 do
   begin
-    p := cache.GetValue(Format('PMake/item%d/path', [i + 1]), '');
-    c := cache.GetValue(Format('PMake/item%d/crc', [i + 1]), 0);
+    p := cache.GetValue(widestring(Format('PMake/item%d/path', [i + 1])), widestring(''));
+    c := cache.GetValue(widestring(Format('PMake/item%d/crc', [i + 1])), 0);
 
     f.LoadFromFile(p);
-    pmakecrc := crc32(0, @f.Text[1], length(f.Text));
+    pmakecrc := crc_16(@f.Text[1], length(f.Text));
 
     idx := pmakefiles.IndexOf(p);
 

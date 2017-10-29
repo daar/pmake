@@ -51,7 +51,7 @@ var
 implementation
 
 uses
-  Classes, SysUtils, crc, pmake_utilities;
+  Classes, SysUtils, crc16, pmake_utilities;
 
 type
   PMK_type = (ptBoolean, ptInteger, ptString, ptDouble);
@@ -372,10 +372,9 @@ end;
 
 procedure pmakecache_write;
 var
-  pmakecrc: cardinal;
+  pmakecrc: word;
   f: TStrings;
   i: integer;
-  tmp: string;
   v: pPMK_boolean;
 begin
   cache.Clear;
@@ -419,8 +418,7 @@ begin
     for i := 0 to pmakefiles.Count - 1 do
     begin
       f.LoadFromFile(pmakefiles[i]);
-      pmakecrc := crc32(0, @f.Text[1], length(f.Text));
-      str(pmakecrc: 10, tmp);
+      pmakecrc := crc_16(@f.Text[1], length(f.Text));
 
       cache.Setvalue(widestring(Format('PMake/item%d/path', [i + 1])), widestring(pmakefiles[i]));
       cache.Setvalue(widestring(Format('PMake/item%d/crc', [i + 1])), pmakecrc);
