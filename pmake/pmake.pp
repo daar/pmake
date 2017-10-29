@@ -91,7 +91,7 @@ var
     //need to implement a propoper command line parser here
 
     set_('PMAKE_SOURCE_DIR', IncludeTrailingPathDelimiter(ExpandFileName(ParamStr(1))));
-    set_('PMAKE_BINARY_DIR', GetCurrentDir);
+    set_('PMAKE_BINARY_DIR', IncludeTrailingPathDelimiter(GetCurrentDir));
 
     verbose := True;
   end;
