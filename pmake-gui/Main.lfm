@@ -4,16 +4,16 @@ object PMakeGUIForm: TPMakeGUIForm
   Top = 180
   Width = 813
   Caption = 'PMake'
-  ClientHeight = 502
+  ClientHeight = 479
   ClientWidth = 813
   Menu = MainMenu
   OnCreate = FormCreate
   Position = poScreenCenter
-  LCLVersion = '1.6.0.4'
+  LCLVersion = '1.8.0.4'
   object ButtonPanel: TButtonPanel
     Left = 6
     Height = 37
-    Top = 459
+    Top = 436
     Width = 801
     OKButton.Name = 'OKButton'
     OKButton.DefaultCaption = True
@@ -30,25 +30,26 @@ object PMakeGUIForm: TPMakeGUIForm
   end
   object MessagePanel: TPanel
     Left = 0
-    Height = 152
+    Height = 129
     Top = 301
     Width = 813
     Align = alClient
     BevelOuter = bvNone
-    ClientHeight = 152
+    ClientHeight = 129
     ClientWidth = 813
     TabOrder = 1
     object GenerateButton: TButton
       AnchorSideLeft.Control = ConfigureButton
       AnchorSideLeft.Side = asrBottom
       AnchorSideTop.Control = MessagePanel
-      Left = 93
+      Left = 89
       Height = 29
       Top = 6
-      Width = 75
+      Width = 74
       AutoSize = True
       BorderSpacing.Around = 6
       Caption = 'Generate'
+      Enabled = False
       OnClick = GenerateButtonClick
       TabOrder = 0
     end
@@ -58,10 +59,11 @@ object PMakeGUIForm: TPMakeGUIForm
       Left = 6
       Height = 29
       Top = 6
-      Width = 81
+      Width = 77
       AutoSize = True
       BorderSpacing.Around = 6
       Caption = 'Configure'
+      Enabled = False
       OnClick = ConfigureButtonClick
       TabOrder = 1
     end
@@ -74,7 +76,7 @@ object PMakeGUIForm: TPMakeGUIForm
       AnchorSideBottom.Control = MessagePanel
       AnchorSideBottom.Side = asrBottom
       Left = 6
-      Height = 105
+      Height = 82
       Top = 41
       Width = 801
       Anchors = [akTop, akLeft, akRight, akBottom]
@@ -123,10 +125,10 @@ object PMakeGUIForm: TPMakeGUIForm
       AnchorSideTop.Side = asrBottom
       AnchorSideRight.Control = ConfigurePanel
       AnchorSideRight.Side = asrBottom
-      Left = 705
+      Left = 708
       Height = 29
       Top = 41
-      Width = 102
+      Width = 99
       Anchors = [akTop, akRight]
       AutoSize = True
       BorderSpacing.Around = 6
@@ -139,10 +141,10 @@ object PMakeGUIForm: TPMakeGUIForm
       AnchorSideLeft.Side = asrBottom
       AnchorSideTop.Control = ConfigurePanel
       AnchorSideRight.Control = BrowseSourceButton
-      Left = 149
+      Left = 147
       Height = 27
       Top = 6
-      Width = 539
+      Width = 544
       Anchors = [akTop, akLeft, akRight]
       BorderSpacing.Around = 6
       Enabled = False
@@ -153,10 +155,10 @@ object PMakeGUIForm: TPMakeGUIForm
       AnchorSideTop.Control = ConfigurePanel
       AnchorSideRight.Control = ConfigurePanel
       AnchorSideRight.Side = asrBottom
-      Left = 694
+      Left = 697
       Height = 29
       Top = 6
-      Width = 113
+      Width = 110
       Anchors = [akTop, akRight]
       AutoSize = True
       BorderSpacing.Around = 6
@@ -170,10 +172,10 @@ object PMakeGUIForm: TPMakeGUIForm
       AnchorSideTop.Control = BrowseSourceButton
       AnchorSideTop.Side = asrBottom
       AnchorSideRight.Control = BrowseBuildButton
-      Left = 115
+      Left = 112
       Height = 27
       Top = 41
-      Width = 584
+      Width = 590
       Anchors = [akTop, akLeft, akRight]
       BorderSpacing.Around = 6
       Enabled = False
@@ -186,7 +188,7 @@ object PMakeGUIForm: TPMakeGUIForm
       Left = 6
       Height = 17
       Top = 41
-      Width = 103
+      Width = 100
       BorderSpacing.Around = 6
       Caption = 'Binary location'
       ParentColor = False
@@ -197,7 +199,7 @@ object PMakeGUIForm: TPMakeGUIForm
       Left = 6
       Height = 17
       Top = 6
-      Width = 137
+      Width = 135
       BorderSpacing.Around = 6
       Caption = 'Source tree location'
       ParentColor = False
@@ -209,9 +211,10 @@ object PMakeGUIForm: TPMakeGUIForm
       Left = 6
       Height = 24
       Top = 74
-      Width = 86
+      Width = 85
       BorderSpacing.Around = 6
       Caption = 'Grouped'
+      Enabled = False
       TabOrder = 5
     end
   end

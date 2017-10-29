@@ -42,10 +42,11 @@
         <ComponentName Value="PMakeGUIForm"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <TopLine Value="163"/>
-        <CursorPos X="19" Y="172"/>
+        <TopLine Value="111"/>
+        <CursorPos X="46" Y="119"/>
         <UsageCount Value="70"/>
         <Loaded Value="True"/>
+        <LoadedDesigner Value="True"/>
       </Unit1>
       <Unit2>
         <Filename Value="About.pas"/>
@@ -53,9 +54,10 @@
         <ComponentName Value="AboutForm"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
+        <IsVisibleTab Value="True"/>
         <EditorIndex Value="1"/>
-        <TopLine Value="70"/>
-        <CursorPos X="28" Y="43"/>
+        <TopLine Value="67"/>
+        <CursorPos X="50" Y="77"/>
         <UsageCount Value="69"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -166,10 +168,9 @@
       </Unit16>
       <Unit17>
         <Filename Value="..\pmake\pmake_utilities.pas"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="2"/>
         <TopLine Value="7"/>
-        <CursorPos X="25" Y="10"/>
+        <CursorPos X="45" Y="19"/>
         <UsageCount Value="11"/>
         <Loaded Value="True"/>
       </Unit17>
@@ -187,127 +188,123 @@
         <UsageCount Value="10"/>
       </Unit19>
     </Units>
-    <JumpHistory Count="30" HistoryIndex="29">
+    <JumpHistory Count="29" HistoryIndex="28">
       <Position1>
         <Filename Value="Main.pas"/>
-        <Caret Line="133" Column="8" TopLine="119"/>
+        <Caret Line="99" Column="3" TopLine="90"/>
       </Position1>
       <Position2>
         <Filename Value="Main.pas"/>
-        <Caret Line="9" Column="57"/>
+        <Caret Line="100" Column="15" TopLine="92"/>
       </Position2>
       <Position3>
-        <Filename Value="Main.pas"/>
-        <Caret Line="10" Column="13" TopLine="3"/>
+        <Filename Value="..\pmake\make_main.pas"/>
+        <Caret Line="11" Column="19" TopLine="7"/>
       </Position3>
       <Position4>
-        <Filename Value="Main.pas"/>
-        <Caret Line="105" Column="41" TopLine="90"/>
+        <Filename Value="..\pmake\make_main.pas"/>
+        <Caret Line="83" Column="3" TopLine="82"/>
       </Position4>
       <Position5>
-        <Filename Value="Main.pas"/>
-        <Caret Line="138" Column="41" TopLine="133"/>
+        <Filename Value="..\pmake\pmake_variables.pas"/>
+        <Caret Line="19" Column="45" TopLine="14"/>
       </Position5>
       <Position6>
-        <Filename Value="Main.pas"/>
-        <Caret Line="5" Column="29"/>
+        <Filename Value="..\pmake\pmake_variables.pas"/>
+        <Caret Line="428" Column="87" TopLine="416"/>
       </Position6>
       <Position7>
-        <Filename Value="Main.pas"/>
-        <Caret Line="105" Column="41" TopLine="89"/>
+        <Filename Value="About.pas"/>
+        <Caret Line="76" Column="93" TopLine="69"/>
       </Position7>
       <Position8>
-        <Filename Value="About.pas"/>
-        <Caret Line="4" Column="68"/>
+        <Filename Value="..\pmake\pmake_utilities.pas"/>
+        <Caret Column="21"/>
       </Position8>
       <Position9>
         <Filename Value="About.pas"/>
-        <Caret Line="42" Column="11" TopLine="33"/>
+        <Caret Line="76" Column="112" TopLine="67"/>
       </Position9>
       <Position10>
-        <Filename Value="Main.pas"/>
-        <Caret Line="9" Column="84"/>
+        <Filename Value="About.pas"/>
+        <Caret Line="77" Column="91" TopLine="68"/>
       </Position10>
       <Position11>
-        <Filename Value="About.pas"/>
-        <Caret Line="42" Column="28" TopLine="34"/>
+        <Filename Value="Main.pas"/>
+        <Caret Line="167" Column="16" TopLine="163"/>
       </Position11>
       <Position12>
-        <Filename Value="About.pas"/>
-        <Caret Line="76" Column="70" TopLine="40"/>
+        <Filename Value="Main.pas"/>
+        <Caret Line="112" TopLine="108"/>
       </Position12>
       <Position13>
-        <Filename Value="About.pas"/>
-        <Caret Line="42" Column="45" TopLine="37"/>
+        <Filename Value="Main.pas"/>
+        <Caret Line="120" TopLine="107"/>
       </Position13>
       <Position14>
-        <Filename Value="About.pas"/>
-        <Caret Line="76" Column="153" TopLine="56"/>
+        <Filename Value="Main.pas"/>
+        <Caret Line="112" TopLine="107"/>
       </Position14>
       <Position15>
-        <Filename Value="..\pmake\pmake_variables.pas"/>
-        <Caret Line="428" Column="35" TopLine="394"/>
+        <Filename Value="Main.pas"/>
+        <Caret Line="96" TopLine="90"/>
       </Position15>
       <Position16>
         <Filename Value="Main.pas"/>
-        <Caret Line="142" Column="47" TopLine="140"/>
+        <Caret Line="97" TopLine="90"/>
       </Position16>
       <Position17>
         <Filename Value="Main.pas"/>
-        <Caret Line="99" Column="3" TopLine="83"/>
+        <Caret Line="100" Column="38" TopLine="90"/>
       </Position17>
       <Position18>
         <Filename Value="Main.pas"/>
-        <Caret Line="102" Column="17" TopLine="94"/>
+        <Caret Line="93" Column="24" TopLine="90"/>
       </Position18>
       <Position19>
         <Filename Value="Main.pas"/>
-        <Caret Line="81" Column="25" TopLine="77"/>
+        <Caret Line="115" TopLine="106"/>
       </Position19>
       <Position20>
         <Filename Value="Main.pas"/>
-        <Caret Line="99" Column="3" TopLine="90"/>
+        <Caret Line="96" TopLine="87"/>
       </Position20>
       <Position21>
         <Filename Value="Main.pas"/>
-        <Caret Line="100" Column="15" TopLine="92"/>
+        <Caret Line="97" TopLine="87"/>
       </Position21>
       <Position22>
-        <Filename Value="..\pmake\make_main.pas"/>
-        <Caret Line="11" Column="19" TopLine="7"/>
+        <Filename Value="Main.pas"/>
+        <Caret Line="99" TopLine="87"/>
       </Position22>
       <Position23>
-        <Filename Value="..\pmake\make_main.pas"/>
-        <Caret Line="83" Column="3" TopLine="82"/>
+        <Filename Value="Main.pas"/>
+        <Caret Line="100" TopLine="87"/>
       </Position23>
       <Position24>
-        <Filename Value="..\pmake\pmake_variables.pas"/>
-        <Caret Line="19" Column="45" TopLine="14"/>
+        <Filename Value="Main.pas"/>
+        <Caret Line="102" TopLine="87"/>
       </Position24>
       <Position25>
-        <Filename Value="..\pmake\pmake_variables.pas"/>
-        <Caret Line="428" Column="87" TopLine="416"/>
+        <Filename Value="Main.pas"/>
+        <Caret Line="103" TopLine="88"/>
       </Position25>
       <Position26>
-        <Filename Value="About.pas"/>
-        <Caret Line="76" Column="93" TopLine="69"/>
+        <Filename Value="Main.pas"/>
+        <Caret Line="105" TopLine="90"/>
       </Position26>
       <Position27>
-        <Filename Value="..\pmake\pmake_utilities.pas"/>
-        <Caret Column="21"/>
+        <Filename Value="Main.pas"/>
+        <Caret Line="107" TopLine="93"/>
       </Position27>
       <Position28>
-        <Filename Value="About.pas"/>
-        <Caret Line="76" Column="112" TopLine="67"/>
+        <Filename Value="Main.pas"/>
+        <Caret Line="117" TopLine="108"/>
       </Position28>
       <Position29>
-        <Filename Value="About.pas"/>
-        <Caret Line="77" Column="91" TopLine="68"/>
+        <Filename Value="Main.pas"/>
+        <Caret Line="125" Column="33" TopLine="123"/>
       </Position29>
-      <Position30>
-        <Filename Value="About.pas"/>
-        <Caret Line="43" Column="28" TopLine="70"/>
-      </Position30>
     </JumpHistory>
   </ProjectOptions>
   <CompilerOptions>
@@ -330,7 +327,7 @@
     </Linking>
   </CompilerOptions>
   <Debugging>
-    <BreakPoints Count="3">
+    <BreakPoints Count="2">
       <Item1>
         <Kind Value="bpkSource"/>
         <WatchScope Value="wpsLocal"/>
@@ -343,15 +340,8 @@
         <WatchScope Value="wpsLocal"/>
         <WatchKind Value="wpkWrite"/>
         <Source Value="Main.pas"/>
-        <Line Value="110"/>
+        <Line Value="123"/>
       </Item2>
-      <Item3>
-        <Kind Value="bpkSource"/>
-        <WatchScope Value="wpsLocal"/>
-        <WatchKind Value="wpkWrite"/>
-        <Source Value="Main.pas"/>
-        <Line Value="116"/>
-      </Item3>
     </BreakPoints>
     <Exceptions Count="3">
       <Item1>

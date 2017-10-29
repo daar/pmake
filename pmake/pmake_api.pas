@@ -1,6 +1,6 @@
 unit pmake_api;
 
-{$mode objfpc}{$H-}
+{$mode objfpc}{$H+}
 
 interface
 
@@ -41,7 +41,7 @@ var
   i: integer;
 begin
   for i := Low(depends) to High(depends) do
-    add_dependency_to_cache(depcache, pkgname, depends[i].VString^);
+    add_dependency_to_cache(depcache, pkgname, AnsiString(depends[I].VAnsiString));
 end;
 
 procedure add_executable(pkgname, executable, srcfile: string; depends: array of const);
@@ -80,12 +80,12 @@ begin
   pkg := find_or_create_package(pkglist, pkgname, val_('PMAKE_CURRENT_SOURCE_DIR'), val_('PMAKE_CURRENT_BINARY_DIR'));
 
   //for each source file add a command to the package
-  for i := Low(srcfiles) to High(srcfiles) do
+  for i := 0 to High(srcfiles) do
   begin
     cmd := allocmem(sizeof(ExecutableCommand));
 
     cmd^.command := ctUnit;
-    cmd^.filename := srcfiles[i].VString^;
+    cmd^.filename := AnsiString(srcfiles[I].VAnsiString);
 
     //add the command to the package
     pkg^.commands.Add(cmd);
@@ -116,8 +116,7 @@ begin
   instlist.Add(cmd);
 end;
 
-procedure add_custom_command(pkgname, executable, parameters: string;
-  depends: array of const);
+procedure add_custom_command(pkgname, executable, parameters: string; depends: array of const);
 var
   cmd: pCustomCommand;
   pkg: pPackage;

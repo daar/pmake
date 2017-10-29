@@ -1,6 +1,6 @@
 unit pmake_utilities;
 
-{$mode objfpc}{$H-}
+{$mode objfpc}{$H+}
 
 interface
 
@@ -11,7 +11,7 @@ uses
 
 type
   //callback function for the command_execute function
-  PMAKECommandFun = procedure(line: string);
+  PMAKECommandFun = procedure(line: string; active: boolean);
 
 procedure pmake_initialize;
 
@@ -126,7 +126,7 @@ begin
     sStream.Position := 0;
 
     if callback <> nil then
-      callback(sStream.DataString);
+      callback(sStream.DataString, AProcess.Running);
 
     sStream.Size := 0;
   until BytesRead = 0;

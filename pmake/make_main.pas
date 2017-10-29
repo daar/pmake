@@ -1,6 +1,6 @@
 unit make_main;
 
-{$mode objfpc}{$H-}
+{$mode objfpc}{$H+}
 
 interface
 
@@ -21,18 +21,24 @@ var
   verbose: boolean = False;
 
 //parsing FPC output
-procedure command_callback(line: string);
+procedure command_callback(line: string; active: boolean);
 begin
   sline.Text := sline.Text + line;
 
-  while sline.Count > 0 do
+  while sline.Count > 1 do
   begin
     writeln(sline[0]);
     sline.Delete(0);
   end;
 
-  if (sline.Count > 0) and (line = '') then
-    writeln(sline[0]);
+  if not active then
+  begin
+    while sline.Count > 0 do
+    begin
+      writeln(sline[0]);
+      sline.Delete(0);
+    end;
+  end;
 end;
 
 function check_rebuild_make2: boolean;
@@ -45,6 +51,9 @@ var
   c: cardinal;
 begin
   if not FileExists('PMakeCache.txt') then
+    exit(True);
+
+  if not FileExists(macros_expand('make2$(EXE)')) then
     exit(True);
 
   //return true if the PMake.txt is count is different
@@ -141,9 +150,8 @@ begin
   param.Add(src_name);
   param.Add(macros_expand('-omake2$(EXE)'));
 
-  param.Delimiter := ' ';
   if verbose then
-    writeln('-- Executing ', val_('PMAKE_PAS_COMPILER'), ' ', param.DelimitedText);
+    writeln('-- Executing ', val_('PMAKE_PAS_COMPILER'), ' ', param.Text);
 
   sline := TStringList.Create;
   exit_code := command_execute(val_('PMAKE_PAS_COMPILER'), param, @command_callback);
@@ -161,7 +169,7 @@ begin
   DeleteFile(ChangeFileExt(src_name, '.o'));
 
   if exit_code <> 0 then
-    message(FATAL_ERROR, 'fatal error: cannot compile ' + macros_expand('-omake$(EXE)'));
+    message(FATAL_ERROR, 'fatal error: cannot compile ' + macros_expand('make2$(EXE)'));
 end;
 
 procedure parse_commandline;
@@ -195,7 +203,7 @@ begin
   pmakefiles.Free;
 
   if exit_code <> 0 then
-    message(FATAL_ERROR, 'fatal error: cannot compile ' + macros_expand('make2$(EXE)'));
+    message(FATAL_ERROR, 'fatal error: cannot execute ' + macros_expand('make2$(EXE)'));
 end;
 
 end.

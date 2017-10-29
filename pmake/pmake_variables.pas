@@ -1,6 +1,6 @@
 unit pmake_variables;
 
-{$mode objfpc}{$H-}
+{$mode objfpc}{$H+}
 
 interface
 
@@ -27,15 +27,18 @@ const
 //The version number combined, eg. 2.8.4.20110222-ged5ba for a Nightly build. or 2.8.4 for a Release build.
 function PMAKE_VERSION: string; inline;
 
-procedure set_(name: string; value: boolean);
-procedure set_(name: string; value: integer);
-procedure set_(name: string; value: string);
-procedure set_(name: string; value: double);
+procedure set_(name: shortstring; value: boolean);
+procedure set_(name: shortstring; value: integer);
+procedure set_(name: shortstring; value: shortstring);
+procedure set_(name: shortstring; value: double);
 
-function val_(name: string): string;
-function val_(name: string): boolean;
-function val_(name: string): integer;
-function val_(name: string): double;
+function val_(name: shortstring): shortstring;
+function val_(name: shortstring): boolean;
+function val_(name: shortstring): integer;
+function val_(name: shortstring): double;
+
+procedure option(option_variable, description: shortstring; initial_value: boolean);
+function option(option_variable: shortstring): boolean;
 
 procedure replace_variable_macros(var tmp: string);
 
@@ -64,7 +67,7 @@ type
   PMK_boolean = record
     next, prev: pointer;
     type_: PMK_type;
-    name: string;
+    name: shortstring;
     value: boolean;
   end;
 
@@ -73,7 +76,7 @@ type
   PMK_integer = record
     next, prev: pointer;
     type_: PMK_type;
-    name: string;
+    name: shortstring;
     value: integer;
   end;
 
@@ -82,7 +85,7 @@ type
   PMK_string = record
     next, prev: pointer;
     type_: PMK_type;
-    name: string;
+    name: shortstring;
     value: string;
   end;
 
@@ -91,7 +94,7 @@ type
   PMK_double = record
     next, prev: pointer;
     type_: PMK_type;
-    name: string;
+    name: shortstring;
     value: double;
     Count: integer;
   end;
@@ -155,7 +158,7 @@ begin
   varlist.last := link;
 end;
 
-procedure delete_variable(name: string);
+procedure delete_variable(name: shortstring);
 var
   v: pPMK_boolean;
 begin
@@ -173,7 +176,7 @@ begin
   end;
 end;
 
-function find_variable(name: string): pointer;
+function find_variable(name: shortstring): pointer;
 var
   v: pPMK_boolean;
 begin
@@ -190,7 +193,7 @@ begin
   exit(nil);
 end;
 
-procedure set_(name: string; value: boolean);
+procedure set_(name: shortstring; value: boolean);
 var
   v: pPMK_boolean;
 begin
@@ -211,7 +214,7 @@ begin
   addtail(v);
 end;
 
-procedure set_(name: string; value: integer);
+procedure set_(name: shortstring; value: integer);
 var
   v: pPMK_integer;
 begin
@@ -232,7 +235,7 @@ begin
   addtail(v);
 end;
 
-procedure set_(name: string; value: string);
+procedure set_(name: shortstring; value: shortstring);
 var
   v: pPMK_string;
 begin
@@ -253,7 +256,7 @@ begin
   addtail(v);
 end;
 
-procedure set_(name: string; value: double);
+procedure set_(name: shortstring; value: double);
 var
   v: pPMK_double;
 begin
@@ -274,7 +277,7 @@ begin
   addtail(v);
 end;
 
-function val_(name: string): boolean;
+function val_(name: shortstring): boolean;
 var
   v: pPMK_boolean;
 begin
@@ -286,7 +289,7 @@ begin
     exit(False);
 end;
 
-function val_(name: string): integer;
+function val_(name: shortstring): integer;
 var
   v: pPMK_integer;
 begin
@@ -298,7 +301,7 @@ begin
     exit(0);
 end;
 
-function val_(name: string): string;
+function val_(name: shortstring): shortstring;
 var
   v: pPMK_string;
 begin
@@ -310,7 +313,7 @@ begin
     exit('');
 end;
 
-function val_(name: string): double;
+function val_(name: shortstring): double;
 var
   v: pPMK_double;
 begin
@@ -320,6 +323,19 @@ begin
     exit(v^.value)
   else
     exit(0);
+end;
+
+procedure option(option_variable, description: shortstring; initial_value: boolean);
+begin
+  set_(option_variable, initial_value);
+end;
+
+function option(option_variable: shortstring): boolean;
+var
+  res: boolean;
+begin
+  //res := val_(option_variable);
+  exit(res);
 end;
 
 procedure replace_variable_macros(var tmp: string);

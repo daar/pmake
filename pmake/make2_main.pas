@@ -1,6 +1,6 @@
 unit make2_main;
 
-{$mode objfpc}{$H-}
+{$mode objfpc}{$H+}
 
 interface
 
@@ -24,7 +24,7 @@ var
   verbose: Boolean;
   RunMode: TRunMode;
 
-procedure command_callback(line: string);
+procedure command_callback(line: string; active: boolean);
 begin
   write(line);
 end;

@@ -1,6 +1,6 @@
 unit compiler;
 
-{$mode objfpc}{$H-}
+{$mode objfpc}{$H+}
 
 interface
 
@@ -60,7 +60,6 @@ procedure UpdatePMakePostions(var FPCMsgs: TFPList; fName: string);
 function GetFPCMsgType(msgidx: integer): TMessage;
 procedure WriteFPCCommand(FPCMsgs: TFPList; ShowMsg: TMessages; progress: double = -1);
 function ParseFPCCommand(FPCOutput: TStrings; BasePath: string): TFPList;
-function RunCompilerCommand(ExeName, SrcName: string): TStrings;
 
 function CompilerCommandLine(pkg: pPackage; cmd: pointer): TStringList;
 
@@ -198,27 +197,6 @@ begin
     FPCmsg^.Text := sLine;
     Result.Add(FPCmsg);
   end;
-end;
-
-function RunCompilerCommand(ExeName, SrcName: string): TStrings;
-var
-  param: TStrings;
-begin
-//  param := TStringList.Create;
-//
-//  param.Add('-viq');
-//{$ifdef debug}
-//  param.Add('-gh');
-//{$endif}
-//  //add the unit search path where the pmake executable is locate
-//  param.Add('-FU' + ExtractFilePath(ParamStr(0)));
-//  param.Add(SrcName);
-//  //based on the app extension of pmake, add the same extension to make
-//  param.Add(macros_expand('-o' + ExeName));
-//
-//  Result := RunCommand(fpc, param);
-//
-//  param.Free;
 end;
 
 function CompilerCommandLine(pkg: pPackage; cmd: pointer): TStringList;

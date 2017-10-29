@@ -1,6 +1,6 @@
 program pmake;
 
-{$mode objfpc}{$H-}
+{$mode objfpc}{$H+}
 
 uses
 {$IFDEF UNIX}
@@ -17,20 +17,23 @@ var
   verbose: boolean = False;
 
   //parsing FPC output
-  procedure command_callback(line: string);
+  procedure command_callback(line: string; active: boolean);
   begin
     if verbose then
     begin
       str.Text := str.Text + line;
+
+      while str.Count > 1 do
+      begin
+        writeln(str[0]);
+        str.Delete(0);
+      end;
 
       while str.Count > 0 do
       begin
         writeln(str[0]);
         str.Delete(0);
       end;
-
-      if (str.Count > 0) and (line = '') then
-        writeln(str[0]);
     end;
   end;
 
@@ -79,6 +82,8 @@ var
 
     if exit_code <> 0 then
       message(FATAL_ERROR, 'fatal error: cannot compile ' + macros_expand('make$(EXE)'));
+
+    writeln('-- Build file has been written to: ', macros_expand('make$(EXE)'));
   end;
 
   procedure parse_commandline;
@@ -86,7 +91,7 @@ var
     //need to implement a propoper command line parser here
 
     set_('PMAKE_SOURCE_DIR', IncludeTrailingPathDelimiter(ExpandFileName(ParamStr(1))));
-    set_('PMAKE_BINARY_DIR', IncludeTrailingPathDelimiter(ExtractFilePath(ParamStr(0))));
+    set_('PMAKE_BINARY_DIR', GetCurrentDir);
 
     verbose := True;
   end;
@@ -100,4 +105,5 @@ begin
     create_and_build_make;
 
   pmakecache_write;
+  writeln('-- Generating done');
 end.

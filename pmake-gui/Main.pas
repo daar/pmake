@@ -96,6 +96,9 @@ begin
   BrowseSource := IncludeTrailingPathDelimiter(BrowseSourceEdit.Text);
   BrowseBuildEdit.Text := ExpandFileName(BrowseSource + '..' + PathDelim + 'build');
 
+  if pmakefiles = nil then
+    pmakefiles := TStringList.Create;
+
   pmakefiles.Clear;
   search_pmake(BrowseSource);
 
@@ -108,7 +111,10 @@ end;
 procedure TPMakeGUIForm.BrowseSourceButtonClick(Sender: TObject);
 begin
   if SelectDirectoryDialog.Execute then
+  begin
+    GenerateButton.Enabled := True;
     BrowseSourceEdit.Text := SelectDirectoryDialog.FileName;
+  end;
 end;
 
 procedure TPMakeGUIForm.BrowseBuildButtonClick(Sender: TObject);
@@ -119,7 +125,7 @@ end;
 
 procedure TPMakeGUIForm.ConfigureButtonClick(Sender: TObject);
 begin
-
+  GenerateButton.Enabled := True;
 end;
 
 procedure TPMakeGUIForm.GenerateButtonClick(Sender: TObject);
