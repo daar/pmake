@@ -1,0 +1,5 @@
+<span class="Apple-style-span" style="font-family: Consolas, Monaco, monospace; font-size: 12px; white-space: pre;">Package: $(PMAKE_PROJECT_NAME)
+</span><span class="Apple-style-span" style="font-family: Consolas, Monaco, monospace; font-size: 12px; white-space: pre;">Version: $(PROJECT_VERSION_MAJOR).$(PROJECT_VERSION_MINOR).$(PROJECT_VERSION_PATCH)
+</span><span class="Apple-style-span" style="font-family: Consolas, Monaco, monospace; font-size: 12px; white-space: pre;">Maintainer: Darius Blaszyk
+</span><span class="Apple-style-span" style="font-family: Consolas, Monaco, monospace; font-size: 12px; white-space: pre;">Architecture: all
+</span><span class="Apple-style-span" style="font-family: Consolas, Monaco, monospace; font-size: 12px; white-space: pre;">Description: a cross-platform build tool for (free) pascal
