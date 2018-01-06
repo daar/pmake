@@ -15,10 +15,12 @@ uses
 var
   str: TStrings;
   verbose: boolean = False;
+  force_build: boolean = False;
 
 const
-  CmdOptions: array[1..3] of TCmdOption = (
+  CmdOptions: array[1..4] of TCmdOption = (
     (name: '--compiler'; descr: 'Use indicated binary as compiler'),
+    (name: '--force'; descr: 'Force building make.exe'),
     (name: '--help'; descr: 'This message.'),
     (name: '--verbose'; descr: 'Be more verbose.')
     );
@@ -96,7 +98,6 @@ const
   procedure usage;
   var
     i: integer;
-    First: boolean;
   begin
     writeln('PMake the pascal build tool. Version ', PMAKE_VERSION, ' [',
 {$I %DATE%}
@@ -105,31 +106,13 @@ const
       );
     writeln('Copyright (c) 2016-2017 by Darius Blaszyk');
     writeln;
-    writeln('usage: ', ParamStr(0), ' <subcommand> [options] [args]');
+    writeln('Usage ');
+    writeln('  pmake [options] <path-to-source>');
     writeln;
+    writeln('Options');
 
-    First := True;
     for i := low(CmdOptions) to high(CmdOptions) do
-      if pos('--', CmdOptions[i].name) = 0 then
-      begin
-        if First then
-          writeln('Subcommands');
-        First := False;
-        writeln(Format(' %-16s %s', [CmdOptions[i].name, CmdOptions[i].descr]));
-      end;
-
-    if First = False then
-      writeln;
-
-    First := True;
-    for i := low(CmdOptions) to high(CmdOptions) do
-      if pos('--', CmdOptions[i].name) <> 0 then
-      begin
-        if First then
-          writeln('Options');
-        First := False;
-        writeln(Format(' %-16s %s', [CmdOptions[i].name, CmdOptions[i].descr]));
-      end;
+      writeln(Format(' %-16s %s', [CmdOptions[i].name, CmdOptions[i].descr]));
 
     halt(1);
   end;
@@ -166,7 +149,7 @@ const
                   Inc(i);
                   set_('PMAKE_PAS_COMPILER', ParamStr(i));
                   if not FileExists(ParamStr(i)) then
-                    message(FATAL_ERROR, 'fatal error: cannot find the supplied compiler');
+                    message(FATAL_ERROR, 'fatal error: cannot find the pascal compiler');
                 end
                 else
                 begin
@@ -176,6 +159,7 @@ const
               end;
               '--help': usage;
               '--verbose': verbose := True;
+              '--force': force_build := True;
             end;
           end;
           if found then
@@ -202,11 +186,11 @@ const
   end;
 
 begin
-  pmake_initialize;
-
   parse_commandline;
 
-  if not FileExists(macros_expand('make$(EXE)')) then
+  pmake_initialize;
+
+  if not FileExists(macros_expand('make$(EXE)')) or force_build then
     create_and_build_make;
 
   pmakecache_write;

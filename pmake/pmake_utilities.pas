@@ -85,12 +85,24 @@ end;
 procedure CompilerDefaults;
 var
   infoSL: TStringList;
+  compiler: string;
 begin
-  // Detect compiler version/target from -i option
+  compiler := val_('PMAKE_PAS_COMPILER');
+
+  //for now we initialize the FPC compiler, but we will add other compilers here later!!
+  if compiler = '' then
+    compiler := ExeSearch(macros_expand('fpc$(EXE)'), SysUtils.GetEnvironmentVariable('PATH'));
+
+  if not FileExists(compiler) then
+    message(FATAL_ERROR, 'fatal error: cannot find the pascal compiler');
+
+  set_('PMAKE_PAS_COMPILER', compiler);
+
+  //detect compiler version/target from -i option
   infosl := TStringList.Create;
   infosl.Delimiter := ' ';
 
-  infosl.DelimitedText := GetCompilerInfo(val_('PMAKE_PAS_COMPILER'), '-iVTPTO');
+  infosl.DelimitedText := GetCompilerInfo(compiler, '-iVTPTO');
 
   if infosl.Count <> 3 then
     message(FATAL_ERROR, 'fatal error: compiler returns invalid information, check if fpc -iV works');
@@ -267,9 +279,6 @@ begin
     cache.LoadFromFile('PMakeCache.txt')
   else
     cache.Filename := 'PMakeCache.txt';
-
-  //for now we initialize the FPC compiler, but we will add more here later!!
-  set_('PMAKE_PAS_COMPILER', ExeSearch(macros_expand('fpc$(EXE)'), SysUtils.GetEnvironmentVariable('PATH')));
 
   CompilerDefaults;
 end;
