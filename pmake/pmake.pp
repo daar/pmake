@@ -112,7 +112,7 @@ const
     writeln('Options');
 
     for i := low(CmdOptions) to high(CmdOptions) do
-      writeln(Format(' %-16s %s', [CmdOptions[i].name, CmdOptions[i].descr]));
+      writeln(Format('  %-16s %s', [CmdOptions[i].name, CmdOptions[i].descr]));
 
     halt(1);
   end;

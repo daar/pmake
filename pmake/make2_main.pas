@@ -26,7 +26,7 @@ var
 
 procedure command_callback(line: string; active: boolean);
 begin
-  write(line);
+  write(StdOut, line);
 end;
 
 procedure parse_commandline;
@@ -116,7 +116,7 @@ begin
           end;
           ctCustom:
           begin
-            writeln('Executing ', pCustomCommand(cmd)^.executable);
+            writeln(StdOut, 'Executing ', pCustomCommand(cmd)^.executable);
 
             param := TStringList.Create;
             param.Add(pCustomCommand(cmd)^.parameters);
@@ -125,13 +125,13 @@ begin
 
             if verbose then
               for k := 0 to cmd_out.Count - 1 do
-                writeln(cmd_out[k]);
+                writeln(StdOut, cmd_out[k]);
 
             cmd_out.Free;
           end;
         end;
     end;
-    writeln(format('[%3.0f%%] Built package %s', [progress, pkg^.name]));
+    writeln(StdOut, format('[%3.0f%%] Built package %s', [progress, pkg^.name]));
   end;
 end;
 
@@ -149,7 +149,7 @@ begin
     cmd := instlist[i];
 
     progress += 100 / instlist.Count;
-    write(format('[%3.0f%%] ', [progress]));
+    write(StdOut, format('[%3.0f%%] ', [progress]));
 
     First := True;
 
@@ -161,15 +161,15 @@ begin
           begin
             if not ForceDirectories(cmd^.destination) then
             begin
-              writeln;
+              writeln(StdOut);
               message(FATAL_ERROR, 'fatal error: failed to create directory "' + cmd^.directory + '"');
             end;
 
             //give proper offset for consequtive copies
             if not First then
-              write('       ');
+              write(StdOut, '       ');
 
-            writeln('Installing - ', cmd^.destination + info.name);
+            writeln(StdOut, 'Installing - ', cmd^.destination + info.name);
             copyfile(cmd^.directory + info.name, cmd^.destination + info.name);
             First := False;
           end;
@@ -180,7 +180,7 @@ begin
     end;
   end;
 
-  writeln('Installed files');
+  writeln(StdOut, 'Installed files');
 end;
 
 procedure CleanMode(pkglist: TFPList);
@@ -195,9 +195,9 @@ begin
     pkg := pkglist[i];
 
     progress += 100 / pkglist.Count;
-    write(format('[%3.0f%%] ', [progress]));
+    write(StdOut, format('[%3.0f%%] ', [progress]));
 
-    writeln('package ', pkg^.name);
+    writeln(StdOut, 'package ', pkg^.name);
 
     for j := 0 to pkg^.commands.Count - 1 do
     begin
@@ -209,29 +209,29 @@ begin
         begin
           if not DeleteDirectory(pkg^.unitsoutput, False) then
           begin
-            writeln;
+            writeln(StdOut);
             message(FATAL_ERROR, 'fatal error: cannot remove directory ' + pkg^.unitsoutput);
           end
           else
           if verbose then
-            writeln('       deleting ', pkg^.unitsoutput);
+            writeln(StdOut, '       deleting ', pkg^.unitsoutput);
         end;
 
         if DirectoryExists(pkg^.binoutput) then
         begin
           if not DeleteDirectory(pkg^.binoutput, False) then
           begin
-            writeln;
+            writeln(StdOut);
             message(FATAL_ERROR, 'fatal error: cannot remove directory ' + pkg^.binoutput);
           end
           else
           if verbose then
-            writeln('       deleting ', pkg^.binoutput);
+            writeln(StdOut, '       deleting ', pkg^.binoutput);
         end;
       end;
     end;
   end;
-  writeln('Cleaned all packages');
+  writeln(StdOut, 'Cleaned all packages');
 end;
 
 procedure execute_make2;

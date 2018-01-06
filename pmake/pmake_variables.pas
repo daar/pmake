@@ -352,8 +352,7 @@ begin
       ptInteger:
         tmp := StringReplace(tmp, '$(' + v^.name + ')', IntToStr(pPMK_integer(v)^.value), [rfReplaceAll]);
       ptString:
-        tmp := StringReplace(tmp, '$(' + v^.name + ')', pPMK_string(v)^.value,
-          [rfReplaceAll]);
+        tmp := StringReplace(tmp, '$(' + v^.name + ')', pPMK_string(v)^.value, [rfReplaceAll]);
       ptDouble:
         tmp := StringReplace(tmp, '$(' + v^.name + ')', FloatToStr(pPMK_double(v)^.value), [rfReplaceAll]);
     end;
@@ -435,15 +434,16 @@ procedure pmakecache_read;
 begin
   //todo: rewrite this part, see pmakecache_write
   //see: http://wiki.lazarus.freepascal.org/XML_Tutorial#Usage_Examples
-  set_('PMAKE_SOURCE_DIR', string(cache.Getvalue('PMAKE_SOURCE_DIR/value', '')));
-  set_('PMAKE_CURRENT_SOURCE_DIR', string(cache.Getvalue('PMAKE_SOURCE_DIR/value', '')));
+  set_('PMAKE_SOURCE_DIR', shortstring(cache.Getvalue('PMAKE_SOURCE_DIR/value', '')));
+  set_('PMAKE_CURRENT_SOURCE_DIR', shortstring(cache.Getvalue('PMAKE_SOURCE_DIR/value', '')));
+  set_('PMAKE_PAS_COMPILER', shortstring(cache.Getvalue('PMAKE_PAS_COMPILER/value', '')));
 
-  set_('PMAKE_BINARY_DIR', string(cache.Getvalue('PMAKE_BINARY_DIR/value', '')));
-  set_('PMAKE_CURRENT_BINARY_DIR', string(cache.Getvalue('PMAKE_BINARY_DIR/value', '')));
+  set_('PMAKE_BINARY_DIR', shortstring(cache.Getvalue('PMAKE_BINARY_DIR/value', '')));
+  set_('PMAKE_CURRENT_BINARY_DIR', shortstring(cache.Getvalue('PMAKE_BINARY_DIR/value', '')));
 
-  set_('PMAKE_PAS_COMPILER_VERSION', string(cache.Getvalue('PMAKE_PAS_COMPILER_VERSION/value', '')));
-  set_('PMAKE_HOST_SYSTEM_PROCESSOR', string(cache.Getvalue('PMAKE_HOST_SYSTEM_PROCESSOR/value', '')));
-  set_('PMAKE_HOST_SYSTEM_NAME', string(cache.Getvalue('PMAKE_HOST_SYSTEM_NAME/value', '')));
+  set_('PMAKE_PAS_COMPILER_VERSION', shortstring(cache.Getvalue('PMAKE_PAS_COMPILER_VERSION/value', '')));
+  set_('PMAKE_HOST_SYSTEM_PROCESSOR', shortstring(cache.Getvalue('PMAKE_HOST_SYSTEM_PROCESSOR/value', '')));
+  set_('PMAKE_HOST_SYSTEM_NAME', shortstring(cache.Getvalue('PMAKE_HOST_SYSTEM_NAME/value', '')));
 end;
 
 end.

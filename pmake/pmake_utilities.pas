@@ -280,6 +280,8 @@ begin
   else
     cache.Filename := 'PMakeCache.txt';
 
+  pmakecache_read;
+
   CompilerDefaults;
 end;
 

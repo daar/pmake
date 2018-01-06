@@ -20,11 +20,12 @@ type
   TRunMode = (rmBuild, rmInstall, rmClean);
 
 const
-  CmdOptions: array[1..6] of TCmdOption = (
+  CmdOptions: array[1..7] of TCmdOption = (
     (name: 'build'; descr: 'Build all targets in the project.'),
     (name: 'clean'; descr: 'Clean all units and folders in the project'),
     (name: 'install'; descr: 'Install all targets in the project.'),
     (name: '--compiler'; descr: 'Use indicated binary as compiler'),
+    (name: '--force'; descr: 'Force building make2.exe'),
     (name: '--help'; descr: 'This message.'),
     (name: '--verbose'; descr: 'Be more verbose.')
     );
@@ -32,7 +33,8 @@ const
 var
   sline: TStrings;
   verbose: boolean = False;
-  RunMode: TRunMode;
+  force_build: boolean = False;
+  RunMode: TRunMode = rmBuild;
 
 //parsing FPC output
 procedure command_callback(line: string; active: boolean);
@@ -85,7 +87,7 @@ begin
 
     idx := pmakefiles.IndexOf(p);
 
-    //either the PMake.tx file does not exist, or the crc changed
+    //either the PMake.txt file does not exist, or the crc changed
     if (idx = -1) or (c <> pmakecrc) then
     begin
       f.Free;
@@ -131,7 +133,7 @@ var
   i, exit_code: integer;
   param: TStrings;
 begin
-  //create_pmakecache;
+  writeln('-- Processing PMake.txt files');
 
   make2 := TStringList.Create;
 
@@ -176,9 +178,7 @@ begin
   if verbose then
     writeln('-- Deleting temporary files');
 
-{$ifndef debug}
   DeleteFile(src_name);
-{$endif}
   DeleteFile(ChangeFileExt(src_name, '.o'));
 
   if exit_code <> 0 then
@@ -188,36 +188,21 @@ end;
 procedure usage;
 var
   i: integer;
-  First: boolean;
 begin
-  writeln('PMake the freepascal build tool. Version ', PMAKE_VERSION, ' [', {$I %DATE%}, '] for ', {$I %FPCTARGETCPU%});
+  writeln('PMake the pascal build tool. Version ', PMAKE_VERSION, ' [',
+{$I %DATE%}
+    , '] for ',
+{$I %FPCTARGETCPU%}
+    );
   writeln('Copyright (c) 2016-2017 by Darius Blaszyk');
   writeln;
-  writeln('usage: ', ParamStr(0), ' <subcommand> [options] [args]');
+  writeln('Usage ');
+  writeln('  make [options] <path-to-source>');
   writeln;
+  writeln('Options');
 
-  First := True;
   for i := low(CmdOptions) to high(CmdOptions) do
-      if pos('--', CmdOptions[i].name) = 0 then
-      begin
-        if First then
-          writeln('Subcommands');
-        First := False;
-        writeln(Format(' %-16s %s', [CmdOptions[i].name, CmdOptions[i].descr]));
-      end;
-
-  if First = False then
-    writeln;
-
-  First := True;
-  for i := low(CmdOptions) to high(CmdOptions) do
-      if pos('--', CmdOptions[i].name) <> 0 then
-      begin
-        if First then
-          writeln('Options');
-        First := False;
-        writeln(Format(' %-16s %s', [CmdOptions[i].name, CmdOptions[i].descr]));
-      end;
+    writeln(Format('  %-16s %s', [CmdOptions[i].name, CmdOptions[i].descr]));
 
   halt(1);
 end;
@@ -279,21 +264,20 @@ procedure make_execute;
 var
   exit_code: integer;
 begin
-  pmake_initialize;
-  pmakecache_read;
-
   parse_commandline;
+
+  pmake_initialize;
 
   pmakefiles := TStringList.Create;
   search_pmake(val_('PMAKE_SOURCE_DIR'));
 
-  if check_rebuild_make2 then
+  if check_rebuild_make2 or force_build then
     make2_build;
 
   pmakecache_write;
 
   sline := TStringList.Create;
-  exit_code := command_execute(macros_expand('make2$(EXE)', nil), nil, @command_callback);
+  exit_code := command_execute(macros_expand('$(PMAKE_BINARY_DIR)make2$(EXE)', nil), nil, @command_callback);
   sline.Free;
 
   pmakefiles.Free;
