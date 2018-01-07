@@ -31,7 +31,7 @@ You need to have the latest stable freepascal compiler installed. PMake can boot
 
 `$ ./pmake install`
 
-To be able to use pmake, you need to make sure the pmake executable can be found from the commandline. You should be set now.
+To be able to use PMake, you need to make sure the PMake executable can be found from the commandline. You should be set now.
 
 Reporting Bugs / New Features
 =============================
