@@ -29,7 +29,9 @@ You need to have the latest stable freepascal compiler installed. PMake can boot
 
 `$ fpc pmake.pp`
 
-`$ ./pmake install`
+`$ ./pmake`
+
+`$ ./make install`
 
 
 Reporting Bugs
