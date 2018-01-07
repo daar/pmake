@@ -21,23 +21,23 @@ Supported Platforms
 * Apple macOS
 * Linux
 
-Other operating systems will probably work too out of the box, if not it should not be a major problem to make PMake work on this platform.
+Other operating systems that FPC supports will probably work too out of the box, if not it should not be a major problem to make PMake work on this platform. Please let me know here if you used PMake succesfull on a "new" platform so I can add it to the list here. If you find an issue please report it (see below). 
 
 Building PMake from Scratch
 ---------------------------
 You need to have the latest stable freepascal compiler installed. PMake can bootstrap itself with the provided PMake.txt script. You will first need to build pmake and then install it. In short:
 
-`$ fpc pmake.pp`
+`$ fpc pmake`
 
 `$ ./pmake install`
 
+To be able to use pmake, you need to make sure the pmake executable can be found from the commandline. You should be set now.
 
-Reporting Bugs
-==============
-If you have found a bug:
+Reporting Bugs / New Features
+=============================
+If you have found a bug or would like a new feature implemented:
 
 1. If you have a patch, please make a pull request.
-
 2. Otherwise, please create an issue on the GitHub page.
 
 Contributing
