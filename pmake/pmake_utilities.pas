@@ -35,6 +35,7 @@ var
   depcache: TFPList;
   instlist: TFPList;
   cmd_count: longint = 0;
+  verbose: boolean = False;
 
 implementation
 
@@ -123,6 +124,9 @@ var
   Buffer: array[1..BUF_SIZE] of byte;
   sStream: TStringStream;
 begin
+  if verbose then
+    writeln('-- Executing ', executable, ' ', parameters.Text);
+
   if callback = nil then
     message(FATAL_ERROR, 'fatal error: command_execute, no callback assigned!');
 
@@ -276,11 +280,15 @@ procedure pmake_initialize;
 begin
   cache := TXMLConfig.Create(nil);
   if FileExists('PMakeCache.txt') then
-    cache.LoadFromFile('PMakeCache.txt')
+  begin
+    cache.LoadFromFile('PMakeCache.txt');
+    pmakecache_read;
+  end
   else
+  begin
     cache.Filename := 'PMakeCache.txt';
-
-  pmakecache_read;
+    pmakecache_write;
+  end;
 
   CompilerDefaults;
 end;

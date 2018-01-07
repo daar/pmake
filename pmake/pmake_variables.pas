@@ -438,6 +438,8 @@ begin
   set_('PMAKE_CURRENT_SOURCE_DIR', shortstring(cache.Getvalue('PMAKE_SOURCE_DIR/value', '')));
   set_('PMAKE_PAS_COMPILER', shortstring(cache.Getvalue('PMAKE_PAS_COMPILER/value', '')));
 
+  set_('PMAKE_TOOL_DIR', shortstring(cache.Getvalue('PMAKE_TOOL_DIR/value', '')));
+
   set_('PMAKE_BINARY_DIR', shortstring(cache.Getvalue('PMAKE_BINARY_DIR/value', '')));
   set_('PMAKE_CURRENT_BINARY_DIR', shortstring(cache.Getvalue('PMAKE_BINARY_DIR/value', '')));
 

@@ -14,13 +14,12 @@ uses
 
 var
   str: TStrings;
-  verbose: boolean = False;
   force_build: boolean = False;
 
 const
   CmdOptions: array[1..4] of TCmdOption = (
     (name: '--compiler'; descr: 'Use indicated binary as compiler'),
-    (name: '--force'; descr: 'Force building make.exe'),
+    (name: '--force'; descr: 'Force building the make executable'),
     (name: '--help'; descr: 'This message.'),
     (name: '--verbose'; descr: 'Be more verbose.')
     );
@@ -71,7 +70,7 @@ const
     param.Add('-viq');
     //add the unit search path to the pmake source directory
     param.Add('-FU' + UnitsOutputDir(val_('PMAKE_BINARY_DIR')));
-    param.Add('-Fu' + val_('PMAKE_SOURCE_DIR'));
+    param.Add('-Fu' + val_('PMAKE_TOOL_DIR'));
     param.Add(src_name);
     param.Add(macros_expand('-omake$(EXE)'));
 
@@ -125,9 +124,6 @@ const
     if ParamCount = 0 then
       usage;
 
-    //the binary dir is determined by the current directory pmake is invoked from
-    set_('PMAKE_BINARY_DIR', IncludeTrailingPathDelimiter(GetCurrentDir));
-
     i := 1;
 
     while i <= ParamCount do
@@ -170,14 +166,14 @@ const
           if DirectoryExists(ParamStr(i)) then
           begin
             found := True;
-            set_('PMAKE_SOURCE_DIR', IncludeTrailingPathDelimiter(ExpandFileName(ParamStr(i))));
+             set_('PMAKE_SOURCE_DIR', IncludeTrailingPathDelimiter(ExpandFileName(ParamStr(i))));
             Inc(i);
           end;
       end;
 
       if not found then
       begin
-        writeln('error: invalid commandline parameter ', ParamStr(i));
+        writeln('error: invalid command-line parameter ', ParamStr(i));
         usage;
       end;
 
@@ -186,9 +182,14 @@ const
   end;
 
 begin
-  parse_commandline;
+  //the binary dir is determined by the current directory pmake is invoked from
+  set_('PMAKE_BINARY_DIR', IncludeTrailingPathDelimiter(GetCurrentDir));
+
+  //folder where pmake is located, also location of units for make and make2
+  set_('PMAKE_TOOL_DIR', ExtractFilePath(ParamStr(0)));
 
   pmake_initialize;
+  parse_commandline;
 
   if not FileExists(macros_expand('make$(EXE)')) or force_build then
     create_and_build_make;

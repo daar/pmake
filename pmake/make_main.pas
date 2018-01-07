@@ -32,7 +32,6 @@ const
 
 var
   sline: TStrings;
-  verbose: boolean = False;
   force_build: boolean = False;
   RunMode: TRunMode = rmBuild;
 
@@ -161,7 +160,7 @@ begin
   param.Add('-viq');
   //add the unit search path where the pmake executable is locate
   param.Add('-FU' + UnitsOutputDir(val_('PMAKE_BINARY_DIR')));
-  param.Add('-Fu' + val_('PMAKE_SOURCE_DIR'));
+  param.Add('-Fu' + val_('PMAKE_TOOL_DIR'));
   param.Add(src_name);
   param.Add(macros_expand('-omake2$(EXE)'));
 
@@ -264,9 +263,8 @@ procedure make_execute;
 var
   exit_code: integer;
 begin
-  parse_commandline;
-
   pmake_initialize;
+  parse_commandline;
 
   pmakefiles := TStringList.Create;
   search_pmake(val_('PMAKE_SOURCE_DIR'));
