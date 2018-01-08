@@ -127,7 +127,12 @@ var
   sStream: TStringStream;
 begin
   if verbose then
-    writeln('-- Executing ', executable, ' ', parameters.Text);
+  begin
+    if parameters = nil then
+      writeln('-- Executing ', executable)
+    else
+      writeln('-- Executing ', executable, ' ', parameters.Text);
+  end;
 
   if callback = nil then
     message(FATAL_ERROR, 'fatal error: command_execute, no callback assigned!');
@@ -156,7 +161,7 @@ begin
 
   Result := AProcess.ExitCode;
 
-  // Clean up
+  //clean up
   sStream.Free;
   AProcess.Free;
 end;

@@ -32,12 +32,6 @@ const
     begin
       str.Text := str.Text + line;
 
-      while str.Count > 1 do
-      begin
-        writeln(str[0]);
-        str.Delete(0);
-      end;
-
       while str.Count > 0 do
       begin
         writeln(str[0]);

@@ -23,10 +23,33 @@ type
 var
   verbose: Boolean;
   RunMode: TRunMode;
+  sline: TStringList;
 
 procedure command_callback(line: string; active: boolean);
 begin
-  write(StdOut, line);
+  //parse the output
+  sline.Text := sline.Text + line;
+
+  while sline.Count > 1 do
+  begin
+    writeln(StdOut, sline[0]);
+    sline.Delete(0);
+  end;
+
+  if not active then
+  begin
+    while sline.Count > 0 do
+    begin
+      writeln(StdOut, sline[0]);
+      sline.Delete(0);
+    end;
+  end;
+end;
+
+procedure execute_callback(line: string; active: boolean);
+begin
+  if verbose then
+    write(StdOut, line);
 end;
 
 procedure parse_commandline;
@@ -108,7 +131,9 @@ begin
           ctExecutable, ctUnit:
           begin
             param := CompilerCommandLine(pkg, cmd);
+            sline := TStringList.Create;
             exit_code := command_execute(val_('PMAKE_PAS_COMPILER'), param, @command_callback);
+            sline.Free;
             param.Free;
 
             if exit_code <> 0 then
@@ -120,7 +145,7 @@ begin
 
             param := TStringList.Create;
             param.Add(pCustomCommand(cmd)^.parameters);
-            exit_code := command_execute(pCustomCommand(cmd)^.executable, param, @command_callback);
+            exit_code := command_execute(pCustomCommand(cmd)^.executable, param, @execute_callback);
             param.Free;
 
             if verbose then
