@@ -75,9 +75,6 @@ const
     param.Add(src_name);
     param.Add(macros_expand('-omake$(EXE)'));
 
-    if verbose then
-      writeln('-- Executing ', val_('PMAKE_PAS_COMPILER'), ' ', param.Text);
-
     str := TStringList.Create;
     exit_code := command_execute(val_('PMAKE_PAS_COMPILER'), param, @command_callback);
     str.Free;

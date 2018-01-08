@@ -14,7 +14,7 @@ implementation
 
 uses
   crc16,
-  pmake_utilities, pmake_variables, pmake_api;
+  pmake_utilities, pmake_variables, pmake_api, compiler;
 
 type
   TRunMode = (rmBuild, rmInstall, rmClean);
@@ -163,9 +163,6 @@ begin
   param.Add('-Fu' + val_('PMAKE_TOOL_DIR'));
   param.Add(src_name);
   param.Add(macros_expand('-omake2$(EXE)'));
-
-  if verbose then
-    writeln('-- Executing ', val_('PMAKE_PAS_COMPILER'), ' ', param.Text);
 
   sline := TStringList.Create;
   exit_code := command_execute(val_('PMAKE_PAS_COMPILER'), param, @command_callback);
