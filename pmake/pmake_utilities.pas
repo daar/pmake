@@ -29,6 +29,8 @@ function macros_expand(str: string; pkg: pPackage = nil): string;
 procedure copyfile(old, new: string);
 function DeleteDirectory(const Directoryname: string; OnlyChildren: boolean): boolean;
 
+procedure CompilerDefaults;
+
 var
   pmakefiles: TStrings;
   pkglist: TFPList;

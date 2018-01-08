@@ -8,6 +8,7 @@ uses
 {$ENDIF}
   Classes,
   SysUtils,
+  XMLConf,
   pmake_variables,
   pmake_utilities,
   pmake_api;
@@ -188,7 +189,11 @@ begin
   //folder where pmake is located, also location of units for make and make2
   set_('PMAKE_TOOL_DIR', ExtractFilePath(ParamStr(0)));
 
-  pmake_initialize;
+  cache := TXMLConfig.Create(nil);
+  cache.Filename := 'PMakeCache.txt';
+
+  CompilerDefaults;
+
   parse_commandline;
 
   if not FileExists(macros_expand('make$(EXE)')) or force_build then

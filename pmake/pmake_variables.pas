@@ -54,49 +54,31 @@ uses
   Classes, SysUtils, crc16, pmake_utilities;
 
 type
-  PMK_type = (ptBoolean, ptInteger, ptString, ptDouble);
+  PMK_type = (ptBoolean, ptInteger, ptFloat, ptString, ptFileCache);
 
   pPMK_Link = ^PMK_Link;
-
   PMK_Link = record
     next, prev: pointer;
   end;
 
-  pPMK_boolean = ^PMK_boolean;
-
-  PMK_boolean = record
+  pPMK_FileCache = ^PMK_FileCache;
+  PMK_FileCache = record
     next, prev: pointer;
-    type_: PMK_type;
-    name: shortstring;
-    value: boolean;
+    path: PChar;
+    crc: word;
   end;
 
-  pPMK_integer = ^PMK_integer;
-
-  PMK_integer = record
+  pPMK_variant = ^PMK_variant;
+  PMK_variant = record
     next, prev: pointer;
-    type_: PMK_type;
+    vtype: PMK_type;
     name: shortstring;
-    value: integer;
-  end;
-
-  pPMK_string = ^PMK_string;
-
-  PMK_string = record
-    next, prev: pointer;
-    type_: PMK_type;
-    name: shortstring;
-    value: string;
-  end;
-
-  pPMK_double = ^PMK_double;
-
-  PMK_double = record
-    next, prev: pointer;
-    type_: PMK_type;
-    name: shortstring;
-    value: double;
-    Count: integer;
+      case word of
+        ptBoolean:   (PM_Boolean  : boolean);
+        ptInteger:   (PM_Integer  : integer);
+        ptFloat:     (PM_Float    : double);
+        ptString:    (PM_String   : shortstring);
+        ptFileCache: (PM_FileCache: pointer);
   end;
 
   PMK_ListBase = record
@@ -160,7 +142,7 @@ end;
 
 procedure delete_variable(name: shortstring);
 var
-  v: pPMK_boolean;
+  v: pPMK_variant;
 begin
   v := varlist.first;
 
@@ -178,7 +160,7 @@ end;
 
 function find_variable(name: shortstring): pointer;
 var
-  v: pPMK_boolean;
+  v: pPMK_variant;
 begin
   v := varlist.first;
 
@@ -193,22 +175,31 @@ begin
   exit(nil);
 end;
 
-procedure set_(name: shortstring; value: boolean);
+function create_variable(name: shortstring): pPMK_variant;
 var
-  v: pPMK_boolean;
+  v: pPMK_variant;
 begin
   v := find_variable(name);
 
-  //if it already exists, then delete first
+  //delete if exists to prevent multiple instances of the same variable
   if v <> nil then
     delete_variable(name);
 
-  v := GetMem(sizeof(PMK_boolean));
-
-  //add data to list
-  v^.type_ := ptBoolean;
+  v := callocN(sizeof(PMK_variant));
   v^.name := name;
-  v^.value := value;
+
+  exit(v);
+end;
+
+procedure set_(name: shortstring; value: boolean);
+var
+  v: pPMK_variant;
+begin
+  v := create_variable(name);
+
+  //add data to variant
+  v^.vtype := ptBoolean;
+  v^.PM_Boolean := value;
 
   //add item to bottom of list
   addtail(v);
@@ -216,20 +207,13 @@ end;
 
 procedure set_(name: shortstring; value: integer);
 var
-  v: pPMK_integer;
+  v: pPMK_variant;
 begin
-  v := find_variable(name);
+  v := create_variable(name);
 
-  //if it already exists, then delete first
-  if v <> nil then
-    delete_variable(name);
-
-  v := GetMem(sizeof(PMK_integer));
-
-  //add data to list
-  v^.type_ := ptInteger;
-  v^.name := name;
-  v^.value := value;
+  //add data to variant
+  v^.vtype := ptInteger;
+  v^.PM_Integer := value;
 
   //add item to bottom of list
   addtail(v);
@@ -237,20 +221,13 @@ end;
 
 procedure set_(name: shortstring; value: shortstring);
 var
-  v: pPMK_string;
+  v: pPMK_variant;
 begin
-  v := find_variable(name);
+  v := create_variable(name);
 
-  //if it already exists, then delete first
-  if v <> nil then
-    delete_variable(name);
-
-  v := callocN(sizeof(PMK_string));
-
-  //add data to list
-  v^.type_ := ptString;
-  v^.name := name;
-  v^.value := value;
+  //add data to variant
+  v^.vtype := ptString;
+  v^.PM_String := value;
 
   //add item to bottom of list
   addtail(v);
@@ -258,20 +235,13 @@ end;
 
 procedure set_(name: shortstring; value: double);
 var
-  v: pPMK_double;
+  v: pPMK_variant;
 begin
-  v := find_variable(name);
+  v := create_variable(name);
 
-  //if it already exists, then delete first
-  if v <> nil then
-    delete_variable(name);
-
-  v := callocN(sizeof(PMK_double));
-
-  //add data to list
-  v^.type_ := ptDouble;
-  v^.name := name;
-  v^.value := value;
+  //add data to variant
+  v^.vtype := ptFloat;
+  v^.PM_Float := value;
 
   //add item to bottom of list
   addtail(v);
@@ -279,48 +249,48 @@ end;
 
 function val_(name: shortstring): boolean;
 var
-  v: pPMK_boolean;
+  v: pPMK_variant;
 begin
   v := find_variable(name);
 
   if v <> nil then
-    exit(v^.value)
+    exit(v^.PM_Boolean)
   else
     exit(False);
 end;
 
 function val_(name: shortstring): integer;
 var
-  v: pPMK_integer;
+  v: pPMK_variant;
 begin
   v := find_variable(name);
 
   if v <> nil then
-    exit(v^.value)
+    exit(v^.PM_Integer)
   else
     exit(0);
 end;
 
 function val_(name: shortstring): shortstring;
 var
-  v: pPMK_string;
+  v: pPMK_variant;
 begin
   v := find_variable(name);
 
   if v <> nil then
-    exit(v^.value)
+    exit(v^.PM_String)
   else
     exit('');
 end;
 
 function val_(name: shortstring): double;
 var
-  v: pPMK_double;
+  v: pPMK_variant;
 begin
   v := find_variable(name);
 
   if v <> nil then
-    exit(v^.value)
+    exit(v^.PM_Float)
   else
     exit(0);
 end;
@@ -340,21 +310,21 @@ end;
 
 procedure replace_variable_macros(var tmp: string);
 var
-  v: pPMK_boolean;
+  v: pPMK_variant;
 begin
   v := varlist.first;
 
   while v <> nil do
   begin
-    case v^.type_ of
+    case v^.vtype of
       ptBoolean:
-        tmp := StringReplace(tmp, '$(' + v^.name + ')', BoolToStr(v^.value), [rfReplaceAll]);
+        tmp := StringReplace(tmp, '$(' + v^.name + ')', BoolToStr(v^.PM_Boolean), [rfReplaceAll]);
       ptInteger:
-        tmp := StringReplace(tmp, '$(' + v^.name + ')', IntToStr(pPMK_integer(v)^.value), [rfReplaceAll]);
+        tmp := StringReplace(tmp, '$(' + v^.name + ')', IntToStr(v^.PM_Integer), [rfReplaceAll]);
+      ptFloat:
+        tmp := StringReplace(tmp, '$(' + v^.name + ')', FloatToStr(v^.PM_Float), [rfReplaceAll]);
       ptString:
-        tmp := StringReplace(tmp, '$(' + v^.name + ')', pPMK_string(v)^.value, [rfReplaceAll]);
-      ptDouble:
-        tmp := StringReplace(tmp, '$(' + v^.name + ')', FloatToStr(pPMK_double(v)^.value), [rfReplaceAll]);
+        tmp := StringReplace(tmp, '$(' + v^.name + ')', v^.PM_String, [rfReplaceAll]);
     end;
 
     v := v^.next;
@@ -374,7 +344,7 @@ var
   pmakecrc: word;
   f: TStrings;
   i: integer;
-  v: pPMK_boolean;
+  v: pPMK_variant;
 begin
   cache.Clear;
 
@@ -383,26 +353,26 @@ begin
 
   while v <> nil do
   begin
-    case v^.type_ of
+    case v^.vtype of
       ptBoolean:
       begin
         cache.Getvalue(widestring(v^.name + '/type'), 'boolean');
-        cache.Getvalue(widestring(v^.name + '/value'), v^.value);
+        cache.Getvalue(widestring(v^.name + '/value'), v^.PM_Boolean);
       end;
       ptInteger:
       begin
         cache.Getvalue(widestring(v^.name + '/type'), 'integer');
-        cache.Setvalue(widestring(v^.name + '/value'), pPMK_integer(v)^.value);
+        cache.Setvalue(widestring(v^.name + '/value'), v^.PM_Integer);
+      end;
+      ptFloat:
+      begin
+        cache.Getvalue(widestring(v^.name + '/type'), 'float');
+        cache.Setvalue(widestring(v^.name + '/value'), widestring(FloatToStr(v^.PM_Float)));
       end;
       ptString:
       begin
         cache.Getvalue(widestring(v^.name + '/type'), 'string');
-        cache.Setvalue(widestring(v^.name + '/value'), widestring(pPMK_string(v)^.value));
-      end;
-      ptDouble:
-      begin
-        cache.Getvalue(widestring(v^.name + '/type'), 'double');
-        cache.Setvalue(widestring(v^.name + '/value'), widestring(FloatToStr(pPMK_double(v)^.value)));
+        cache.Setvalue(widestring(v^.name + '/value'), widestring(v^.PM_String));
       end;
     end;
 
