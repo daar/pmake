@@ -8,7 +8,7 @@ uses
   Classes, SysUtils;
 
 type
-  msgMode = (none, STATUS, WARNING, AUTHOR_WARNING, SEND_ERROR,
+  msgMode = (NONE, STATUS, WARNING, AUTHOR_WARNING, SEND_ERROR,
     FATAL_ERROR, DEPRECATION);
 
 procedure add_executable(pkgname, executable, srcfile: string; depends: array of const);
@@ -105,7 +105,7 @@ begin
   pkg := find_pkg_by_name(pkglist, depends);
 
   if pkg = nil then
-    message(FATAL_ERROR, 'fatal error: cannot find dependency "' + depends + '" for install command');
+    messagefmt(FATAL_ERROR, 'fatal error: cannot find dependency "%s" for install command', [depends]);
 
   cmd := AllocMem(sizeof(InstallCommand));
   cmd^.directory := IncludeTrailingPathDelimiter(macros_expand(directory, pkg));
@@ -138,7 +138,7 @@ end;
 procedure message(mode: msgMode; msg: string);
 begin
   case mode of
-    none: writeln(stderr, msg);
+    NONE: writeln(stderr, msg);
     STATUS: writeln(stdout, msg);
     WARNING: writeln(stderr, msg);
     AUTHOR_WARNING: writeln(stderr, msg);
@@ -154,7 +154,7 @@ end;
 
 procedure message(msg: string);
 begin
-  message(none, msg);
+  message(NONE, msg);
 end;
 
 procedure messagefmt(mode: msgMode; msg: string; const args: array of const);
@@ -164,7 +164,7 @@ end;
 
 procedure messagefmt(msg: string; const args: array of const);
 begin
-  messagefmt(none, msg, args);
+  messagefmt(NONE, msg, args);
 end;
 
 procedure add_subdirectory(path: string);

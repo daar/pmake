@@ -15,15 +15,28 @@ procedure execute_make2;
 implementation
 
 uses
+  XMLConf,
   depsolver, compiler, pmake_api;
 
 type
   TRunMode = (rmBuild, rmInstall, rmClean);
 
 var
-  verbose: Boolean;
   RunMode: TRunMode;
   sline: TStringList;
+  progress: double = 0;
+
+procedure output_line(var sline: TStringList);
+var
+  line: string;
+begin
+  line := StringReplace(sline[0], val_('PMAKE_SOURCE_DIR'), '.' + DirectorySeparator, [rfReplaceAll]);
+  line := StringReplace(line, '(3104)', format('(3104) [%3.0f%%]', [progress]), [rfReplaceAll]);
+
+  writeln(StdOut, line);
+
+  sline.Delete(0);
+end;
 
 procedure command_callback(line: string; active: boolean);
 begin
@@ -31,18 +44,12 @@ begin
   sline.Text := sline.Text + line;
 
   while sline.Count > 1 do
-  begin
-    writeln(StdOut, sline[0]);
-    sline.Delete(0);
-  end;
+    output_line(sline);
 
   if not active then
   begin
     while sline.Count > 0 do
-    begin
-      writeln(StdOut, sline[0]);
-      sline.Delete(0);
-    end;
+      output_line(sline);
   end;
 end;
 
@@ -61,9 +68,13 @@ end;
 
 procedure init_make2;
 begin
-  pmake_initialize;
-  pmakecache_read;
+  cache := TXMLConfig.Create(nil);
+  if FileExists('PMakeCache.txt') then
+    cache.LoadFromFile('PMakeCache.txt')
+  else
+    message(FATAL_ERROR, 'fatal error: cannot find PMakeCache.txt, rerun pmake');
 
+  pmakecache_read;
   parse_commandline;
 
   pkglist := TFPList.Create;
@@ -106,14 +117,14 @@ end;
 
 procedure ExecutePackages(pkglist: TFPList; mode: TCommandTypes);
 var
-  i, j, k, exit_code: integer;
+  i, j, exit_code: integer;
   param: TStringList;
-  cmd_out: TStrings;
-  progress: double = 0;
   pkg: pPackage = nil;
   cmdtype: TCommandType;
   cmd: pointer;
 begin
+  progress := 0;
+
   //execute commands
   for i := 0 to pkglist.Count - 1 do
   begin
@@ -137,7 +148,7 @@ begin
             param.Free;
 
             if exit_code <> 0 then
-              message(FATAL_ERROR, 'fatal error: cannot compile ' + pUnitCommand(cmd)^.filename);
+              messagefmt(FATAL_ERROR, 'fatal error: cannot compile %s', [pUnitCommand(cmd)^.filename]);
           end;
           ctCustom:
           begin
@@ -148,15 +159,12 @@ begin
             exit_code := command_execute(pCustomCommand(cmd)^.executable, param, @execute_callback);
             param.Free;
 
-            if verbose then
-              for k := 0 to cmd_out.Count - 1 do
-                writeln(StdOut, cmd_out[k]);
-
-            cmd_out.Free;
+            if exit_code <> 0 then
+              messagefmt(FATAL_ERROR, 'fatal error: executing %s', [pCustomCommand(cmd)^.executable]);
           end;
         end;
     end;
-    writeln(StdOut, format('[%3.0f%%] Built package %s', [progress, pkg^.name]));
+    writeln(StdOut, format('(5025) [%3.0f%%] Built package %s', [progress, pkg^.name]));
   end;
 end;
 
@@ -187,7 +195,7 @@ begin
             if not ForceDirectories(cmd^.destination) then
             begin
               writeln(StdOut);
-              message(FATAL_ERROR, 'fatal error: failed to create directory "' + cmd^.directory + '"');
+              messagefmt(FATAL_ERROR, 'fatal error: failed to create directory "%s"', [cmd^.directory]);
             end;
 
             //give proper offset for consequtive copies
@@ -235,7 +243,7 @@ begin
           if not DeleteDirectory(pkg^.unitsoutput, False) then
           begin
             writeln(StdOut);
-            message(FATAL_ERROR, 'fatal error: cannot remove directory ' + pkg^.unitsoutput);
+            messagefmt(FATAL_ERROR, 'fatal error: cannot remove directory %s', [pkg^.unitsoutput]);
           end
           else
           if verbose then
@@ -247,7 +255,7 @@ begin
           if not DeleteDirectory(pkg^.binoutput, False) then
           begin
             writeln(StdOut);
-            message(FATAL_ERROR, 'fatal error: cannot remove directory ' + pkg^.binoutput);
+            messagefmt(FATAL_ERROR, 'fatal error: cannot remove directory $s', [pkg^.binoutput]);
           end
           else
           if verbose then

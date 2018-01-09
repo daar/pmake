@@ -13,6 +13,7 @@ procedure search_pmake(const path: string);
 implementation
 
 uses
+  XMLConf,
   crc16,
   pmake_utilities, pmake_variables, pmake_api, compiler;
 
@@ -31,13 +32,42 @@ const
     );
 
 var
-  sline: TStrings;
+  sline: TStringList;
   force_build: boolean = False;
   RunMode: TRunMode = rmBuild;
 
-//parsing FPC output
+procedure output_line(var sline: TStringList);
+var
+  fpc_msg: TFPCMessage;
+begin
+  fpc_msg := ParseFPCCommand(sline[0]);
+
+  WriteFPCCommand(fpc_msg, [mCompiling, mDebug, mError, mFail, mHint, mLinking, mNote, mOption, mUnitInfo, mWarning]);
+
+  sline.Delete(0);
+end;
+
 procedure command_callback(line: string; active: boolean);
 begin
+  //parse the output
+  sline.Text := sline.Text + line;
+
+  while sline.Count > 1 do
+    output_line(sline);
+
+  if not active then
+  begin
+    while sline.Count > 0 do
+      output_line(sline);
+  end;
+end;
+
+procedure make2_callback(line: string; active: boolean);
+begin
+  if not verbose then
+    exit;
+
+  //parse the output
   sline.Text := sline.Text + line;
 
   while sline.Count > 1 do
@@ -146,6 +176,7 @@ begin
   for i := 0 to pmakefiles.Count - 1 do
   begin
     f.LoadFromFile(pmakefiles[i]);
+    make2.Add('  add_subdirectory(''%s'');', [ExtractFilePath(pmakefiles[i])]);
     make2.Add(f.Text);
   end;
   f.Free;
@@ -165,7 +196,7 @@ begin
   param.Add(macros_expand('-omake2$(EXE)'));
 
   sline := TStringList.Create;
-  exit_code := command_execute(val_('PMAKE_PAS_COMPILER'), param, @command_callback);
+  exit_code := command_execute(val_('PMAKE_PAS_COMPILER'), param, @make2_callback, false);
   sline.Free;
 
   param.Free;
@@ -178,7 +209,7 @@ begin
   DeleteFile(ChangeFileExt(src_name, '.o'));
 
   if exit_code <> 0 then
-    message(FATAL_ERROR, 'fatal error: cannot compile ' + macros_expand('make2$(EXE)'));
+    messagefmt(FATAL_ERROR, 'fatal error: cannot compile %s', [macros_expand('make2$(EXE)')]);
 end;
 
 procedure usage;
@@ -260,7 +291,13 @@ procedure make_execute;
 var
   exit_code: integer;
 begin
-  pmake_initialize;
+  cache := TXMLConfig.Create(nil);
+  if FileExists('PMakeCache.txt') then
+    cache.LoadFromFile('PMakeCache.txt')
+  else
+    message(FATAL_ERROR, 'fatal error: cannot find PMakeCache.txt, rerun pmake');
+
+  pmakecache_read;
   parse_commandline;
 
   pmakefiles := TStringList.Create;
@@ -272,13 +309,13 @@ begin
   pmakecache_write;
 
   sline := TStringList.Create;
-  exit_code := command_execute(macros_expand('$(PMAKE_BINARY_DIR)make2$(EXE)', nil), nil, @command_callback);
+  exit_code := command_execute(macros_expand('$(PMAKE_BINARY_DIR)make2$(EXE)', nil), nil, @command_callback, false);
   sline.Free;
 
   pmakefiles.Free;
 
   if exit_code <> 0 then
-    message(FATAL_ERROR, 'fatal error: cannot execute ' + macros_expand('make2$(EXE)'));
+    messagefmt(FATAL_ERROR, 'fatal error: cannot execute %s', [macros_expand('make2$(EXE)')]);
 end;
 
 end.

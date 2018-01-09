@@ -134,10 +134,10 @@ begin
   targetpkg := find_pkg_by_name(pkglist, target);
 
   if sourcepkg = nil then
-    message(FATAL_ERROR, 'fatal error: cannot find package ' + source);
+    messagefmt(FATAL_ERROR, 'fatal error: cannot find package %s', [source]);
 
   if targetpkg = nil then
-    message(FATAL_ERROR, 'fatal error: cannot find package ' + target);
+    messagefmt(FATAL_ERROR, 'fatal error: cannot find package %s', [target]);
 
   //put the dependecies in a separate list
   sourcepkg^.dependency.Add(targetpkg);

@@ -31,7 +31,7 @@ type
 
   TFPCMessage = record
     msgidx: integer;
-    Text: string;
+    text: string;
   end;
   PFPCMessage = ^TFPCMessage;
 
@@ -53,13 +53,12 @@ const
   (msgtype: mUnknown; msgcol: LightGray),
   (msgtype: mWarning; msgcol: LightGray));
 
-//to add more FPC versions, ifdef this include file
+//add here more FPC versions
 {$i fpc300.inc}
 
 procedure UpdatePMakePostions(var FPCMsgs: TFPList; fName: string);
-function GetFPCMsgType(msgidx: integer): TMessage;
-procedure WriteFPCCommand(FPCMsgs: TFPList; ShowMsg: TMessages; progress: double = -1);
-function ParseFPCCommand(FPCOutput: TStrings; BasePath: string): TFPList;
+procedure WriteFPCCommand(fpc_msg: TFPCMessage; ShowMsg: TMessages);
+function ParseFPCCommand(FPCOutput: string): TFPCMessage;
 
 function CompilerCommandLine(pkg: pPackage; cmd: pointer): TStringList;
 
@@ -69,16 +68,16 @@ uses
   SysUtils, pmake_api;
 
 procedure UpdatePMakePostions(var FPCMsgs: TFPList; fName: string);
-var
-  i: integer;
-  fpc_msg: PFPCMessage;
-  fpc_msgtype: TMessage;
-  from_file: string;
-  sep: integer;
-  lineno, j: integer;
-  fitem: PPMakeItem;
-  found: boolean;
-  tmp: string;
+//var
+//  i: integer;
+//  fpc_msg: PFPCMessage;
+//  fpc_msgtype: TMessage;
+//  from_file: string;
+//  sep: integer;
+//  lineno, j: integer;
+//  fitem: PPMakeItem;
+//  found: boolean;
+//  tmp: string;
 begin
   //from_file := ExtractFileName(fName);
   //
@@ -88,11 +87,11 @@ begin
   //  fpc_msgtype := GetFPCMsgType(fpc_msg^.msgidx);
   //  if fpc_msgtype in [mError, mFail] then
   //  begin
-  //    sep := pos(',', fpc_msg^.Text);
+  //    sep := pos(',', fpc_msg^.text);
   //    if sep > 0 then
   //    begin
   //      sep := sep - length(from_file) - 2;
-  //      lineno := StrToInt(copy(fpc_msg^.Text, length(from_file) + 2, sep));
+  //      lineno := StrToInt(copy(fpc_msg^.text, length(from_file) + 2, sep));
   //
   //      //find the line no
   //      for j := 0 to pmakelist.Count - 1 do
@@ -108,27 +107,18 @@ begin
   //
   //      if found then
   //      begin
-  //        sep := pos(',', fpc_msg^.Text);
-  //        tmp := copy(fpc_msg^.Text, sep, length(fpc_msg^.Text) - sep + 1);
-  //        fpc_msg^.Text :=
-  //          format('%s(%d%s', [fitem^.fname, lineno - fitem^.startpos, tmp]);
+  //        sep := pos(',', fpc_msg^.text);
+  //        tmp := copy(fpc_msg^.text, sep, length(fpc_msg^.text) - sep + 1);
+  //        fpc_msg^.text := format('%s(%d%s', [fitem^.fname, lineno - fitem^.startpos, tmp]);
   //      end;
   //    end;
   //  end;
   //end;
 end;
 
-function GetFPCMsgType(msgidx: integer): TMessage;
-begin
-  if msgidx = -1 then
-    Result := mUnknown
-  else
-    Result := Msg[msgidx].msgtype;
-end;
+procedure WriteFPCCommand(fpc_msg: TFPCMessage; ShowMsg: TMessages);
 
-procedure WriteFPCCommand(FPCMsgs: TFPList; ShowMsg: TMessages; progress: double = -1);
-
-  function GetFPCMsgCol(msgidx: integer): TMessage;
+  function GetFPCMsgType(msgidx: integer): TMessage;
   begin
     if msgidx = -1 then
       Result := mUnknown
@@ -137,66 +127,56 @@ procedure WriteFPCCommand(FPCMsgs: TFPList; ShowMsg: TMessages; progress: double
   end;
 
 var
-  i: integer;
-  fpc_msg: TFPCMessage;
   fpc_msgtype: TMessage;
+  sline: string;
 begin
-  for i := 0 to FPCMsgs.Count - 1 do
-  begin
-    fpc_msg := TFPCMessage(FPCMsgs[i]^);
-    fpc_msgtype := GetFPCMsgType(fpc_msg.msgidx);
-    if fpc_msgtype in ShowMsg then
-    begin
-      if (fpc_msgtype = mCompiling) and (progress >= 0) and (progress <= 100) then
-        Write(format('[%3.0f%%] ', [progress]));
+  fpc_msgtype := GetFPCMsgType(fpc_msg.msgidx);
 
-      if fpc_msg.msgidx <> -1 then
-        TextColor(MsgCol[fpc_msgtype].msgcol);
-      writeln(fpc_msg.Text);
-      NormVideo;
+  if fpc_msgtype in ShowMsg then
+  begin
+    sline := fpc_msg.text;
+
+    if  Msg[fpc_msg.msgidx].msgtype = mCompiling then
+    begin
+      write(copy(sline, 1, 6));
+      Delete(sline, 1, 6);
     end;
+    if fpc_msg.msgidx <> -1 then
+      TextColor(MsgCol[fpc_msgtype].msgcol);
+
+    writeln(sline);
+
+    NormVideo;
   end;
 end;
 
-function ParseFPCCommand(FPCOutput: TStrings; BasePath: string): TFPList;
+function ParseFPCCommand(FPCOutput: string): TFPCMessage;
 var
-  sLine, snum: string;
+  snum: string;
   found: boolean;
-  i: integer;
-  FPCmsg: PFPCMessage;
   msgidx: integer;
   ipos: SizeInt;
 begin
-  Result := TFPList.Create;
-
-  for i := 0 to FPCOutput.Count - 1 do
+  found := False;
+  for msgidx := Low(Msg) to High(Msg) do
   begin
-    sLine := StringReplace(FPCOutput[i], BasePath, '.' + DirectorySeparator, [rfReplaceAll]);
-
-    found := False;
-    for msgidx := Low(Msg) to High(Msg) do
+    snum := Format('(%d)', [Msg[msgidx].msgno]);
+    ipos := Pos(snum, FPCOutput);
+    if ipos <> 0 then
     begin
-      snum := Format('(%d)', [Msg[msgidx].msgno]);
-      ipos := Pos(snum, sLine);
-      if ipos <> 0 then
-      begin
-        sLine := StringReplace(sLine, sNum + ' ', '', [rfReplaceAll]);
+      FPCOutput := StringReplace(FPCOutput, sNum + ' ', '', [rfReplaceAll]);
 
-        found := True;
-        break;
-      end;
+      found := True;
+      break;
     end;
-
-    FPCmsg := GetMem(sizeof(TFPCMessage));
-
-    if found then
-      FPCmsg^.msgidx := msgidx
-    else
-      FPCmsg^.msgidx := -1;
-
-    FPCmsg^.Text := sLine;
-    Result.Add(FPCmsg);
   end;
+
+  if found then
+    Result.msgidx := msgidx
+  else
+    Result.msgidx := -1;
+
+  Result.text := FPCOutput;
 end;
 
 function CompilerCommandLine(pkg: pPackage; cmd: pointer): TStringList;
@@ -223,7 +203,7 @@ begin
     dep := pkg^.dependency[i];
 
     if dep = nil then
-      message(FATAL_ERROR, 'fatal error: cannot find dependency ' + pPackage(pkg^.dependency[i])^.name);
+      messagefmt(FATAL_ERROR, 'fatal error: cannot find dependency %s', [pPackage(pkg^.dependency[i])^.name]);
 
     Result.Add('-Fu' + dep^.unitsoutput);
   end;

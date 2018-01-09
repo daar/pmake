@@ -18,12 +18,10 @@ type
   //callback function for the command_execute function
   PMAKECommandFun = procedure(line: string; active: boolean);
 
-procedure pmake_initialize;
-
 function UnitsOutputDir(BasePath: string): string;
 function BinOutputDir(BasePath: string): string;
 
-function command_execute(executable: string; parameters: TStrings; callback: PMAKECommandFun): integer;
+function command_execute(executable: string; parameters: TStrings; callback: PMAKECommandFun; HasStdOut: boolean = true): integer;
 function macros_expand(str: string; pkg: pPackage = nil): string;
 
 procedure copyfile(old, new: string);
@@ -42,14 +40,14 @@ var
 implementation
 
 uses
-  Process, XMLConf, typinfo, pmake_variables, pmake_api;
+  Process, pmake_variables, pmake_api;
 
 function UnitsOutputDir(BasePath: string): string;
 begin
   Result := macros_expand(BasePath + 'units' + DirectorySeparator +
     '$(PMAKE_HOST_SYSTEM_PROCESSOR)-$(PMAKE_HOST_SYSTEM_NAME)' + DirectorySeparator);
   if not ForceDirectories(Result) then
-    message(FATAL_ERROR, 'fatal error: failed to create directory "' + Result + '"');
+    messagefmt(FATAL_ERROR, 'fatal error: failed to create directory "%s"', [Result]);
 end;
 
 function BinOutputDir(BasePath: string): string;
@@ -57,7 +55,7 @@ begin
   Result := macros_expand(BasePath + 'bin' + DirectorySeparator +
     '$(PMAKE_HOST_SYSTEM_PROCESSOR)-$(PMAKE_HOST_SYSTEM_NAME)' + DirectorySeparator);
   if not ForceDirectories(Result) then
-    message(FATAL_ERROR, 'fatal error: failed to create directory "' + Result + '"');
+    messagefmt(FATAL_ERROR, 'fatal error: failed to create directory "%s"', [Result]);
 end;
 
 function GetCompilerInfo(const ACompiler, AOptions: string): string;
@@ -117,7 +115,7 @@ begin
   infosl.Free;
 end;
 
-function command_execute(executable: string; parameters: TStrings; callback: PMAKECommandFun): integer;
+function command_execute(executable: string; parameters: TStrings; callback: PMAKECommandFun; HasStdOut: boolean = true): integer;
 const
   BUF_SIZE = 2048;
 var
@@ -128,10 +126,20 @@ var
 begin
   if verbose then
   begin
-    if parameters = nil then
-      writeln('-- Executing ', executable)
+    if HasStdOut then
+    begin
+      if parameters = nil then
+        writeln(StdOut, '-- Executing ', executable)
+      else
+        writeln(StdOut, '-- Executing ', executable, ' ', parameters.Text);
+    end
     else
-      writeln('-- Executing ', executable, ' ', parameters.Text);
+    begin
+      if parameters = nil then
+        writeln('-- Executing ', executable)
+      else
+        writeln('-- Executing ', executable, ' ', parameters.Text);
+    end;
   end;
 
   if callback = nil then
@@ -182,9 +190,9 @@ begin
   else
   begin
     if pos('$(UNITSOUTPUTDIR)', tmp) <> 0 then
-      message(FATAL_ERROR, 'fatal error: invalid use of macro $(UNITSOUTPUTDIR) in "' + str + '"');
+      messagefmt(FATAL_ERROR, 'fatal error: invalid use of macro $(UNITSOUTPUTDIR) in "%s"', [str]);
     if pos('$(BINOUTPUTDIR)', tmp) <> 0 then
-      message(FATAL_ERROR, 'fatal error: invalid use of macro $(BINOUTPUTDIR) in "' + str + '"');
+      messagefmt(FATAL_ERROR, 'fatal error: invalid use of macro $(BINOUTPUTDIR) in "%s"', [str]);
   end;
 
 {$ifdef unix}
@@ -281,23 +289,6 @@ begin
     exit;
 
   Result := True;
-end;
-
-procedure pmake_initialize;
-begin
-  cache := TXMLConfig.Create(nil);
-  if FileExists('PMakeCache.txt') then
-  begin
-    cache.LoadFromFile('PMakeCache.txt');
-    pmakecache_read;
-  end
-  else
-  begin
-    cache.Filename := 'PMakeCache.txt';
-    pmakecache_write;
-  end;
-
-  CompilerDefaults;
 end;
 
 end.
