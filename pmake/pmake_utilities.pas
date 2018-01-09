@@ -30,7 +30,7 @@ function DeleteDirectory(const Directoryname: string; OnlyChildren: boolean): bo
 procedure CompilerDefaults;
 
 var
-  pmakefiles: TStrings;
+  pmakefiles: TStringList;
   pkglist: TFPList;
   depcache: TFPList;
   instlist: TFPList;
