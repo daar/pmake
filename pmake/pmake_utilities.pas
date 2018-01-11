@@ -167,7 +167,7 @@ begin
     sStream.Size := 0;
   until BytesRead = 0;
 
-  Result := AProcess.ExitCode;
+  Result := AProcess.ExitStatus;
 
   //clean up
   sStream.Free;
