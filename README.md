@@ -1,5 +1,5 @@
 [![license](https://img.shields.io/badge/license-%20GPL--2-blue.svg)](../master/LICENSE)
-[![Build Status](https://travis-ci.org/daar/pmake.svg?branch=master)](https://travis-ci.org/daar/pmake)
+[![Build Status](https://travis-ci.org/daar/pmake.svg?branch=v0.02)](https://travis-ci.org/daar/pmake)
 
 <img src="https://github.com/daar/pmake/blob/master/logo/pmake_logo.png" alt="PMake" width="50%" height="50%"/>
 
