@@ -138,17 +138,17 @@ end;
 procedure message(mode: msgMode; msg: string);
 begin
   case mode of
-    NONE: writeln(stderr, msg);
-    STATUS: writeln(stdout, msg);
-    WARNING: writeln(stderr, msg);
-    AUTHOR_WARNING: writeln(stderr, msg);
-    SEND_ERROR: writeln(stderr, msg);
+    NONE: StdErrLn(msg);
+    STATUS: StdOutLn(msg);
+    WARNING: StdErrLn( msg);
+    AUTHOR_WARNING: StdErrLn(msg);
+    SEND_ERROR: StdErrLn(msg);
     FATAL_ERROR:
     begin
-      writeln(stderr, msg);
+      StdErrLn(msg);
       halt(1);
     end;
-    DEPRECATION: writeln(stderr, msg);
+    DEPRECATION: StdErrLn(msg);
   end;
 end;
 

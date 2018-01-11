@@ -397,7 +397,7 @@ begin
 
   cache.Flush;
 
-  writeln('-- PMakeCache.txt file has been written');
+  OutputLn('-- PMakeCache.txt file has been written');
 end;
 
 procedure pmakecache_read;

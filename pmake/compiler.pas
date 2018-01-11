@@ -65,7 +65,7 @@ function CompilerCommandLine(pkg: pPackage; cmd: pointer): TStringList;
 implementation
 
 uses
-  SysUtils, pmake_api;
+  SysUtils, pmake_api, pmake_utilities;
 
 procedure UpdatePMakePostions(var FPCMsgs: TFPList; fName: string);
 //var
@@ -144,7 +144,7 @@ begin
     if fpc_msg.msgidx <> -1 then
       TextColor(MsgCol[fpc_msgtype].msgcol);
 
-    writeln(sline);
+    OutputLn(sline);
 
     NormVideo;
   end;

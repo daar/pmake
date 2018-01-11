@@ -9,12 +9,12 @@ uses
   Classes,
   SysUtils,
   XMLConf,
+  pmake_main,
   pmake_variables,
   pmake_utilities,
   pmake_api;
 
 var
-  str: TStrings;
   force_build: boolean = False;
 
 const
@@ -25,85 +25,24 @@ const
     (name: '--verbose'; descr: 'Be more verbose.')
     );
 
-  //parsing FPC output
-  procedure command_callback(line: string; active: boolean);
-  begin
-    if verbose then
-    begin
-      str.Text := str.Text + line;
-
-      while str.Count > 0 do
-      begin
-        writeln(str[0]);
-        str.Delete(0);
-      end;
-    end;
-  end;
-
-  procedure create_and_build_make;
-  var
-    tmp: TStrings;
-    param: TStrings;
-    src_name: string;
-    exit_code: integer;
-  begin
-    writeln('-- Creating makefile');
-
-    tmp := TStringList.Create;
-
-    tmp.Add('program make;');
-    tmp.Add('uses {$IFDEF UNIX} cthreads, {$ENDIF} make_main;');
-    tmp.Add('begin');
-    tmp.Add('  make_execute;');
-    tmp.Add('end.');
-
-    src_name := GetTempFileName('.', 'pmake');
-    tmp.SaveToFile(src_name);
-    tmp.Free;
-
-    param := TStringList.Create;
-    param.Add('-viq');
-    //add the unit search path to the pmake source directory
-    param.Add('-FU' + UnitsOutputDir(val_('PMAKE_BINARY_DIR')));
-    param.Add('-Fu' + val_('PMAKE_TOOL_DIR'));
-    param.Add(src_name);
-    param.Add(macros_expand('-omake$(EXE)'));
-
-    str := TStringList.Create;
-    exit_code := command_execute(val_('PMAKE_PAS_COMPILER'), param, @command_callback);
-    str.Free;
-
-    //remove the object and source files
-    if verbose then
-      writeln('-- Deleting temporary files');
-
-    DeleteFile(src_name);
-    DeleteFile(ChangeFileExt(src_name, '.o'));
-
-    if exit_code <> 0 then
-      messagefmt(FATAL_ERROR, 'fatal error: cannot compile %s', [macros_expand('make$(EXE)')]);
-
-    writeln('-- Build file has been written to: ', macros_expand('make$(EXE)'));
-  end;
-
   procedure usage;
   var
     i: integer;
   begin
-    writeln('PMake the pascal build tool. Version ', PMAKE_VERSION, ' [',
+    OutputLn('PMake the pascal build tool. Version ' + PMAKE_VERSION + ' [' +
 {$I %DATE%}
-      , '] for ',
+      + '] for ' +
 {$I %FPCTARGETCPU%}
       );
-    writeln('Copyright (c) 2016-2017 by Darius Blaszyk');
-    writeln;
-    writeln('Usage ');
-    writeln('  pmake [options] <path-to-source>');
-    writeln;
-    writeln('Options');
+    OutputLn('Copyright (c) 2016-2017 by Darius Blaszyk');
+    OutputLn('');
+    OutputLn('Usage ');
+    OutputLn('  pmake [options] <path-to-source>');
+    OutputLn('');
+    OutputLn('Options');
 
     for i := low(CmdOptions) to high(CmdOptions) do
-      writeln(Format('  %-16s %s', [CmdOptions[i].name, CmdOptions[i].descr]));
+      OutputLn(Format('  %-16s %s', [CmdOptions[i].name, CmdOptions[i].descr]));
 
     halt(1);
   end;
@@ -141,7 +80,7 @@ const
                 end
                 else
                 begin
-                  writeln('error: please supply a valid path for the compiler');
+                  StdErrLn('error: please supply a valid path for the compiler');
                   usage;
                 end;
               end;
@@ -158,14 +97,14 @@ const
           if DirectoryExists(ParamStr(i)) then
           begin
             found := True;
-             set_('PMAKE_SOURCE_DIR', IncludeTrailingPathDelimiter(ExpandFileName(ParamStr(i))));
+            set_('PMAKE_SOURCE_DIR', IncludeTrailingPathDelimiter(ExpandFileName(ParamStr(i))));
             Inc(i);
           end;
       end;
 
       if not found then
       begin
-        writeln('error: invalid command-line parameter ', ParamStr(i));
+        StdErrLn('error: invalid command-line parameter ' + ParamStr(i));
         usage;
       end;
 
@@ -174,16 +113,7 @@ const
   end;
 
 begin
-  //the binary dir is determined by the current directory pmake is invoked from
-  set_('PMAKE_BINARY_DIR', IncludeTrailingPathDelimiter(GetCurrentDir));
-
-  //folder where pmake is located, also location of units for make and make2
-  set_('PMAKE_TOOL_DIR', ExtractFilePath(ParamStr(0)));
-
-  cache := TXMLConfig.Create(nil);
-  cache.Filename := 'PMakeCache.txt';
-
-  CompilerDefaults;
+  pmake_initialize(IncludeTrailingPathDelimiter(GetCurrentDir));
 
   parse_commandline;
 
@@ -191,5 +121,5 @@ begin
     create_and_build_make;
 
   pmakecache_write;
-  writeln('-- Generating done');
+  OutputLn('-- Generating done');
 end.

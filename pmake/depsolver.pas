@@ -186,7 +186,7 @@ begin
       //if no dependency found then raise error
       if i >= pkglist.Count then
       begin
-        writeln(stderr, 'fatal error: cannot resolve remaining dependencies');
+        StdErrLn('fatal error: cannot resolve remaining dependencies');
 
         //make a dump here for all unresolved packages
         for j := 0 to pkglist.Count - 1 do
@@ -199,7 +199,7 @@ begin
               if k <> pkg^.unresolved.Count - 1 then
                 Write(pPackage(pkg^.unresolved[k])^.name, ', ')
               else
-                writeln(pPackage(pkg^.unresolved[k])^.name);
+                OutputLn(pPackage(pkg^.unresolved[k])^.name);
           end;
         end;
         halt(1);

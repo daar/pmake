@@ -33,7 +33,7 @@ begin
   line := StringReplace(sline[0], val_('PMAKE_SOURCE_DIR'), '.' + DirectorySeparator, [rfReplaceAll]);
   line := StringReplace(line, '(3104)', format('(3104) [%3.0f%%]', [progress]), [rfReplaceAll]);
 
-  writeln(StdOut, line);
+  StdOutLn(line);
 
   sline.Delete(0);
 end;
@@ -152,7 +152,7 @@ begin
           end;
           ctCustom:
           begin
-            writeln(StdOut, 'Executing ', pCustomCommand(cmd)^.executable);
+            StdOutLn('Executing ', pCustomCommand(cmd)^.executable);
 
             param := TStringList.Create;
             param.Add(pCustomCommand(cmd)^.parameters);
@@ -164,7 +164,7 @@ begin
           end;
         end;
     end;
-    writeln(StdOut, format('(5025) [%3.0f%%] Built package %s', [progress, pkg^.name]));
+    StdOutLn(format('(5025) [%3.0f%%] Built package %s', [progress, pkg^.name]));
   end;
 end;
 
@@ -194,7 +194,7 @@ begin
           begin
             if not ForceDirectories(cmd^.destination) then
             begin
-              writeln(StdOut);
+              StdOutLn('');
               messagefmt(FATAL_ERROR, 'fatal error: failed to create directory "%s"', [cmd^.directory]);
             end;
 
@@ -202,7 +202,7 @@ begin
             if not First then
               write(StdOut, '       ');
 
-            writeln(StdOut, 'Installing - ', cmd^.destination + info.name);
+            StdOutLn('Installing - ', cmd^.destination + info.name);
             copyfile(cmd^.directory + info.name, cmd^.destination + info.name);
             First := False;
           end;
@@ -213,7 +213,7 @@ begin
     end;
   end;
 
-  writeln(StdOut, 'Installed files');
+  StdOutLn('Installed files');
 end;
 
 procedure CleanMode(pkglist: TFPList);
@@ -230,7 +230,7 @@ begin
     progress += 100 / pkglist.Count;
     write(StdOut, format('[%3.0f%%] ', [progress]));
 
-    writeln(StdOut, 'package ', pkg^.name);
+    StdOutLn('package ', pkg^.name);
 
     for j := 0 to pkg^.commands.Count - 1 do
     begin
@@ -242,29 +242,29 @@ begin
         begin
           if not DeleteDirectory(pkg^.unitsoutput, False) then
           begin
-            writeln(StdOut);
+            StdOutLn('');
             messagefmt(FATAL_ERROR, 'fatal error: cannot remove directory %s', [pkg^.unitsoutput]);
           end
           else
           if verbose then
-            writeln(StdOut, '       deleting ', pkg^.unitsoutput);
+            StdOutLn('       deleting ', pkg^.unitsoutput);
         end;
 
         if DirectoryExists(pkg^.binoutput) then
         begin
           if not DeleteDirectory(pkg^.binoutput, False) then
           begin
-            writeln(StdOut);
+            StdOutLn('');
             messagefmt(FATAL_ERROR, 'fatal error: cannot remove directory $s', [pkg^.binoutput]);
           end
           else
           if verbose then
-            writeln(StdOut, '       deleting ', pkg^.binoutput);
+            StdOutLn('       deleting ', pkg^.binoutput);
         end;
       end;
     end;
   end;
-  writeln(StdOut, 'Cleaned all packages');
+  StdOutLn('Cleaned all packages');
 end;
 
 procedure execute_make2;

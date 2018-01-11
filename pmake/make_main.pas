@@ -72,7 +72,7 @@ begin
 
   while sline.Count > 1 do
   begin
-    writeln(sline[0]);
+    OutputLn(sline[0]);
     sline.Delete(0);
   end;
 
@@ -80,7 +80,7 @@ begin
   begin
     while sline.Count > 0 do
     begin
-      writeln(sline[0]);
+      OutputLn(sline[0]);
       sline.Delete(0);
     end;
   end;
@@ -162,7 +162,7 @@ var
   i, exit_code: integer;
   param: TStrings;
 begin
-  writeln('-- Processing PMake.txt files');
+  OutputLn('-- Processing PMake.txt files');
 
   make2 := TStringList.Create;
 
@@ -203,7 +203,7 @@ begin
 
   //remove the object and source files
   if verbose then
-    writeln('-- Deleting temporary files');
+    OutputLn('-- Deleting temporary files');
 
   DeleteFile(src_name);
   DeleteFile(ChangeFileExt(src_name, '.o'));
@@ -216,20 +216,20 @@ procedure usage;
 var
   i: integer;
 begin
-  writeln('PMake the pascal build tool. Version ', PMAKE_VERSION, ' [',
+  OutputLn('PMake the pascal build tool. Version ' + PMAKE_VERSION + ' [' +
 {$I %DATE%}
-    , '] for ',
+    + '] for ' +
 {$I %FPCTARGETCPU%}
     );
-  writeln('Copyright (c) 2016-2017 by Darius Blaszyk');
-  writeln;
-  writeln('Usage ');
-  writeln('  make [options] <path-to-source>');
-  writeln;
-  writeln('Options');
+  OutputLn('Copyright (c) 2016-2017 by Darius Blaszyk');
+  OutputLn('');
+  OutputLn('Usage ');
+  OutputLn('  make [options] <path-to-source>');
+  OutputLn('');
+  OutputLn('Options');
 
   for i := low(CmdOptions) to high(CmdOptions) do
-    writeln(Format('  %-16s %s', [CmdOptions[i].name, CmdOptions[i].descr]));
+    OutputLn(Format('  %-16s %s', [CmdOptions[i].name, CmdOptions[i].descr]));
 
   halt(1);
 end;
@@ -265,7 +265,7 @@ begin
               end
               else
               begin
-                writeln('error: please supply a valid path for the compiler');
+                StdErrLn('error: please supply a valid path for the compiler');
                 usage;
               end;
             end;
@@ -279,7 +279,7 @@ begin
 
     if not found then
     begin
-      writeln('error: invalid commandline parameter ', ParamStr(i));
+      StdErrLn('error: invalid commandline parameter ' + ParamStr(i));
       usage;
     end;
 

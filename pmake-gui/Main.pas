@@ -59,12 +59,12 @@ type
     procedure LanguagesMenuItemClick(Sender: TObject);
     procedure GenerateButtonClick(Sender: TObject);
     procedure ButtonPanelClick(Sender: TObject);
-    procedure BrowseSourceEditChange(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure MenuItem18Click(Sender: TObject);
     procedure MenuItem1Click(Sender: TObject);
     procedure MenuItem5Click(Sender: TObject);
   private
+    function CheckAndCreateDirectory(ADirectory: string): boolean;
     { private declarations }
   public
     { public declarations }
@@ -78,7 +78,12 @@ implementation
 {$R *.lfm}
 
 uses
-  About, pmake_variables, make_main, pmake_utilities;
+  About, pmake_variables, make_main, pmake_utilities, pmake_main;
+
+procedure GUIOutputLn(msg: string);
+begin
+  PMakeGUIForm.MessagesMemo.Lines.Add(msg);
+end;
 
 { TPMakeGUIForm }
 
@@ -87,50 +92,51 @@ begin
   Close;
 end;
 
-procedure TPMakeGUIForm.BrowseSourceEditChange(Sender: TObject);
-var
-  i: integer;
-  BrowseSource: String;
-begin
-  //initialize default build folder
-  BrowseSource := IncludeTrailingPathDelimiter(BrowseSourceEdit.Text);
-  BrowseBuildEdit.Text := ExpandFileName(BrowseSource + '..' + PathDelim + 'build');
-
-  if pmakefiles = nil then
-    pmakefiles := TStringList.Create;
-
-  pmakefiles.Clear;
-  search_pmake(BrowseSource);
-
-  for i := 0 to pmakefiles.Count - 1 do
-  begin
-    OptionsTreeView.Items.Add(nil, pmakefiles[i]);
-  end;
-end;
-
 procedure TPMakeGUIForm.BrowseSourceButtonClick(Sender: TObject);
+var
+  BrowseSource: string;
 begin
   if SelectDirectoryDialog.Execute then
   begin
-    GenerateButton.Enabled := True;
-    BrowseSourceEdit.Text := SelectDirectoryDialog.FileName;
+    ConfigureButton.Enabled := True;
+    BrowseSource := IncludeTrailingPathDelimiter(SelectDirectoryDialog.FileName);
+
+    BrowseSourceEdit.Text := BrowseSource;
+
+    //initialize default build folder
+    BrowseBuildEdit.Text := IncludeTrailingPathDelimiter(ExpandFileName(BrowseSource + '..' + PathDelim + 'build'));
   end;
 end;
 
 procedure TPMakeGUIForm.BrowseBuildButtonClick(Sender: TObject);
 begin
   if SelectDirectoryDialog.Execute then
-    BrowseBuildEdit.Text := SelectDirectoryDialog.FileName;
+    BrowseBuildEdit.Text := IncludeTrailingPathDelimiter(SelectDirectoryDialog.FileName);
 end;
 
 procedure TPMakeGUIForm.ConfigureButtonClick(Sender: TObject);
 begin
+  if not DirectoryExists(BrowseSourceEdit.Text) then
+  begin
+    ShowMessage('Cannot find source directory, please specify.');
+    exit;
+  end;
+  if not CheckAndCreateDirectory(BrowseBuildEdit.Text) then
+     //folder does not exists
+    exit;
+
   GenerateButton.Enabled := True;
+
+  pmake_initialize(BrowseBuildEdit.Text);
+
+  set_('PMAKE_SOURCE_DIR', BrowseSourceEdit.Text);
+
+  pmakecache_write;
 end;
 
 procedure TPMakeGUIForm.GenerateButtonClick(Sender: TObject);
 begin
-
+  create_and_build_make;
 end;
 
 procedure TPMakeGUIForm.LanguagesMenuItemClick(Sender: TObject);
@@ -143,8 +149,12 @@ end;
 
 procedure TPMakeGUIForm.FormCreate(Sender: TObject);
 //var
-//  menuItem : TMenuItem;
+//  menuItem: TMenuItem;
 begin
+  OutputLn := @GUIOutputLn;
+  StdOutLn := @GUIOutputLn;
+  StdErrLn := @GUIOutputLn;
+
   Caption := Format('PMake %s', [PMAKE_VERSION]);
 
   //menuItem := TMenuItem.Create(LanguagesMenuItem) ;
@@ -180,6 +190,34 @@ end;
 procedure TPMakeGUIForm.MenuItem5Click(Sender: TObject);
 begin
   Close;
+end;
+
+function TPMakeGUIForm.CheckAndCreateDirectory(ADirectory: string): boolean;
+begin
+  Result := True;
+
+  if not DirectoryExists(ADirectory) then
+  begin
+    if MessageDlg('Create directory',
+        Format(
+          'The directory %s does not exist.%sWould you like to create it?', [
+          BrowseBuildEdit.Text, LineEnding]),
+        mtInformation, [mbYes, mbNo], 0) = mrYes
+    then
+    begin
+      if not CreateDir(BrowseBuildEdit.Text) then
+      begin
+        OutputLn(Format('Failed to create directory %s?', [BrowseBuildEdit.Text]));
+        Result := False;
+      end
+      else
+        Result := True
+    end
+    else
+      Result := False;
+  end
+  else
+    Result := True;
 end;
 
 end.

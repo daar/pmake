@@ -36,11 +36,29 @@ var
   instlist: TFPList;
   cmd_count: longint = 0;
   verbose: boolean = False;
+  OutputLn: procedure(msg: string);
+  StdOutLn: procedure(msg: string);
+  StdErrLn: procedure(msg: string);
 
 implementation
 
 uses
   Process, pmake_variables, pmake_api;
+
+procedure CmdOutputLn(msg: string);
+begin
+  OutputLn(msg);
+end;
+
+procedure CmdStdOutLn(msg: string);
+begin
+  StdOutLn(msg);
+end;
+
+procedure CmdStdErrLn(msg: string);
+begin
+  StdErrLn(msg);
+end;
 
 function UnitsOutputDir(BasePath: string): string;
 begin
@@ -129,16 +147,16 @@ begin
     if HasStdOut then
     begin
       if parameters = nil then
-        writeln(StdOut, '-- Executing ', executable)
+        StdOutLn('-- Executing ' + executable)
       else
-        writeln(StdOut, '-- Executing ', executable, ' ', parameters.Text);
+        StdOutLn('-- Executing ' + executable + ' ' + parameters.Text);
     end
     else
     begin
       if parameters = nil then
-        writeln('-- Executing ', executable)
+        OutputLn('-- Executing ' + executable)
       else
-        writeln('-- Executing ', executable, ' ', parameters.Text);
+        OutputLn('-- Executing ' + executable + ' ' + parameters.Text);
     end;
   end;
 
@@ -290,5 +308,10 @@ begin
 
   Result := True;
 end;
+
+initialization
+  OutputLn := @CmdOutputLn;
+  StdOutLn := @CmdStdOutLn;
+  StdErrLn := @CmdStdErrLn;
 
 end.
