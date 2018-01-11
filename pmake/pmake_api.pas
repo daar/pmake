@@ -168,11 +168,21 @@ begin
 end;
 
 procedure add_subdirectory(path: string);
+var
+  srcdir: string;
+  bindir: string;
 begin
-  if val_('PMAKE_SOURCE_DIR') = '' then
+  srcdir := val_('PMAKE_SOURCE_DIR');
+
+  if srcdir = '' then
     set_('PMAKE_SOURCE_DIR', path);
 
+  //update the source directory
   set_('PMAKE_CURRENT_SOURCE_DIR', path);
+
+  //update the binary directory
+  bindir := val_('PMAKE_BINARY_DIR');
+  set_('PMAKE_CURRENT_BINARY_DIR', ExpandFileName(bindir + ExtractRelativepath(srcdir, path)));
 end;
 
 procedure compiler_minimum_required(major, minor, revision: integer);
