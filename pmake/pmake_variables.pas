@@ -7,9 +7,44 @@ interface
 uses
   XMLConf;
 
+type
+  PMK_type = (ptBoolean, ptInteger, ptFloat, ptString, ptFileCache);
+
+  pPMK_Link = ^PMK_Link;
+  PMK_Link = record
+    next, prev: pointer;
+  end;
+
+  pPMK_FileCache = ^PMK_FileCache;
+  PMK_FileCache = record
+    next, prev: pointer;
+    path: PChar;
+    crc: word;
+  end;
+
+  pPMK_variant = ^PMK_variant;
+  PMK_variant = record
+    next, prev: pointer;
+    vtype: PMK_type;
+    name: shortstring;
+      case word of
+        ptBoolean:   (PM_Boolean  : boolean);
+        ptInteger:   (PM_Integer  : integer);
+        ptFloat:     (PM_Float    : double);
+        ptString:    (PM_String   : shortstring);
+        ptFileCache: (PM_FileCache: pointer);
+  end;
+
+  PMK_ListBase = record
+    first, last: pointer;
+  end;
+
+var
+  varlist: PMK_ListBase;
+
 const
-  _ON              = True;
-  _OFF             = False;
+  _ON_             = True;
+  _OFF_            = False;
 
   UNKNOWN          = $00;
   DEBUG            = $01;
@@ -52,41 +87,6 @@ implementation
 
 uses
   Classes, SysUtils, crc16, pmake_utilities;
-
-type
-  PMK_type = (ptBoolean, ptInteger, ptFloat, ptString, ptFileCache);
-
-  pPMK_Link = ^PMK_Link;
-  PMK_Link = record
-    next, prev: pointer;
-  end;
-
-  pPMK_FileCache = ^PMK_FileCache;
-  PMK_FileCache = record
-    next, prev: pointer;
-    path: PChar;
-    crc: word;
-  end;
-
-  pPMK_variant = ^PMK_variant;
-  PMK_variant = record
-    next, prev: pointer;
-    vtype: PMK_type;
-    name: shortstring;
-      case word of
-        ptBoolean:   (PM_Boolean  : boolean);
-        ptInteger:   (PM_Integer  : integer);
-        ptFloat:     (PM_Float    : double);
-        ptString:    (PM_String   : shortstring);
-        ptFileCache: (PM_FileCache: pointer);
-  end;
-
-  PMK_ListBase = record
-    first, last: pointer;
-  end;
-
-var
-  varlist: PMK_ListBase;
 
 function callocN(Size: PtrUInt): pointer;
 var

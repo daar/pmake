@@ -1,6 +1,8 @@
 compiler_minimum_required(3,0,0);
 project('PMake: a build tool for (free) pascal');
 
+option('WITH_DEBUG', 'Enable debug info for PMake', _ON_);
+
 //compile the pmake units
 add_library('lib_pmake', ['compiler.pas', 'crc16.pas', 'depsolver.pas', 'make2_main.pas', 'make_main.pas', 'pmake_api.pas', 'pmake_main.pas', 'pmake_utilities.pas', 'pmake_variables.pas']);
 

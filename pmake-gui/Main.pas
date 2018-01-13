@@ -6,7 +6,8 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls,
-  ComCtrls, EditBtn, ButtonPanel, ExtCtrls, Menus, LCLTranslator, DefaultTranslator;
+  ComCtrls, EditBtn, ButtonPanel, ExtCtrls, Menus, LCLTranslator,
+  DefaultTranslator, ValEdit;
 
 type
 
@@ -52,7 +53,7 @@ type
     ConfigurePanel: TPanel;
     SelectDirectoryDialog: TSelectDirectoryDialog;
     Splitter: TSplitter;
-    OptionsTreeView: TTreeView;
+    OptionsValueListEditor: TValueListEditor;
     procedure BrowseSourceButtonClick(Sender: TObject);
     procedure BrowseBuildButtonClick(Sender: TObject);
     procedure ConfigureButtonClick(Sender: TObject);
@@ -65,6 +66,8 @@ type
     procedure MenuItem5Click(Sender: TObject);
   private
     function CheckAndCreateDirectory(ADirectory: string): boolean;
+    procedure UpdateOptionsValueListEditor;
+    procedure UpdatePMakeCache;
     { private declarations }
   public
     { public declarations }
@@ -132,10 +135,15 @@ begin
   set_('PMAKE_SOURCE_DIR', BrowseSourceEdit.Text);
 
   pmakecache_write;
+
+  UpdateOptionsValueListEditor;
 end;
 
 procedure TPMakeGUIForm.GenerateButtonClick(Sender: TObject);
 begin
+  UpdatePMakeCache;
+  pmakecache_write;
+
   create_and_build_make;
 end;
 
@@ -168,7 +176,7 @@ begin
   //clear the GUI
   BrowseSourceEdit.Text := '';
   BrowseBuildEdit.Text := '';
-  OptionsTreeView.Items.Clear;
+  OptionsValueListEditor.Clear;
   MessagesMemo.Lines.Clear;
 end;
 
@@ -218,6 +226,48 @@ begin
   end
   else
     Result := True;
+end;
+
+procedure TPMakeGUIForm.UpdateOptionsValueListEditor;
+var
+  v: pPMK_variant;
+begin
+  OptionsValueListEditor.Clear;
+  OptionsValueListEditor.FixedCols := 1;
+
+  v := varlist.first;
+
+  while v <> nil do
+  begin
+    case v^.vtype of
+      ptBoolean:
+        OptionsValueListEditor.Strings.Add(v^.name + '=' + BoolToStr(v^.PM_Boolean));
+      ptInteger:
+        OptionsValueListEditor.Strings.Add(v^.name + '=' + IntToStr(v^.PM_Integer));
+      ptFloat:
+        OptionsValueListEditor.Strings.Add(v^.name + '=' + FloatToStr(v^.PM_Float));
+      ptString:
+        OptionsValueListEditor.Strings.Add(v^.name + '=' + v^.PM_String);
+    end;
+
+    v := v^.next;
+  end;
+
+  OptionsValueListEditor.AutoSizeColumn(0);
+end;
+
+procedure TPMakeGUIForm.UpdatePMakeCache;
+var
+  i: integer;
+  key, value: string;
+begin
+  for i := 1 to OptionsValueListEditor.Strings.Count - 1 do
+  begin
+    key := OptionsValueListEditor.Keys[i];
+    value := OptionsValueListEditor.Values[key];
+
+    set_(key, value);
+  end;
 end;
 
 end.

@@ -152,7 +152,7 @@ begin
           end;
           ctCustom:
           begin
-            StdOutLn('Executing ', pCustomCommand(cmd)^.executable);
+            StdOutLn('Executing ' + pCustomCommand(cmd)^.executable);
 
             param := TStringList.Create;
             param.Add(pCustomCommand(cmd)^.parameters);
@@ -202,7 +202,7 @@ begin
             if not First then
               write(StdOut, '       ');
 
-            StdOutLn('Installing - ', cmd^.destination + info.name);
+            StdOutLn('Installing - ' + cmd^.destination + info.name);
             copyfile(cmd^.directory + info.name, cmd^.destination + info.name);
             First := False;
           end;
@@ -230,7 +230,7 @@ begin
     progress += 100 / pkglist.Count;
     write(StdOut, format('[%3.0f%%] ', [progress]));
 
-    StdOutLn('package ', pkg^.name);
+    StdOutLn('package ' + pkg^.name);
 
     for j := 0 to pkg^.commands.Count - 1 do
     begin
@@ -247,7 +247,7 @@ begin
           end
           else
           if verbose then
-            StdOutLn('       deleting ', pkg^.unitsoutput);
+            StdOutLn('       deleting ' + pkg^.unitsoutput);
         end;
 
         if DirectoryExists(pkg^.binoutput) then
@@ -259,7 +259,7 @@ begin
           end
           else
           if verbose then
-            StdOutLn('       deleting ', pkg^.binoutput);
+            StdOutLn('       deleting ' + pkg^.binoutput);
         end;
       end;
     end;

@@ -1,5 +1,5 @@
 object PMakeGUIForm: TPMakeGUIForm
-  Left = 489
+  Left = 269
   Height = 502
   Top = 180
   Width = 813
@@ -101,7 +101,7 @@ object PMakeGUIForm: TPMakeGUIForm
     ClientHeight = 296
     ClientWidth = 813
     TabOrder = 2
-    object OptionsTreeView: TTreeView
+    object OptionsValueListEditor: TValueListEditor
       AnchorSideLeft.Control = ConfigurePanel
       AnchorSideTop.Control = GroupedCheckBox
       AnchorSideTop.Side = asrBottom
@@ -115,10 +115,14 @@ object PMakeGUIForm: TPMakeGUIForm
       Width = 801
       Anchors = [akTop, akLeft, akRight, akBottom]
       BorderSpacing.Around = 6
-      ReadOnly = True
-      RowSelect = True
+      FixedCols = 0
+      RowCount = 2
       TabOrder = 0
-      Options = [tvoAutoItemHeight, tvoHideSelection, tvoKeepCollapsedNodes, tvoReadOnly, tvoRowSelect, tvoShowButtons, tvoShowLines, tvoShowRoot, tvoToolTips, tvoThemedDraw]
+      KeyOptions = [keyEdit, keyUnique]
+      ColWidths = (
+        64
+        733
+      )
     end
     object BrowseBuildButton: TButton
       AnchorSideTop.Control = BrowseSourceButton

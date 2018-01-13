@@ -47,17 +47,17 @@ uses
 
 procedure CmdOutputLn(msg: string);
 begin
-  OutputLn(msg);
+  writeln(msg);
 end;
 
 procedure CmdStdOutLn(msg: string);
 begin
-  StdOutLn(msg);
+  writeln(StdOut, msg);
 end;
 
 procedure CmdStdErrLn(msg: string);
 begin
-  StdErrLn(msg);
+  writeln(StdErr, msg);
 end;
 
 function UnitsOutputDir(BasePath: string): string;

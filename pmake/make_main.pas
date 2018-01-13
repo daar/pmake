@@ -21,11 +21,12 @@ type
   TRunMode = (rmBuild, rmInstall, rmClean);
 
 const
-  CmdOptions: array[1..7] of TCmdOption = (
+  CmdOptions: array[1..8] of TCmdOption = (
     (name: 'build'; descr: 'Build all targets in the project.'),
     (name: 'clean'; descr: 'Clean all units and folders in the project'),
     (name: 'install'; descr: 'Install all targets in the project.'),
     (name: '--compiler'; descr: 'Use indicated binary as compiler'),
+    (name: '--debug'; descr: 'Do not delete the make2 source file.'),
     (name: '--force'; descr: 'Force building make2.exe'),
     (name: '--help'; descr: 'This message.'),
     (name: '--verbose'; descr: 'Be more verbose.')
@@ -34,6 +35,7 @@ const
 var
   sline: TStringList;
   force_build: boolean = False;
+  debug: boolean = False;
   RunMode: TRunMode = rmBuild;
 
 procedure output_line(var sline: TStringList);
@@ -205,7 +207,9 @@ begin
   if verbose then
     OutputLn('-- Deleting temporary files');
 
-  DeleteFile(src_name);
+  if not debug then
+    DeleteFile(src_name);
+
   DeleteFile(ChangeFileExt(src_name, '.o'));
 
   if exit_code <> 0 then
@@ -269,6 +273,8 @@ begin
                 usage;
               end;
             end;
+            '--force': force_build := True;
+            '--debug': debug := True;
             '--help': usage;
             '--verbose': verbose := True;
           end;
