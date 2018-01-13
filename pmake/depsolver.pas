@@ -18,6 +18,7 @@ type
     dependency: TFPList;
     unresolved: TFPList;
     commands: TFPList;
+    includes: TStrings;
     activepath: string;
     binoutput: string;
     unitsoutput: string;
@@ -102,6 +103,8 @@ begin
     pkg^.dependency := TFPList.Create;
     pkg^.unresolved := TFPList.Create;
     pkg^.commands := TFPList.Create;
+
+    pkg^.includes := TStringList.Create;
 
     pkg^.resolved := false;
     pkg^.activepath := srcpath;

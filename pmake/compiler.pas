@@ -190,9 +190,12 @@ begin
 
   cmdtype := TCommandType(cmd^);
 
-  // Output file paths
+  //output file paths
   if cmdtype = ctExecutable then
     Result.Add('-FE' + pkg^.binoutput);
+
+  for i := 0 to pkg^.includes.Count - 1 do
+    Result.Add('-Fi' + pkg^.includes[i]);
 
   Result.Add('-Fu' + pkg^.unitsoutput);
   Result.Add('-FU' + pkg^.unitsoutput);
@@ -208,19 +211,18 @@ begin
     Result.Add('-Fu' + dep^.unitsoutput);
   end;
 
-  // Output executable name
+  //output executable name
   if cmdtype = ctExecutable then
   begin
     Result.Add(pkg^.activepath + pExecutableCommand(cmd)^.filename);
     Result.Add('-o' + pExecutableCommand(cmd)^.executable + ExtractFileExt(ParamStr(0)));
   end;
 
-  // compile unit name
+  //compile unit name
   if cmdtype = ctUnit then
     Result.Add(pkg^.activepath + pUnitCommand(cmd)^.filename);
 
-  // Force the compiler-output to be easy parseable
-  //if not Verbose then
+  //force the compiler-output to be easy parseable
   Result.Add('-viq');
 end;
 

@@ -16,11 +16,13 @@ procedure add_executable(pkgname, executable, srcfile: string; depends: array of
 procedure add_library(pkgname: string; srcfiles: array of const);
 procedure add_library(pkgname: string; srcfiles, depends: array of const);
 
+procedure include_directories(pkgname: string; directories: array of const);
+
 procedure install(directory, destination, pattern, depends: string);
 procedure add_custom_command(pkgname, executable, parameters: string; depends: array of const);
 
 procedure compiler_minimum_required(major, minor, revision: integer);
-procedure project(Name: string; major: integer = 0; minor: integer = 0; patch: integer = 0; tweak: integer = 0);
+procedure project(name: string; major: integer = 0; minor: integer = 0; patch: integer = 0; tweak: integer = 0);
 
 procedure message(mode: msgMode; msg: string);
 procedure message(msg: string);
@@ -95,6 +97,23 @@ begin
 
   //dependencies will be processed once all packages are processed
   add_dependecies_to_cache(pkgname, depends);
+end;
+
+procedure include_directories(pkgname: string; directories: array of const);
+var
+  i: integer;
+  pkg: pPackage;
+  dir: string;
+  curdir: string;
+begin
+  curdir := val_('PMAKE_CURRENT_SOURCE_DIR');
+  pkg := find_or_create_package(pkglist, pkgname, curdir, val_('PMAKE_CURRENT_BINARY_DIR'));
+
+  for i := Low(directories) to High(directories) do
+  begin
+    dir := IncludeTrailingPathDelimiter(ExpandFileName(curdir + AnsiString(directories[I].VAnsiString)));
+    pkg^.includes.Add(dir);
+  end;
 end;
 
 procedure install(directory, destination, pattern, depends: string);
@@ -211,10 +230,10 @@ begin
     messagefmt(FATAL_ERROR, 'fatal error: minimum compiler version required is %d.%d.%d, got %s', [major, minor, revision, val_('PMAKE_PAS_COMPILER_VERSION')]);
 end;
 
-procedure project(Name: string; major: integer = 0; minor: integer = 0;
+procedure project(name: string; major: integer = 0; minor: integer = 0;
   patch: integer = 0; tweak: integer = 0);
 begin
-  set_('PMAKE_PROJECT_NAME', Name);
+  set_('PMAKE_PROJECT_NAME', name);
 
   set_('PROJECT_VERSION_MAJOR', major);
   set_('PROJECT_VERSION_MINOR', minor);
