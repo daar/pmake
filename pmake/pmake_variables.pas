@@ -39,13 +39,12 @@ type
     first, last: pointer;
   end;
 
+  PMK_Bool = (_OFF_, _ON_);
+
 var
   varlist: PMK_ListBase;
 
 const
-  _ON_             = True;
-  _OFF_            = False;
-
   UNKNOWN          = $00;
   DEBUG            = $01;
   RELEASE          = $02;
@@ -72,7 +71,7 @@ function val_(name: shortstring): boolean;
 function val_(name: shortstring): integer;
 function val_(name: shortstring): double;
 
-procedure option(option_variable, description: shortstring; initial_value: boolean);
+procedure option(option_variable, description: shortstring; initial_value: PMK_Bool);
 function option(option_variable: shortstring): boolean;
 
 procedure replace_variable_macros(var tmp: string);
@@ -295,17 +294,29 @@ begin
     exit(0);
 end;
 
-procedure option(option_variable, description: shortstring; initial_value: boolean);
+procedure option(option_variable, description: shortstring; initial_value: PMK_Bool);
 begin
-  set_(option_variable, initial_value);
+  case initial_value of
+    _OFF_ : set_(option_variable, False);
+    _ON_  : set_(option_variable, True);
+  end;
 end;
 
 function option(option_variable: shortstring): boolean;
 var
-  res: boolean;
+  v: pPMK_variant;
 begin
-  //res := val_(option_variable);
-  exit(res);
+  v := find_variable(option_variable);
+
+  if v <> nil then
+    exit(False)
+  else
+  begin
+    if v^.vtype <> ptBoolean then
+      exit(False)
+    else
+      exit(v^.PM_Boolean);
+  end;
 end;
 
 procedure replace_variable_macros(var tmp: string);
@@ -356,22 +367,22 @@ begin
     case v^.vtype of
       ptBoolean:
       begin
-        cache.Getvalue(widestring(v^.name + '/type'), 'boolean');
-        cache.Getvalue(widestring(v^.name + '/value'), v^.PM_Boolean);
+        cache.Setvalue(widestring(v^.name + '/type'), 'boolean');
+        cache.Setvalue(widestring(v^.name + '/value'), v^.PM_Boolean);
       end;
       ptInteger:
       begin
-        cache.Getvalue(widestring(v^.name + '/type'), 'integer');
+        cache.Setvalue(widestring(v^.name + '/type'), 'integer');
         cache.Setvalue(widestring(v^.name + '/value'), v^.PM_Integer);
       end;
       ptFloat:
       begin
-        cache.Getvalue(widestring(v^.name + '/type'), 'float');
+        cache.Setvalue(widestring(v^.name + '/type'), 'float');
         cache.Setvalue(widestring(v^.name + '/value'), widestring(FloatToStr(v^.PM_Float)));
       end;
       ptString:
       begin
-        cache.Getvalue(widestring(v^.name + '/type'), 'string');
+        cache.Setvalue(widestring(v^.name + '/type'), 'string');
         cache.Setvalue(widestring(v^.name + '/value'), widestring(v^.PM_String));
       end;
     end;
@@ -383,6 +394,7 @@ begin
   if pmakefiles <> nil then
   begin
     cache.Setvalue('PMake/count', pmakefiles.Count);
+    cache.Setvalue('PMake/type', 'filecache');
     f := TStringList.Create;
     for i := 0 to pmakefiles.Count - 1 do
     begin

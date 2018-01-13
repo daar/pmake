@@ -33,7 +33,7 @@ object PMakeGUIForm: TPMakeGUIForm
     Height = 135
     Top = 301
     Width = 813
-    Align = alClient
+    Align = alBottom
     BevelOuter = bvNone
     ClientHeight = 135
     ClientWidth = 813
@@ -96,7 +96,7 @@ object PMakeGUIForm: TPMakeGUIForm
     Height = 296
     Top = 0
     Width = 813
-    Align = alTop
+    Align = alClient
     BevelOuter = bvNone
     ClientHeight = 296
     ClientWidth = 813
@@ -227,8 +227,8 @@ object PMakeGUIForm: TPMakeGUIForm
     Height = 5
     Top = 296
     Width = 813
-    Align = alTop
-    ResizeAnchor = akTop
+    Align = alBottom
+    ResizeAnchor = akBottom
   end
   object MainMenu: TMainMenu
     left = 64

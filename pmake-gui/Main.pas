@@ -65,10 +65,12 @@ type
     procedure MenuItem1Click(Sender: TObject);
     procedure MenuItem5Click(Sender: TObject);
   private
+    { private declarations }
+
     function CheckAndCreateDirectory(ADirectory: string): boolean;
     procedure UpdateOptionsValueListEditor;
     procedure UpdatePMakeCache;
-    { private declarations }
+    procedure ParsePMakeFiles;
   public
     { public declarations }
   end;
@@ -133,6 +135,8 @@ begin
   pmake_initialize(BrowseBuildEdit.Text);
 
   set_('PMAKE_SOURCE_DIR', BrowseSourceEdit.Text);
+
+  ParsePMakeFiles;
 
   pmakecache_write;
 
@@ -241,7 +245,12 @@ begin
   begin
     case v^.vtype of
       ptBoolean:
-        OptionsValueListEditor.Strings.Add(v^.name + '=' + BoolToStr(v^.PM_Boolean));
+        begin
+          if v^.PM_Boolean then
+            OptionsValueListEditor.Strings.Add(v^.name + '=True')
+          else
+            OptionsValueListEditor.Strings.Add(v^.name + '=False')
+        end;
       ptInteger:
         OptionsValueListEditor.Strings.Add(v^.name + '=' + IntToStr(v^.PM_Integer));
       ptFloat:
@@ -266,7 +275,72 @@ begin
     key := OptionsValueListEditor.Keys[i];
     value := OptionsValueListEditor.Values[key];
 
-    set_(key, value);
+    case LowerCase(value) of
+      'true' : set_(key, True);
+      'false' : set_(key, False);
+    else
+      set_(key, value);
+    end;
+  end;
+end;
+
+procedure TPMakeGUIForm.ParsePMakeFiles;
+var
+  i, j: integer;
+  f: TStringList;
+  sline, sline2, key: string;
+  p: integer;
+begin
+  //search all PMake.txt files in the source directory
+  pmakefiles := TStringList.Create;
+  search_pmake(val_('PMAKE_SOURCE_DIR'));
+  pmakefiles.CustomSort(@ComparePath);
+
+  (*
+   * parse the PMake.txt file for all options
+   * this search is just a simple, naive search
+   * for the occurences of "option("
+   *)
+  for i := 0 to pmakefiles.Count - 1 do
+  begin
+    f := TStringList.Create;
+    f.LoadFromFile(pmakefiles[i]);
+
+    for j := 0 to f.Count - 1 do
+    begin
+      sline := f[j];
+
+      //remove all spaced between option and (
+      while sline <> sline2 do
+      begin
+        sline2 := sline;
+        sline := StringReplace(sline, ' (', '(', []);
+      end;
+
+      //check if option function is found
+      p := pos('option(', lowercase(sline));
+      if p <> 0 then
+      begin
+        delete(sline, p, length('option('));
+
+        //extract name
+        while sline[1] <> '''' do
+          delete(sline, 1, 1);
+        delete(sline, 1, 1);
+
+        p := pos('''', sline);
+
+        key := copy(sline, 1, p - 1);
+
+        //extract value
+        if pos('_ON_', UpperCase(sline)) <> 0 then
+          set_(key, True)
+        else
+          set_(key, False);
+      end;
+    end;
+
+    f.Free;
   end;
 end;
 
