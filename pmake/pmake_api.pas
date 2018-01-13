@@ -10,6 +10,7 @@ uses
 type
   msgMode = (NONE, STATUS, WARNING, AUTHOR_WARNING, SEND_ERROR,
     FATAL_ERROR, DEPRECATION);
+  fileAction = (WRITEFILE, READFILE);
 
 procedure add_executable(pkgname, executable, srcfile: string; depends: array of const);
 
@@ -31,9 +32,13 @@ procedure messagefmt(msg: string; const args: array of const);
 
 procedure add_subdirectory(path: string);
 
+function execute_process(const curdir, exename: string; const commands: array of string; name: string): boolean;
+procedure execute_file(const filename, name: string; action: fileAction);
+
 implementation
 
 uses
+  Process,
   depsolver,
   pmake_variables,
   pmake_utilities;
@@ -202,6 +207,48 @@ begin
   //update the binary directory
   bindir := val_('PMAKE_BINARY_DIR');
   set_('PMAKE_CURRENT_BINARY_DIR', ExpandFileName(bindir + ExtractRelativepath(srcdir, path)));
+end;
+
+function execute_process(const curdir, exename: string; const commands: array of string; name: string): boolean;
+var
+  outputstring: string;
+begin
+  Result := RunCommandIndir(macros_expand(curdir), exename, commands, outputstring, [poWaitOnExit]);
+
+  set_(name, outputstring);
+end;
+
+procedure execute_file(const filename, name: string; action: fileAction);
+var
+  f: TStrings;
+  v: pPMK_variant;
+  s: string;
+begin
+  f := TStringList.Create;
+
+  case action of
+    WRITEFILE:
+      begin
+        v := find_variable(name);
+        //v = nil
+        case v^.vtype of
+          ptBoolean: s := BoolToStr(v^.PM_Boolean);
+          ptInteger: s := IntToStr(v^.PM_Integer);
+          ptFloat: s := FloatToStr(v^.PM_Float);
+          ptString: s := v^.PM_String;
+        end;
+
+        f.Add(s);
+        f.SaveToFile(macros_expand(filename));
+      end;
+    READFILE:
+      begin
+        f.LoadFromFile(macros_expand(filename));
+        set_(name, f.Text);
+      end;
+  end;
+
+  f.Free;
 end;
 
 procedure compiler_minimum_required(major, minor, revision: integer);

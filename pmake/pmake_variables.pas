@@ -27,12 +27,12 @@ type
     next, prev: pointer;
     vtype: PMK_type;
     name: shortstring;
-      case word of
-        ptBoolean:   (PM_Boolean  : boolean);
-        ptInteger:   (PM_Integer  : integer);
-        ptFloat:     (PM_Float    : double);
-        ptString:    (PM_String   : shortstring);
-        ptFileCache: (PM_FileCache: pointer);
+    case word of
+      ptBoolean:   (PM_Boolean  : boolean);
+      ptInteger:   (PM_Integer  : integer);
+      ptFloat:     (PM_Float    : double);
+      ptString:    (PM_String   : shortstring);
+      ptFileCache: (PM_FileCache: pointer);
   end;
 
   PMK_ListBase = record
@@ -78,6 +78,8 @@ procedure replace_variable_macros(var tmp: string);
 
 procedure pmakecache_write;
 procedure pmakecache_read;
+
+function find_variable(name: shortstring): pointer;
 
 var
   cache: TXMLConfig;
@@ -139,6 +141,36 @@ begin
   varlist.last := link;
 end;
 
+function RemoveSpecialChars(const str: shortstring): shortstring;
+const
+  InvalidChars: set of char = [',', '.', '/', '!', '@', '#', '$', '%',
+                               '^', '&', '*', '''', '"', ';', '(', ')',
+                               ':', '|', '[', ']'];
+var
+  i: cardinal;
+begin
+  Result := '';
+  for i := 1 to Length(str) do
+    if not (str[i] in InvalidChars) then
+      Result := Result + str[i];
+end;
+
+procedure clean_variable_name(var name: shortstring);
+var
+  tmp: string;
+  len: cardinal;
+begin
+  tmp := Trim(name);
+  if pos('$(', tmp) = 1 then
+    Delete(tmp, 1, 2);
+
+  len := length(tmp);
+  if pos(')', tmp) = len then
+    Delete(tmp, len, 1);
+
+  name := RemoveSpecialChars(tmp);
+end;
+
 procedure delete_variable(name: shortstring);
 var
   v: pPMK_variant;
@@ -161,6 +193,8 @@ function find_variable(name: shortstring): pointer;
 var
   v: pPMK_variant;
 begin
+  clean_variable_name(name);
+
   v := varlist.first;
 
   while v <> nil do
@@ -178,6 +212,8 @@ function create_variable(name: shortstring): pPMK_variant;
 var
   v: pPMK_variant;
 begin
+  clean_variable_name(name);
+
   v := find_variable(name);
 
   //delete if exists to prevent multiple instances of the same variable
@@ -297,8 +333,8 @@ end;
 procedure option(option_variable, description: shortstring; initial_value: PMK_Bool);
 begin
   case initial_value of
-    _OFF_ : set_(option_variable, False);
-    _ON_  : set_(option_variable, True);
+    _OFF_: set_(option_variable, False);
+    _ON_ : set_(option_variable, True);
   end;
 end;
 
@@ -367,23 +403,23 @@ begin
     case v^.vtype of
       ptBoolean:
       begin
-        cache.Setvalue(widestring(v^.name + '/type'), 'boolean');
-        cache.Setvalue(widestring(v^.name + '/value'), v^.PM_Boolean);
+        cache.SetValue(WideString(v^.name + '/type'), 'boolean');
+        cache.SetValue(WideString(v^.name + '/value'), v^.PM_Boolean);
       end;
       ptInteger:
       begin
-        cache.Setvalue(widestring(v^.name + '/type'), 'integer');
-        cache.Setvalue(widestring(v^.name + '/value'), v^.PM_Integer);
+        cache.SetValue(WideString(v^.name + '/type'), 'integer');
+        cache.SetValue(WideString(v^.name + '/value'), v^.PM_Integer);
       end;
       ptFloat:
       begin
-        cache.Setvalue(widestring(v^.name + '/type'), 'float');
-        cache.Setvalue(widestring(v^.name + '/value'), widestring(FloatToStr(v^.PM_Float)));
+        cache.SetValue(WideString(v^.name + '/type'), 'float');
+        cache.SetValue(WideString(v^.name + '/value'), WideString(FloatToStr(v^.PM_Float)));
       end;
       ptString:
       begin
-        cache.Setvalue(widestring(v^.name + '/type'), 'string');
-        cache.Setvalue(widestring(v^.name + '/value'), widestring(v^.PM_String));
+        cache.SetValue(WideString(v^.name + '/type'), 'string');
+        cache.SetValue(WideString(v^.name + '/value'), WideString(v^.PM_String));
       end;
     end;
 
@@ -393,16 +429,16 @@ begin
   //todo: rewrite this part
   if pmakefiles <> nil then
   begin
-    cache.Setvalue('PMake/count', pmakefiles.Count);
-    cache.Setvalue('PMake/type', 'filecache');
+    cache.SetValue('PMake/count', pmakefiles.Count);
+    cache.SetValue('PMake/type', 'filecache');
     f := TStringList.Create;
     for i := 0 to pmakefiles.Count - 1 do
     begin
       f.LoadFromFile(pmakefiles[i]);
       pmakecrc := crc_16(@f.Text[1], length(f.Text));
 
-      cache.Setvalue(widestring(Format('PMake/item%d/path', [i + 1])), widestring(pmakefiles[i]));
-      cache.Setvalue(widestring(Format('PMake/item%d/crc', [i + 1])), pmakecrc);
+      cache.SetValue(WideString(Format('PMake/item%d/path', [i + 1])), WideString(pmakefiles[i]));
+      cache.SetValue(WideString(Format('PMake/item%d/crc', [i + 1])), pmakecrc);
     end;
     f.Free;
   end;
@@ -416,18 +452,18 @@ procedure pmakecache_read;
 begin
   //todo: rewrite this part, see pmakecache_write
   //see: http://wiki.lazarus.freepascal.org/XML_Tutorial#Usage_Examples
-  set_('PMAKE_SOURCE_DIR', shortstring(cache.Getvalue('PMAKE_SOURCE_DIR/value', '')));
-  set_('PMAKE_CURRENT_SOURCE_DIR', shortstring(cache.Getvalue('PMAKE_SOURCE_DIR/value', '')));
-  set_('PMAKE_PAS_COMPILER', shortstring(cache.Getvalue('PMAKE_PAS_COMPILER/value', '')));
+  set_('PMAKE_SOURCE_DIR', shortstring(cache.GetValue('PMAKE_SOURCE_DIR/value', '')));
+  set_('PMAKE_CURRENT_SOURCE_DIR', shortstring(cache.GetValue('PMAKE_SOURCE_DIR/value', '')));
+  set_('PMAKE_PAS_COMPILER', shortstring(cache.GetValue('PMAKE_PAS_COMPILER/value', '')));
 
-  set_('PMAKE_TOOL_DIR', shortstring(cache.Getvalue('PMAKE_TOOL_DIR/value', '')));
+  set_('PMAKE_TOOL_DIR', shortstring(cache.GetValue('PMAKE_TOOL_DIR/value', '')));
 
-  set_('PMAKE_BINARY_DIR', shortstring(cache.Getvalue('PMAKE_BINARY_DIR/value', '')));
-  set_('PMAKE_CURRENT_BINARY_DIR', shortstring(cache.Getvalue('PMAKE_BINARY_DIR/value', '')));
+  set_('PMAKE_BINARY_DIR', shortstring(cache.GetValue('PMAKE_BINARY_DIR/value', '')));
+  set_('PMAKE_CURRENT_BINARY_DIR', shortstring(cache.GetValue('PMAKE_BINARY_DIR/value', '')));
 
-  set_('PMAKE_PAS_COMPILER_VERSION', shortstring(cache.Getvalue('PMAKE_PAS_COMPILER_VERSION/value', '')));
-  set_('PMAKE_HOST_SYSTEM_PROCESSOR', shortstring(cache.Getvalue('PMAKE_HOST_SYSTEM_PROCESSOR/value', '')));
-  set_('PMAKE_HOST_SYSTEM_NAME', shortstring(cache.Getvalue('PMAKE_HOST_SYSTEM_NAME/value', '')));
+  set_('PMAKE_PAS_COMPILER_VERSION', shortstring(cache.GetValue('PMAKE_PAS_COMPILER_VERSION/value', '')));
+  set_('PMAKE_HOST_SYSTEM_PROCESSOR', shortstring(cache.GetValue('PMAKE_HOST_SYSTEM_PROCESSOR/value', '')));
+  set_('PMAKE_HOST_SYSTEM_NAME', shortstring(cache.GetValue('PMAKE_HOST_SYSTEM_NAME/value', '')));
 end;
 
 end.

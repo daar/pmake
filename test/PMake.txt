@@ -1,5 +1,9 @@
 project('PMake test');
 
+//test execute_process and execute_file
+execute_process('$(PMAKE_SOURCE_DIR)', 'git', ['log', '--pretty=format:"''%h''"', '-n', '1'], '$(GIT_HASH)');
+execute_file('$(PMAKE_BIN_DIR)git.inc', '$(GIT_HASH)', WRITEFILE);
+
 add_executable('helloworld', 'helloworld', 'hello.pp', ['lib_hello']);
 install('$(BINOUTPUTDIR)', '.\release\$(PMAKE_HOST_SYSTEM_PROCESSOR)-$(PMAKE_HOST_SYSTEM_NAME)', 'helloworld$(EXE)', 'helloworld');
 add_custom_command('pkg_custom', '.\bin\$(PMAKE_HOST_SYSTEM_PROCESSOR)-$(PMAKE_HOST_SYSTEM_NAME)\helloworld$(EXE)', '', []);
