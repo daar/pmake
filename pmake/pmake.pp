@@ -12,17 +12,20 @@ uses
   pmake_main,
   pmake_variables,
   pmake_utilities,
-  pmake_api;
+  pmake_api, 
+  pmake_quickstart;
 
 var
   force_build: boolean = False;
+  quickstart: boolean = False;
 
 const
-  CmdOptions: array[1..4] of TCmdOption = (
+  CmdOptions: array[1..5] of TCmdOption = (
     (name: '--compiler'; descr: 'Use indicated binary as compiler'),
     (name: '--force'; descr: 'Force building the make executable'),
     (name: '--help'; descr: 'This message.'),
-    (name: '--verbose'; descr: 'Be more verbose.')
+    (name: '--verbose'; descr: 'Be more verbose.'),
+    (name: '--quickstart'; descr: 'Create PMake.txt files in the supplied source directory')
     );
 
   procedure usage;
@@ -85,8 +88,9 @@ const
                 end;
               end;
               '--help': usage;
-              '--verbose': verbose := True;
               '--force': force_build := True;
+              '--verbose': verbose := True;
+              '--quickstart': quickstart := True;
             end;
           end;
           if found then
@@ -116,6 +120,9 @@ begin
   pmake_initialize(IncludeTrailingPathDelimiter(GetCurrentDir));
 
   parse_commandline;
+
+  if quickstart then
+    pmake_run_quickstart(val_('PMAKE_SOURCE_DIR'));
 
   if not FileExists(macros_expand('make$(EXE)')) or force_build then
     create_and_build_make;
