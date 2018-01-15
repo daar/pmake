@@ -50,22 +50,8 @@ begin
   sline.Delete(0);
 end;
 
+//make2 execution
 procedure command_callback(line: string; active: boolean);
-begin
-  //parse the output
-  sline.Text := sline.Text + line;
-
-  while sline.Count > 1 do
-    output_line(sline);
-
-  if not active then
-  begin
-    while sline.Count > 0 do
-      output_line(sline);
-  end;
-end;
-
-procedure make2_callback(line: string; active: boolean);
 begin
   if not verbose then
     exit;
@@ -89,13 +75,40 @@ begin
   end;
 end;
 
+//make2 compilation
+procedure make2_callback(line: string; active: boolean);
+var
+  fpc_msg: TFPCMessage;
+begin
+  //parse the output
+  sline.Text := sline.Text + line;
+
+  while sline.Count > 1 do
+  begin
+    fpc_msg := ParseFPCCommand(sline[0]);
+    UpdatePMakePostions(fpc_msg, [mCompiling, mDebug, mError, mFail, mHint, mLinking, mNote, mOption, mUnitInfo, mWarning], pmakefiles);
+    sline.Delete(0);
+  end;
+
+  if not active then
+  begin
+    while sline.Count > 0 do
+    begin
+      fpc_msg := ParseFPCCommand(sline[0]);
+      UpdatePMakePostions(fpc_msg, [mCompiling, mDebug, mError, mFail, mHint, mLinking, mNote, mOption, mUnitInfo, mWarning], pmakefiles);
+      sline.Delete(0);
+    end;
+  end;
+end;
+
 function check_rebuild_make2: boolean;
 var
-  i, idx: integer;
+  i, j: integer;
   f: TStrings;
   pmakecrc: word;
   p: string;
   c: word;
+  found: boolean;
 begin
   if not FileExists('PMakeCache.txt') then
     exit(True);
@@ -111,16 +124,22 @@ begin
   f := TStringList.Create;
   for i := 0 to pmakefiles.Count - 1 do
   begin
-    p := cache.GetValue(widestring(Format('PMake/item%d/path', [i + 1])), widestring(''));
+    p := cache.GetValue(widestring(Format('PMake/item%d/filename', [i + 1])), widestring(''));
     c := cache.GetValue(widestring(Format('PMake/item%d/crc', [i + 1])), 0);
 
     f.LoadFromFile(p);
     pmakecrc := crc_16(@f.Text[1], length(f.Text));
 
-    idx := pmakefiles.IndexOf(p);
+    found := False;
+    for j := 0 to pmakefiles.Count - 1 do
+      if pPMakeItem(pmakefiles[j])^.fname = p then
+      begin
+        found := true;
+        break;
+      end;
 
     //either the PMake.txt file does not exist, or the crc changed
-    if (idx = -1) or (c <> pmakecrc) then
+    if (found = False) or (c <> pmakecrc) then
     begin
       f.Free;
       exit(True);
@@ -135,6 +154,7 @@ end;
 procedure search_pmake(const path: string);
 var
   info: TSearchRec;
+  p: pPMakeItem;
 begin
   if FindFirst(path + '*', faAnyFile, info) = 0 then
   begin
@@ -144,7 +164,11 @@ begin
         begin
           //add PMake.txt to the file list
           if info.Name = 'PMake.txt' then
-            pmakefiles.Add(path + info.Name);
+          begin
+            p := GetMem(SizeOf(TPMakeItem));
+            p^.fname := path + info.Name;
+            pmakefiles.Add(p);
+          end;
         end
         else
         //start the recursive search
@@ -164,6 +188,7 @@ var
   src_name: string;
   i, exit_code: integer;
   param: TStrings;
+  p: pPMakeItem;
 begin
   OutputLn('-- Processing PMake.txt files');
 
@@ -178,8 +203,16 @@ begin
   f := TStringList.Create;
   for i := 0 to pmakefiles.Count - 1 do
   begin
-    f.LoadFromFile(pmakefiles[i]);
-    make2.Add('  add_subdirectory(''%s'');', [ExtractFilePath(pmakefiles[i])]);
+    p := pPMakeItem(pmakefiles[i]);
+
+    f.LoadFromFile(p^.fname);
+
+    make2.Add('  add_subdirectory(''%s'');', [ExtractFilePath(p^.fname)]);
+
+    //determine the start and end position of the PMake.txt in the source file
+    p^.startpos := make2.Count;
+    p^.endpos := p^.startpos + f.Count;
+
     make2.Add(f.Text);
   end;
   f.Free;
@@ -192,6 +225,7 @@ begin
 
   param := TStringList.Create;
   param.Add('-viq');
+
   //add the unit search path where the pmake executable is locate
   param.Add('-FU' + UnitsOutputDir(val_('PMAKE_BINARY_DIR')));
   param.Add('-Fu' + val_('PMAKE_TOOL_DIR'));
@@ -324,9 +358,10 @@ begin
   pmakecache_read;
   parse_commandline;
 
-  pmakefiles := TStringList.Create;
+  pmakefiles := TFPList.Create;
   search_pmake(val_('PMAKE_SOURCE_DIR'));
-  pmakefiles.CustomSort(@ComparePath);
+  //todo: fix sorting a TFPList!!!
+  //pmakefiles.CustomSort(@ComparePath);
 
   if check_rebuild_make2 or force_build then
     make2_build;

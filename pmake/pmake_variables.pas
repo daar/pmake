@@ -87,7 +87,7 @@ var
 implementation
 
 uses
-  Classes, SysUtils, crc16, pmake_utilities;
+  Classes, SysUtils, crc16, pmake_utilities, compiler;
 
 function callocN(Size: PtrUInt): pointer;
 var
@@ -434,10 +434,10 @@ begin
     f := TStringList.Create;
     for i := 0 to pmakefiles.Count - 1 do
     begin
-      f.LoadFromFile(pmakefiles[i]);
+      f.LoadFromFile(pPMakeItem(pmakefiles[i])^.fname);
       pmakecrc := crc_16(@f.Text[1], length(f.Text));
 
-      cache.SetValue(WideString(Format('PMake/item%d/path', [i + 1])), WideString(pmakefiles[i]));
+      cache.SetValue(WideString(Format('PMake/item%d/filename', [i + 1])), WideString(pmakefiles[i]));
       cache.SetValue(WideString(Format('PMake/item%d/crc', [i + 1])), pmakecrc);
     end;
     f.Free;

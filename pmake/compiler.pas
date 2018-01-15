@@ -12,12 +12,12 @@ type
     mNote, mOption, mUnitInfo, mUnknown, mWarning);
   TMessages = set of TMessage;
 
+  pPMakeItem = ^TPMakeItem;
   TPMakeItem = record
     fname: string;
     startpos: integer;
     endpos: integer;
   end;
-  PPMakeItem = ^TPMakeItem;
 
   TFPCOutput = record
     msgno: integer;
@@ -29,11 +29,11 @@ type
     msgcol: integer;
   end;
 
+  pFPCMessage = ^TFPCMessage;
   TFPCMessage = record
     msgidx: integer;
     text: string;
   end;
-  PFPCMessage = ^TFPCMessage;
 
 const
   AllMessages = [mCompiling, mDebug, mError, mFail, mHint, mInformation, mLinking,
@@ -56,7 +56,7 @@ const
 //add here more FPC versions
 {$i fpc300.inc}
 
-procedure UpdatePMakePostions(var FPCMsgs: TFPList; fName: string);
+procedure UpdatePMakePostions(fpc_msg: TFPCMessage; ShowMsg: TMessages; pmakefiles: TFPList);
 procedure WriteFPCCommand(fpc_msg: TFPCMessage; ShowMsg: TMessages);
 function ParseFPCCommand(FPCOutput: string): TFPCMessage;
 
@@ -65,67 +65,80 @@ function CompilerCommandLine(pkg: pPackage; cmd: pointer): TStringList;
 implementation
 
 uses
-  SysUtils, pmake_api, pmake_utilities;
+  SysUtils, pmake_api, pmake_utilities, pmake_variables;
 
-procedure UpdatePMakePostions(var FPCMsgs: TFPList; fName: string);
-//var
-//  i: integer;
-//  fpc_msg: PFPCMessage;
-//  fpc_msgtype: TMessage;
-//  from_file: string;
-//  sep: integer;
-//  lineno, j: integer;
-//  fitem: PPMakeItem;
-//  found: boolean;
-//  tmp: string;
+function GetFPCMsgType(msgidx: integer): TMessage;
 begin
-  //from_file := ExtractFileName(fName);
-  //
-  //for i := 0 to FPCMsgs.Count - 1 do
-  //begin
-  //  fpc_msg := PFPCMessage(FPCMsgs[i]);
-  //  fpc_msgtype := GetFPCMsgType(fpc_msg^.msgidx);
-  //  if fpc_msgtype in [mError, mFail] then
-  //  begin
-  //    sep := pos(',', fpc_msg^.text);
-  //    if sep > 0 then
-  //    begin
-  //      sep := sep - length(from_file) - 2;
-  //      lineno := StrToInt(copy(fpc_msg^.text, length(from_file) + 2, sep));
-  //
-  //      //find the line no
-  //      for j := 0 to pmakelist.Count - 1 do
-  //      begin
-  //        fitem := PPMakeItem(pmakelist[j]);
-  //        found := False;
-  //        if (fitem^.startpos <= lineno) and (fitem^.endpos >= lineno) then
-  //        begin
-  //          found := True;
-  //          break;
-  //        end;
-  //      end;
-  //
-  //      if found then
-  //      begin
-  //        sep := pos(',', fpc_msg^.text);
-  //        tmp := copy(fpc_msg^.text, sep, length(fpc_msg^.text) - sep + 1);
-  //        fpc_msg^.text := format('%s(%d%s', [fitem^.fname, lineno - fitem^.startpos, tmp]);
-  //      end;
-  //    end;
-  //  end;
-  //end;
+  if msgidx = -1 then
+    Result := mUnknown
+  else
+    Result := Msg[msgidx].msgtype;
+end;
+
+procedure UpdatePMakePostions(fpc_msg: TFPCMessage; ShowMsg: TMessages; pmakefiles: TFPList);
+var
+  lineno, rowno: integer;
+  errmsg: string;
+  fpc_msgtype: TMessage;
+  sep: integer;
+  j: integer;
+  fitem: pPMakeItem;
+  found: boolean;
+  tmp, fname: string;
+  p1, p2: cardinal;
+  f: TStrings;
+begin
+  fpc_msgtype := GetFPCMsgType(fpc_msg.msgidx);
+  if fpc_msgtype in [mError, mFail] then
+  begin
+    p1 := pos('(', fpc_msg.text);
+    if p1 > 0 then
+    begin
+      //line number
+      p2 := pos(',', fpc_msg.text);
+      lineno := StrToInt(copy(fpc_msg.text, p1 + 1, p2 - p1 - 1));
+
+      //row number
+      p1 := p2;
+      p2 := pos(')', fpc_msg.text);
+      rowno := StrToInt(copy(fpc_msg.text, p1 + 1, p2 - p1 - 1));
+
+      //error message
+      errmsg := copy(fpc_msg.text, p2 + 2, length(fpc_msg.text) - p2);
+
+      //find the line no
+      for j := 0 to pmakefiles.Count - 1 do
+      begin
+        fitem := pPMakeItem(pmakefiles[j]);
+        found := False;
+        if (fitem^.startpos <= lineno) and (fitem^.endpos >= lineno) then
+        begin
+          found := True;
+          break;
+        end;
+      end;
+
+      if found then
+      begin
+        f := TStringList.Create;
+        f.LoadFromFile(fitem^.fname);
+
+        fname := '.' + DirectorySeparator + ExtractRelativepath(val_('PMAKE_SOURCE_DIR'), fitem^.fname);
+        lineno := lineno - fitem^.startpos;
+
+        tmp := StringOfChar(' ', rowno - 1);
+        OutputLn(f[lineno - 1]);
+        OutputLn(tmp + '^');
+        OutputLn(format(' %s%s(%d,%d) %s', [tmp, fname, lineno, rowno, errmsg]));
+
+        if fpc_msgtype  = mFail then
+          halt(1);
+      end;
+    end;
+  end;
 end;
 
 procedure WriteFPCCommand(fpc_msg: TFPCMessage; ShowMsg: TMessages);
-
-  function GetFPCMsgType(msgidx: integer): TMessage;
-  begin
-    if msgidx = -1 then
-      Result := mUnknown
-    else
-      Result := Msg[msgidx].msgtype;
-  end;
-
 var
   fpc_msgtype: TMessage;
   sline: string;
