@@ -80,7 +80,6 @@ var
   lineno, rowno: integer;
   errmsg: string;
   fpc_msgtype: TMessage;
-  sep: integer;
   j: integer;
   fitem: pPMakeItem;
   found: boolean;
