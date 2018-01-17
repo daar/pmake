@@ -9,7 +9,6 @@ uses
 
 procedure make_execute;
 procedure search_pmake(const path: string);
-function ComparePath(List: TStringList; Index1, Index2: Integer): Integer;
 
 implementation
 
@@ -53,25 +52,16 @@ end;
 //make2 execution
 procedure command_callback(line: string; active: boolean);
 begin
-  if not verbose then
-    exit;
-
   //parse the output
   sline.Text := sline.Text + line;
 
   while sline.Count > 1 do
-  begin
-    OutputLn(sline[0]);
-    sline.Delete(0);
-  end;
+    output_line(sline);
 
   if not active then
   begin
     while sline.Count > 0 do
-    begin
-      OutputLn(sline[0]);
-      sline.Delete(0);
-    end;
+      output_line(sline);
   end;
 end;
 
@@ -80,6 +70,9 @@ procedure make2_callback(line: string; active: boolean);
 var
   fpc_msg: TFPCMessage;
 begin
+  if not verbose then
+    exit;
+
   //parse the output
   sline.Text := sline.Text + line;
 
@@ -124,8 +117,8 @@ begin
   f := TStringList.Create;
   for i := 0 to pmakefiles.Count - 1 do
   begin
-    p := cache.GetValue(widestring(Format('PMake/item%d/filename', [i + 1])), widestring(''));
-    c := cache.GetValue(widestring(Format('PMake/item%d/crc', [i + 1])), 0);
+    p := cache.GetValue(widestring(Format('PMake/item_%d/filename', [i + 1])), widestring(''));
+    c := cache.GetValue(widestring(Format('PMake/item_%d/crc', [i + 1])), 0);
 
     f.LoadFromFile(p);
     pmakecrc := crc_16(@f.Text[1], length(f.Text));
@@ -329,12 +322,12 @@ begin
 end;
 
 //a custom sort for the pmake file list
-function ComparePath(List: TStringList; Index1, Index2: Integer): Integer;
+function ComparePath(Item1: Pointer; Item2: Pointer): Integer;
 var
   path1, path2: string;
 begin
-  path1 := ExtractFilePath(List[Index1]);
-  path2 := ExtractFilePath(List[Index2]);
+  path1 := ExtractFilePath(pPMakeItem(Item1)^.fname);
+  path2 := ExtractFilePath(pPMakeItem(Item2)^.fname);
 
   if path1 < path2 then
     Result := -1
@@ -360,8 +353,7 @@ begin
 
   pmakefiles := TFPList.Create;
   search_pmake(val_('PMAKE_SOURCE_DIR'));
-  //todo: fix sorting a TFPList!!!
-  //pmakefiles.CustomSort(@ComparePath);
+  pmakefiles.Sort(@ComparePath);
 
   if check_rebuild_make2 or force_build then
     make2_build;

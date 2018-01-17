@@ -437,8 +437,8 @@ begin
       f.LoadFromFile(pPMakeItem(pmakefiles[i])^.fname);
       pmakecrc := crc_16(@f.Text[1], length(f.Text));
 
-      cache.SetValue(WideString(Format('PMake/item%d/filename', [i + 1])), WideString(pmakefiles[i]));
-      cache.SetValue(WideString(Format('PMake/item%d/crc', [i + 1])), pmakecrc);
+      cache.SetValue(WideString(Format('PMake/item_%d/filename', [i + 1])), WideString(pPMakeItem(pmakefiles[i])^.fname));
+      cache.SetValue(WideString(Format('PMake/item_%d/crc', [i + 1])), pmakecrc);
     end;
     f.Free;
   end;
