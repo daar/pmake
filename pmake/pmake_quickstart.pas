@@ -17,7 +17,7 @@ uses
 var
   filelist: TStringList;
 
-procedure ask_question(description, question, default: string; var variable: string);
+function prompt(description, question, default: string): string;
 var
   answer: string;
 begin
@@ -34,7 +34,7 @@ begin
 
   writeln;
 
-  variable := answer;
+  Result := answer;
 end;
 
 procedure search_pascal_files(const path: string; recursive: boolean);
@@ -101,6 +101,23 @@ begin
   f.Free;
 end;
 
+//a custom sort for the pmake file list
+function ComparePath(List: TStringList; Index1, Index2: Integer): Integer;
+var
+  path1, path2: string;
+begin
+  path1 := ExtractFilePath(List[Index1]);
+  path2 := ExtractFilePath(List[Index2]);
+
+  if path1 < path2 then
+    Result := -1
+  else
+    if path1 = path2 then
+      Result := 0
+    else
+      Result := 1;
+end;
+
 procedure pmake_run_quickstart(srcdir: string);
 var
   res, recursive, dir, pmtype, name: string;
@@ -113,16 +130,16 @@ begin
   writeln('accept a default value, if one is given in brackets).');
   writeln;
 
-  ask_question('PMake can recursively search the source directory provided and add PMake.txt files as required.',
-  'Would you like Pmake to search recursively? (y/n)', 'y', recursive);
+  recursive := prompt('PMake can recursively search the source directory provided and add PMake.txt files as required.',
+  'Would you like Pmake to search recursively? (y/n)', 'y');
 
   f := TStringList.Create;
 
   //root PMake.txt
-  ask_question('Some projects require a specific minimum compiler version, you can specify this now.', 'Please enter the minimum compiler version (' + val_('PMAKE_PAS_COMPILER_VERSION') + ')', '', res);
+  res := prompt('Some projects require a specific minimum compiler version, you can specify this now.', 'Please enter the minimum compiler version (' + val_('PMAKE_PAS_COMPILER_VERSION') + ')', '');
   f.Add('compiler_minimum_required(' + StringReplace(res, '.', ',', [rfReplaceAll]) + ');');
 
-  ask_question('PMake requires a project name for the entire project', 'Please enter the project name', '', res);
+  res := prompt('PMake requires a project name for the entire project', 'Please enter the project name', '');
   f.Add('project(''' + res + ''');');
 
   writeln('processing all PMake.txt files now');
