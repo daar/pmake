@@ -10,7 +10,10 @@ add_library('lib_pmake', ['compiler.pas', 'crc16.pas', 'depsolver.pas', 'make2_m
 //compile the pmake executable
 add_executable('pmake', 'pmake', 'pmake.pp', ['lib_pmake']);
 
+//create the package
+create_package('pmake-0.0.2-$(PMAKE_HOST_SYSTEM_PROCESSOR)-$(PMAKE_HOST_SYSTEM_NAME)', '$(PMAKE_SOURCE_DIR)..\build\');
+
 //install the compiled units and the pmake executable
-install('$(BINOUTPUTDIR)', '$(PMAKE_SOURCE_DIR)..\build\', 'pmake$(EXE)', 'pmake');
-install('$(UNITSOUTPUTDIR)', '$(PMAKE_SOURCE_DIR)..\build\', '*.o', 'lib_pmake');
-install('$(UNITSOUTPUTDIR)', '$(PMAKE_SOURCE_DIR)..\build\', '*.ppu', 'lib_pmake');
+install('$(BINOUTPUTDIR)', '$(PMAKE_PACKAGE_DIR)', 'pmake$(EXE)', 'pmake');
+install('$(UNITSOUTPUTDIR)', '$(PMAKE_PACKAGE_DIR)', '*.o', 'lib_pmake');
+install('$(UNITSOUTPUTDIR)', '$(PMAKE_PACKAGE_DIR)', '*.ppu', 'lib_pmake');

@@ -19,6 +19,7 @@ procedure add_library(pkgname: string; srcfiles, depends: array of const);
 
 procedure include_directories(pkgname: string; directories: array of const);
 
+procedure create_package(const file_name, base_directory: string);
 procedure install(directory, destination, pattern, depends: string);
 procedure add_custom_command(pkgname, executable, parameters: string; depends: array of const);
 
@@ -119,6 +120,12 @@ begin
     dir := IncludeTrailingPathDelimiter(ExpandFileName(curdir + AnsiString(directories[I].VAnsiString)));
     pkg^.includes.Add(dir);
   end;
+end;
+
+procedure create_package(const file_name, base_directory: string);
+begin
+  set_('PMAKE_PACKAGE_FILE', macros_expand(file_name));
+  set_('PMAKE_PACKAGE_DIR', macros_expand(base_directory));
 end;
 
 procedure install(directory, destination, pattern, depends: string);

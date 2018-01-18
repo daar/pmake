@@ -21,10 +21,11 @@ type
   TRunMode = (rmBuild, rmInstall, rmClean);
 
 const
-  CmdOptions: array[1..8] of TCmdOption = (
+  CmdOptions: array[1..9] of TCmdOption = (
     (name: 'build'; descr: 'Build all targets in the project.'),
     (name: 'clean'; descr: 'Clean all units and folders in the project'),
     (name: 'install'; descr: 'Install all targets in the project.'),
+    (name: 'package'; descr: 'Create a package (zip)'),
     (name: '--compiler'; descr: 'Use indicated binary as compiler'),
     (name: '--debug'; descr: 'Do not delete the make2 source file.'),
     (name: '--force'; descr: 'Force building make2.exe'),
@@ -37,6 +38,7 @@ var
   force_build: boolean = False;
   debug: boolean = False;
   RunMode: TRunMode = rmBuild;
+  make2_params: TStrings;
 
 procedure output_line(var sline: TStringList);
 var
@@ -283,9 +285,15 @@ begin
           found := True;
 
           case CmdOptions[j].name of
-            'build': RunMode := rmBuild;
-            'clean': RunMode := rmClean;
-            'install': RunMode := rmInstall;
+            'build': make2_params.Add('build');
+            'clean': make2_params.Add('clean');
+            'install': make2_params.Add('install');
+            'package':
+            begin
+              make2_params.Add('package');
+              inc(i);
+              make2_params.Add(ParamStr(i));
+            end;
             '--compiler':
             begin
               if i < ParamCount then
@@ -349,6 +357,8 @@ begin
     message(FATAL_ERROR, 'fatal error: cannot find PMakeCache.txt, rerun pmake');
 
   pmakecache_read;
+
+  make2_params := TStringList.Create;
   parse_commandline;
 
   pmakefiles := TFPList.Create;
@@ -361,7 +371,9 @@ begin
   pmakecache_write;
 
   sline := TStringList.Create;
-  exit_code := command_execute(macros_expand('$(PMAKE_BINARY_DIR)make2$(EXE)', nil), nil, @command_callback, false);
+  exit_code := command_execute(macros_expand('$(PMAKE_BINARY_DIR)make2$(EXE)', nil), make2_params, @command_callback, false);
+
+  make2_params.Free;
   sline.Free;
 
   pmakefiles.Free;

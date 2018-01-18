@@ -16,13 +16,15 @@ implementation
 
 uses
   XMLConf,
-  depsolver, compiler, pmake_api;
+  depsolver, compiler, pmake_api, make2_package;
 
 type
-  TRunMode = (rmBuild, rmInstall, rmClean);
+  TRunMode = (rmBuild, rmInstall, rmClean, rmPackage);
+  TPackage = (pkZip);
 
 var
   RunMode: TRunMode;
+  Package: TPackage;
   sline: TStringList;
   progress: double = 0;
 
@@ -60,10 +62,35 @@ begin
 end;
 
 procedure parse_commandline;
+var
+  i: integer;
 begin
-  //need to implement a propoper command line parser here
-
   verbose := True;
+  RunMode := rmBuild;
+
+  i := 1;
+
+  while i <= ParamCount do
+  begin
+    case ParamStr(i) of
+      'build': RunMode := rmBuild;
+      'clean': RunMode := rmClean;
+      'install': RunMode := rmInstall;
+      'package':
+      begin
+        RunMode := rmPackage;
+
+        Inc(i);
+
+        case ParamStr(i) of
+          'zip': package := pkZip;
+          else
+            package := pkZip;
+        end;
+      end;
+    end;
+    Inc(i);
+  end;
 end;
 
 procedure init_make2;
@@ -216,6 +243,13 @@ begin
   StdOutLn('Installed files');
 end;
 
+procedure PackageAll(package: TPackage);
+begin
+  case package of
+    pkZip: package_zip(val_('PMAKE_PACKAGE_DIR'));
+  end;
+end;
+
 procedure CleanMode(pkglist: TFPList);
 var
   i, j: integer;
@@ -277,9 +311,11 @@ begin
   if val_('PMAKE_PROJECT_NAME') = '' then
     message(FATAL_ERROR, 'fatal error: no project defined');
 
-  //add all dependencies for all packages. we do this only here to make sure all
-  //packages are created first. if a package is not found then something must
-  //have gone wrong in the build script.
+  (*
+   * add all dependencies for all packages. we do this only here to make sure all
+   * packages are created first. if a package is not found then something must
+   * have gone wrong in the build script.
+   *)
   for i := 0 to depcache.Count - 1 do
   begin
     dep := depcache[i];
@@ -294,7 +330,16 @@ begin
     rmClean:
       CleanMode(deplist);
     rmInstall:
+    begin
+      ExecutePackages(deplist, [ctUnit, ctExecutable, ctCustom]);
       InstallPackages;
+    end;
+    rmPackage:
+    begin
+      ExecutePackages(deplist, [ctUnit, ctExecutable, ctCustom]);
+      InstallPackages;
+      PackageAll(package);
+    end;
   end;
 
   deplist.Free;
