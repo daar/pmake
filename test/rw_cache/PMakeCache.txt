@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CONFIG>
+  <PMAKE_SOURCE_DIR type="string" value="C:\opsim\"/>
+  <PMAKE_CURRENT_SOURCE_DIR type="string" value="C:\opsim\"/>
+  <PMAKE_PAS_COMPILER type="string" value="C:\lazarus\fpc\3.0.4\bin\x86_64-win64\fpc.exe"/>
+  <PMAKE_TOOL_DIR type="string" value="C:\pmake\pmake\"/>
+  <PMAKE_BINARY_DIR type="string" value="C:\opsim\build\"/>
+  <PMAKE_CURRENT_BINARY_DIR type="string" value="C:\opsim\build\"/>
+  <PMAKE_PAS_COMPILER_VERSION type="string" value="3.0.4"/>
+  <PMAKE_HOST_SYSTEM_PROCESSOR type="string" value="x86_64"/>
+  <PMAKE_HOST_SYSTEM_NAME type="string" value="win64"/>
+  <PMake type="filecache" count="12">
+    <item1 crc="54617" path="C:\opsim\PMake.txt"/>
+    <item2 crc="56659" path="C:\opsim\src\engine\ant\PMake.txt"/>
+    <item3 crc="45720" path="C:\opsim\src\engine\chemform\PMake.txt"/>
+    <item4 crc="43500" path="C:\opsim\src\engine\core\PMake.txt"/>
+    <item5 crc="19881" path="C:\opsim\src\engine\physprops\PMake.txt"/>
+    <item6 crc="6159" path="C:\opsim\src\engine\unit_conv\PMake.txt"/>
+    <item7 crc="2334" path="C:\opsim\src\test\ant\PMake.txt"/>
+    <item8 crc="57075" path="C:\opsim\src\test\chemform\PMake.txt"/>
+    <item9 crc="41032" path="C:\opsim\src\test\physprops\PMake.txt"/>
+    <item10 crc="993" path="C:\opsim\src\test\unit_conv\PMake.txt"/>
+    <item11 crc="36088" path="C:\opsim\tools\autodoc\PMake.txt"/>
+    <item12 crc="539" path="C:\opsim\tools\ppjson\PMake.txt"/>
+  </PMake>
+</CONFIG>

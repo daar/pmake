@@ -146,6 +146,7 @@ begin
 end;
 
 //todo: replace this by a PMake interpreter that finds and follows the add_subdirectory function calls
+//      see #37 for more information
 procedure search_pmake(const path: string);
 var
   info: TSearchRec;
