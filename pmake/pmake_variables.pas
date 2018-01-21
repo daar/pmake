@@ -600,18 +600,13 @@ begin
 
           for j := 0 to nl.Count - 1 do
           begin
-            //fix me
             itm := callocN(sizeof(PMK_FileCache));
 
-            itm^.crc := StrToInt(nl.Item[j].Attributes.GetNamedItem('crc').NodeValue);
-            itm^.fname := nl.Item[j].Attributes.GetNamedItem('filename').NodeValue;
+            itm^.crc := StrToInt(string(nl.Item[j].Attributes.GetNamedItem('crc').NodeValue));
+            itm^.fname := string(nl.Item[j].Attributes.GetNamedItem('filename').NodeValue);
 
             //add item to bottom of list
             addtail(list, itm);
-
-            //('  crc=' + nl.Item[j].Attributes.GetNamedItem('crc').NodeValue +
-            //  ' path=');
-            //(nl.Item[j].Attributes.GetNamedItem('path').NodeValue);
           end;
 
           set_(name, list);

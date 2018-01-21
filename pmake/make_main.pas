@@ -36,7 +36,6 @@ var
   sline: TStringList;
   force_build: boolean = False;
   debug: boolean = False;
-  RunMode: TRunMode = rmBuild;
   make2_params: TStrings;
 
 procedure output_line(var sline: TStringList);
