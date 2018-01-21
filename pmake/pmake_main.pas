@@ -8,7 +8,7 @@ uses
   Classes;
 
 procedure pmake_initialize(BinDir: string);
-procedure create_and_build_make;
+procedure create_and_build_make(debug: boolean);
 
 var
   str: TStrings;
@@ -17,7 +17,6 @@ implementation
 
 uses
   SysUtils,
-  XMLConf,
   pmake_utilities,
   pmake_variables,
   pmake_api;
@@ -29,9 +28,6 @@ begin
 
   //folder where pmake is located, also location of units for make and make2
   set_('PMAKE_TOOL_DIR', ExtractFilePath(ParamStr(0)));
-
-  cache := TXMLConfig.Create(nil);
-  cache.Filename := BinDir + 'PMakeCache.txt';
 
   CompilerDefaults;
 end;
@@ -51,7 +47,7 @@ begin
   end;
 end;
 
-procedure create_and_build_make;
+procedure create_and_build_make(debug: boolean);
 var
   tmp: TStrings;
   param: TStrings;
@@ -88,7 +84,9 @@ begin
   if verbose then
     OutputLn('-- Deleting temporary files');
 
-  DeleteFile(src_name);
+  if not debug then
+    DeleteFile(src_name);
+
   DeleteFile(ChangeFileExt(src_name, '.o'));
 
   if exit_code <> 0 then

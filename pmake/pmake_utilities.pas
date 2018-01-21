@@ -78,11 +78,11 @@ end;
 
 function GetCompilerInfo(const ACompiler, AOptions: string): string;
 const
-  BufSize = 1024;
+  BUF_SIZE = 1024;
 var
   AProcess: TProcess;
-  Buf: array [0..BufSize - 1] of char;
-  Count: longint;
+  buf: array [0..BUF_SIZE - 1] of char;
+  count: longint;
 begin
   AProcess := TProcess.Create(nil);
   AProcess.Executable := ACompiler;
@@ -93,12 +93,12 @@ begin
   AProcess.Options := [poUsePipes];
   AProcess.Execute;
 
-  Count := AProcess.Output.Read(buf, BufSize);
+  count := AProcess.Output.Read(buf, BUF_SIZE);
 
   AProcess.Free;
 
-  SetLength(Result, Count);
-  Move(Buf, Result[1], Count);
+  SetLength(Result, count);
+  Move(Buf, Result[1], count);
 end;
 
 procedure CompilerDefaults;
@@ -139,7 +139,7 @@ const
 var
   AProcess: TProcess;
   BytesRead: longint;
-  Buffer: array[1..BUF_SIZE] of byte;
+  buf: array[1..BUF_SIZE] of byte;
   sStream: TStringStream;
 begin
   if verbose then
@@ -175,8 +175,8 @@ begin
   sStream := TStringStream.Create('');
 
   repeat
-    BytesRead := AProcess.Output.Read(Buffer, BUF_SIZE);
-    sStream.Write(Buffer, BytesRead);
+    BytesRead := AProcess.Output.Read(buf, BUF_SIZE);
+    sStream.Write(buf, BytesRead);
     sStream.Position := 0;
 
     if callback <> nil then

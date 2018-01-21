@@ -13,7 +13,6 @@ procedure search_pmake(const path: string);
 implementation
 
 uses
-  XMLConf,
   crc16,
   pmake_utilities, pmake_variables, pmake_api, compiler;
 
@@ -98,12 +97,12 @@ end;
 
 function check_rebuild_make2: boolean;
 var
-  i, j: integer;
+  j: integer;
   f: TStrings;
   pmakecrc: word;
-  p: string;
-  c: word;
   found: boolean;
+  fc: pPMK_ListBase;
+  pm: pPMK_FileCache;
 begin
   if not FileExists('PMakeCache.txt') then
     exit(True);
@@ -111,34 +110,37 @@ begin
   if not FileExists(macros_expand('make2$(EXE)')) then
     exit(True);
 
+  fc := VALfc('PMAKE_TXT');
+
   //return true if the PMake.txt is count is different
-  if cache.GetValue('PMake/count', 0) <> pmakefiles.Count then
+  if countlist(fc) <> pmakefiles.Count then
     exit(True);
 
   //return true if a crc / PMake.txt combination is not found
   f := TStringList.Create;
-  for i := 0 to pmakefiles.Count - 1 do
-  begin
-    p := cache.GetValue(widestring(Format('PMake/item_%d/filename', [i + 1])), widestring(''));
-    c := cache.GetValue(widestring(Format('PMake/item_%d/crc', [i + 1])), 0);
 
-    f.LoadFromFile(p);
+  pm := fc^.first;
+  while pm <> nil do
+  begin
+    f.LoadFromFile(pm^.fname);
     pmakecrc := crc_16(@f.Text[1], length(f.Text));
 
     found := False;
     for j := 0 to pmakefiles.Count - 1 do
-      if pPMakeItem(pmakefiles[j])^.fname = p then
+      if pPMakeItem(pmakefiles[j])^.fname = pm^.fname then
       begin
         found := true;
         break;
       end;
 
     //either the PMake.txt file does not exist, or the crc changed
-    if (found = False) or (c <> pmakecrc) then
+    if (found = False) or (pm^.crc <> pmakecrc) then
     begin
       f.Free;
       exit(True);
     end;
+
+    pm := pm^.next;
   end;
   f.Free;
 
@@ -351,12 +353,6 @@ procedure make_execute;
 var
   exit_code: integer;
 begin
-  cache := TXMLConfig.Create(nil);
-  if FileExists('PMakeCache.txt') then
-    cache.LoadFromFile('PMakeCache.txt')
-  else
-    message(FATAL_ERROR, 'fatal error: cannot find PMakeCache.txt, rerun pmake');
-
   pmakecache_read;
 
   make2_params := TStringList.Create;
@@ -369,6 +365,7 @@ begin
   if check_rebuild_make2 or force_build then
     make2_build;
 
+  //save PMakeCache for make2 to use it
   pmakecache_write;
 
   sline := TStringList.Create;

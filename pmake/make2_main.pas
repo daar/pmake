@@ -15,7 +15,6 @@ procedure execute_make2;
 implementation
 
 uses
-  XMLConf,
   depsolver, compiler, pmake_api, make2_package;
 
 type
@@ -95,12 +94,6 @@ end;
 
 procedure init_make2;
 begin
-  cache := TXMLConfig.Create(nil);
-  if FileExists('PMakeCache.txt') then
-    cache.LoadFromFile('PMakeCache.txt')
-  else
-    message(FATAL_ERROR, 'fatal error: cannot find PMakeCache.txt, rerun pmake');
-
   pmakecache_read;
   parse_commandline;
 

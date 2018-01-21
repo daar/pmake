@@ -4,9 +4,6 @@ unit pmake_variables;
 
 interface
 
-uses
-  XMLConf;
-
 type
   PMK_type = (ptBoolean, ptInteger, ptFloat, ptString, ptFileCache);
 
@@ -18,8 +15,13 @@ type
   pPMK_FileCache = ^PMK_FileCache;
   PMK_FileCache = record
     next, prev: pointer;
-    path: PChar;
+    fname: shortstring;
     crc: word;
+  end;
+
+  pPMK_ListBase = ^PMK_ListBase;
+  PMK_ListBase = record
+    first, last: pointer;
   end;
 
   pPMK_variant = ^PMK_variant;
@@ -32,14 +34,10 @@ type
       ptInteger:   (PM_Integer  : integer);
       ptFloat:     (PM_Float    : double);
       ptString:    (PM_String   : shortstring);
-      ptFileCache: (PM_FileCache: pointer);
+      ptFileCache: (PM_FileCache: pPMK_ListBase);
   end;
 
-  PMK_ListBase = record
-    first, last: pointer;
-  end;
-
-  PMK_Bool = (_OFF_, _ON_);
+  PMK_Bool = (_OFF_ = 0, _ON_ = 1);
 
 var
   varlist: PMK_ListBase;
@@ -65,11 +63,13 @@ procedure set_(name: shortstring; value: boolean);
 procedure set_(name: shortstring; value: integer);
 procedure set_(name: shortstring; value: shortstring);
 procedure set_(name: shortstring; value: double);
+procedure set_(name: shortstring; value: pPMK_ListBase);
 
 function val_(name: shortstring): shortstring;
 function val_(name: shortstring): boolean;
 function val_(name: shortstring): integer;
 function val_(name: shortstring): double;
+function VALfc(name: shortstring): pPMK_ListBase;
 
 procedure option(option_variable, description: shortstring; initial_value: PMK_Bool);
 function option(option_variable: shortstring): boolean;
@@ -80,14 +80,33 @@ procedure pmakecache_write;
 procedure pmakecache_read;
 
 function find_variable(name: shortstring): pointer;
-
-var
-  cache: TXMLConfig;
+function countlist(listbase: pPMK_ListBase): integer;
 
 implementation
 
 uses
-  Classes, SysUtils, crc16, pmake_utilities, compiler;
+  DOM,
+  XMLRead,
+  XMLWrite,
+  Classes, SysUtils, crc16, pmake_utilities, pmake_api, compiler;
+
+function countlist(listbase: pPMK_ListBase): integer;
+var
+  link: pPMK_Link;
+  count: integer = 0;
+begin
+  if listbase <> nil then
+  begin
+    link := listbase^.first;
+    while link <> nil do
+    begin
+      inc(count);
+      link := link^.next;
+    end;
+  end;
+
+  exit(count);
+end;
 
 function callocN(Size: PtrUInt): pointer;
 var
@@ -120,7 +139,7 @@ begin
     varlist.first := link^.next;
 end;
 
-procedure addtail(vlink: pointer);
+procedure addtail(listbase: pPMK_ListBase; vlink: pointer);
 var
   link: pPMK_Link;
 begin
@@ -130,22 +149,22 @@ begin
     exit;
 
   link^.next := nil;
-  link^.prev := varlist.last;
+  link^.prev := listbase^.last;
 
-  if varlist.last <> nil then
-    pPMK_Link(varlist.last)^.next := link;
+  if listbase^.last <> nil then
+    pPMK_Link(listbase^.last)^.next := link;
 
-  if varlist.first = nil then
-    varlist.first := link;
+  if listbase^.first = nil then
+    listbase^.first := link;
 
-  varlist.last := link;
+  listbase^.last := link;
 end;
 
 function RemoveSpecialChars(const str: shortstring): shortstring;
 const
-  InvalidChars: set of char = [',', '.', '/', '!', '@', '#', '$', '%',
-                               '^', '&', '*', '''', '"', ';', '(', ')',
-                               ':', '|', '[', ']'];
+  InvalidChars: set of char =
+    [',', '.', '/', '!', '@', '#', '$', '%', '^',
+    '&', '*', '''', '"', ';', '(', ')', ':', '|', '[', ']'];
 var
   i: cardinal;
 begin
@@ -237,7 +256,7 @@ begin
   v^.PM_Boolean := value;
 
   //add item to bottom of list
-  addtail(v);
+  addtail(@varlist, v);
 end;
 
 procedure set_(name: shortstring; value: integer);
@@ -251,7 +270,7 @@ begin
   v^.PM_Integer := value;
 
   //add item to bottom of list
-  addtail(v);
+  addtail(@varlist, v);
 end;
 
 procedure set_(name: shortstring; value: shortstring);
@@ -265,7 +284,7 @@ begin
   v^.PM_String := value;
 
   //add item to bottom of list
-  addtail(v);
+  addtail(@varlist, v);
 end;
 
 procedure set_(name: shortstring; value: double);
@@ -279,7 +298,21 @@ begin
   v^.PM_Float := value;
 
   //add item to bottom of list
-  addtail(v);
+  addtail(@varlist, v);
+end;
+
+procedure set_(name: shortstring; value: pPMK_ListBase);
+var
+  v: pPMK_variant;
+begin
+  v := create_variable(name);
+
+  //add data to variant
+  v^.vtype := ptFileCache;
+  v^.PM_FileCache := value;
+
+  //add item to bottom of list
+  addtail(@varlist, v);
 end;
 
 function val_(name: shortstring): boolean;
@@ -328,6 +361,18 @@ begin
     exit(v^.PM_Float)
   else
     exit(0);
+end;
+
+function VALfc(name: shortstring): pPMK_ListBase;
+var
+  v: pPMK_variant;
+begin
+  v := find_variable(name);
+
+  if v <> nil then
+    exit(v^.PM_FileCache)
+  else
+    exit(nil);
 end;
 
 procedure option(option_variable, description: shortstring; initial_value: PMK_Bool);
@@ -386,6 +431,93 @@ begin
     PMAKE_VERSION := Format('%d.%d.%d', [PMAKE_MAJOR_VERSION, PMAKE_MINOR_VERSION, PMAKE_PATCH_VERSION]);
 end;
 
+var
+  doc: TXMLDocument;
+  root: TDOMElement;
+
+procedure write_pmakecache_init;
+begin
+  if doc = nil then
+    doc := TXMLDocument.Create;
+
+  //create the root node
+  root := doc.CreateElement('PMakeCache');
+  doc.AppendChild(root);
+end;
+
+procedure write_pmakecache_finish;
+begin
+  //write to XML
+  writeXMLFile(doc, 'PMakeCache.txt');
+
+  FreeAndNil(doc);
+end;
+
+procedure write_boolean_pmakecache(variable: string; value: boolean);
+var
+  elem: TDOMElement;
+begin
+  elem := doc.CreateElement(WideString(variable));
+  root.AppendChild(elem);
+
+  TDOMElement(elem).SetAttribute('type', 'boolean');
+  TDOMElement(elem).SetAttribute('value', WideString(BoolToStr(value, True)));
+end;
+
+procedure write_integer_pmakecache(variable: string; value: integer);
+var
+  elem: TDOMElement;
+begin
+  elem := doc.CreateElement(WideString(variable));
+  root.AppendChild(elem);
+
+  TDOMElement(elem).SetAttribute('type', 'integer');
+  TDOMElement(elem).SetAttribute('value', WideString(IntToStr(value)));
+end;
+
+procedure write_float_pmakecache(variable: string; value: double);
+var
+  elem: TDOMElement;
+begin
+  elem := doc.CreateElement(WideString(variable));
+  root.AppendChild(elem);
+
+  TDOMElement(elem).SetAttribute('type', 'float');
+  TDOMElement(elem).SetAttribute('value', WideString(FloatToStr(value)));
+end;
+
+procedure write_string_pmakecache(variable: string; value: string);
+var
+  elem: TDOMElement;
+begin
+  elem := doc.CreateElement(WideString(variable));
+  root.AppendChild(elem);
+
+  TDOMElement(elem).SetAttribute('type', 'string');
+  TDOMElement(elem).SetAttribute('value', WideString(value));
+end;
+
+procedure write_filecache_pmakecache(variable: string; crc: word; fname: string);
+var
+  elem: TDOMElement;
+  itm: TDOMElement;
+begin
+  elem := TDOMElement(doc.DocumentElement.FindNode(WideString(variable)));
+
+  if elem = nil then
+  begin
+    elem := doc.CreateElement(WideString(variable));
+    root.AppendChild(elem);
+    TDOMElement(elem).SetAttribute('type', 'filecache');
+  end;
+
+  itm := doc.CreateElement('item');
+  elem.AppendChild(itm);
+
+  TDOMElement(itm).SetAttribute('crc', WideString(IntToStr(crc)));
+  TDOMElement(itm).SetAttribute('filename', WideString(fname));
+end;
+
 procedure pmakecache_write;
 var
   pmakecrc: word;
@@ -393,7 +525,7 @@ var
   i: integer;
   v: pPMK_variant;
 begin
-  cache.Clear;
+  write_pmakecache_init;
 
   //write all variables to cache
   v := varlist.first;
@@ -402,68 +534,95 @@ begin
   begin
     case v^.vtype of
       ptBoolean:
-      begin
-        cache.SetValue(WideString(v^.name + '/type'), 'boolean');
-        cache.SetValue(WideString(v^.name + '/value'), v^.PM_Boolean);
-      end;
+        write_boolean_pmakecache(v^.name, v^.PM_Boolean);
       ptInteger:
-      begin
-        cache.SetValue(WideString(v^.name + '/type'), 'integer');
-        cache.SetValue(WideString(v^.name + '/value'), v^.PM_Integer);
-      end;
+        write_integer_pmakecache(v^.name, v^.PM_Integer);
       ptFloat:
-      begin
-        cache.SetValue(WideString(v^.name + '/type'), 'float');
-        cache.SetValue(WideString(v^.name + '/value'), WideString(FloatToStr(v^.PM_Float)));
-      end;
+        write_float_pmakecache(v^.name, v^.PM_Float);
       ptString:
-      begin
-        cache.SetValue(WideString(v^.name + '/type'), 'string');
-        cache.SetValue(WideString(v^.name + '/value'), WideString(v^.PM_String));
-      end;
+        write_string_pmakecache(v^.name, v^.PM_String);
     end;
 
     v := v^.next;
   end;
 
-  //todo: rewrite this part
+  //write the actual PMAKE file cache as well
   if pmakefiles <> nil then
   begin
-    cache.SetValue('PMake/count', pmakefiles.Count);
-    cache.SetValue('PMake/type', 'filecache');
     f := TStringList.Create;
     for i := 0 to pmakefiles.Count - 1 do
     begin
       f.LoadFromFile(pPMakeItem(pmakefiles[i])^.fname);
       pmakecrc := crc_16(@f.Text[1], length(f.Text));
 
-      cache.SetValue(WideString(Format('PMake/item_%d/filename', [i + 1])), WideString(pPMakeItem(pmakefiles[i])^.fname));
-      cache.SetValue(WideString(Format('PMake/item_%d/crc', [i + 1])), pmakecrc);
+      write_filecache_pmakecache('PMAKE_TXT', pmakecrc, pPMakeItem(pmakefiles[i])^.fname);
     end;
     f.Free;
   end;
 
-  cache.Flush;
+  write_pmakecache_finish;
 
   OutputLn('-- PMakeCache.txt file has been written');
 end;
 
 procedure pmakecache_read;
+var
+  child: TDOMNode;
+  j: integer;
+  nl: TDOMNodeList;
+  name: string;
+  list: pPMK_ListBase;
+  itm: pPMK_FileCache;
 begin
-  //todo: rewrite this part, see pmakecache_write
-  //see: http://wiki.lazarus.freepascal.org/XML_Tutorial#Usage_Examples
-  set_('PMAKE_SOURCE_DIR', shortstring(cache.GetValue('PMAKE_SOURCE_DIR/value', '')));
-  set_('PMAKE_CURRENT_SOURCE_DIR', shortstring(cache.GetValue('PMAKE_SOURCE_DIR/value', '')));
-  set_('PMAKE_PAS_COMPILER', shortstring(cache.GetValue('PMAKE_PAS_COMPILER/value', '')));
+  if not FileExists('PMakeCache.txt') then
+    message(FATAL_ERROR, 'fatal error: cannot find PMakeCache.txt, rerun pmake');
 
-  set_('PMAKE_TOOL_DIR', shortstring(cache.GetValue('PMAKE_TOOL_DIR/value', '')));
+  try
+    ReadXMLFile(doc, 'PMakeCache.txt');
 
-  set_('PMAKE_BINARY_DIR', shortstring(cache.GetValue('PMAKE_BINARY_DIR/value', '')));
-  set_('PMAKE_CURRENT_BINARY_DIR', shortstring(cache.GetValue('PMAKE_BINARY_DIR/value', '')));
+    //get the first child under the root
+    child := doc.FirstChild.FirstChild;
 
-  set_('PMAKE_PAS_COMPILER_VERSION', shortstring(cache.GetValue('PMAKE_PAS_COMPILER_VERSION/value', '')));
-  set_('PMAKE_HOST_SYSTEM_PROCESSOR', shortstring(cache.GetValue('PMAKE_HOST_SYSTEM_PROCESSOR/value', '')));
-  set_('PMAKE_HOST_SYSTEM_NAME', shortstring(cache.GetValue('PMAKE_HOST_SYSTEM_NAME/value', '')));
+    while child <> nil do
+    begin
+      name := string(child.NodeName);
+
+      case child.Attributes.GetNamedItem('type').NodeValue of
+        'boolean': set_(name, StrToBool(string(child.Attributes.GetNamedItem('value').NodeValue)));
+        'integer': set_(name, StrToInt(string(child.Attributes.GetNamedItem('value').NodeValue)));
+        'float': set_(name, StrToFloat(string(child.Attributes.GetNamedItem('value').NodeValue)));
+        'string': set_(name, string(child.Attributes.GetNamedItem('value').NodeValue));
+        'filecache':
+        begin
+          nl := child.ChildNodes;
+
+          list := callocN(sizeof(PMK_ListBase));
+
+          for j := 0 to nl.Count - 1 do
+          begin
+            //fix me
+            itm := callocN(sizeof(PMK_FileCache));
+
+            itm^.crc := StrToInt(nl.Item[j].Attributes.GetNamedItem('crc').NodeValue);
+            itm^.fname := nl.Item[j].Attributes.GetNamedItem('filename').NodeValue;
+
+            //add item to bottom of list
+            addtail(list, itm);
+
+            //('  crc=' + nl.Item[j].Attributes.GetNamedItem('crc').NodeValue +
+            //  ' path=');
+            //(nl.Item[j].Attributes.GetNamedItem('path').NodeValue);
+          end;
+
+          set_(name, list);
+        end;
+      end;
+
+      child := child.NextSibling;
+    end;
+  finally
+    FreeAndNil(doc);
+  end;
 end;
 
 end.

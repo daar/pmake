@@ -8,7 +8,6 @@ uses
 {$ENDIF}
   Classes,
   SysUtils,
-  XMLConf,
   pmake_main,
   pmake_variables,
   pmake_utilities,
@@ -17,15 +16,17 @@ uses
 
 var
   force_build: boolean = False;
+  debug: boolean = False;
   quickstart: boolean = False;
 
 const
-  CmdOptions: array[1..5] of TCmdOption = (
+  CmdOptions: array[1..6] of TCmdOption = (
     (name: '--compiler'; descr: 'Use indicated binary as compiler'),
+    (name: '--debug'; descr: 'Do not delete the make source file.'),
     (name: '--force'; descr: 'Force building the make executable'),
     (name: '--help'; descr: 'This message.'),
-    (name: '--verbose'; descr: 'Be more verbose.'),
-    (name: '--quickstart'; descr: 'Create PMake.txt files in the supplied source directory')
+    (name: '--quickstart'; descr: 'Create PMake.txt files in the supplied source directory'),
+    (name: '--verbose'; descr: 'Be more verbose.')
     );
 
   procedure usage;
@@ -89,6 +90,7 @@ const
               end;
               '--help': usage;
               '--force': force_build := True;
+              '--debug': debug := True;
               '--verbose': verbose := True;
               '--quickstart': quickstart := True;
             end;
@@ -125,7 +127,7 @@ begin
     pmake_run_quickstart(val_('PMAKE_SOURCE_DIR'));
 
   if not FileExists(macros_expand('make$(EXE)')) or force_build then
-    create_and_build_make;
+    create_and_build_make(debug);
 
   pmakecache_write;
   OutputLn('-- Generating done');
