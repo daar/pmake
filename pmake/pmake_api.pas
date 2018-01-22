@@ -49,7 +49,7 @@ var
   i: integer;
 begin
   for i := Low(depends) to High(depends) do
-    add_dependency_to_cache(depcache, pkgname, AnsiString(depends[I].VAnsiString));
+    add_dependency_to_cache(depcache, pkgname, AnsiString(depends[i].VAnsiString));
 end;
 
 procedure add_executable(pkgname, executable, srcfile: string; depends: array of const);

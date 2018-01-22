@@ -119,7 +119,17 @@ end;
 procedure add_dependency_to_cache(depcache: TFPList; source, target: string);
 var
   dep: pDependency = nil;
+  i: integer;
 begin
+  //check if dependency already exists in the cache
+  for i := 0 to depcache.Count - 1 do
+  begin
+    dep := depcache[i];
+
+    if (dep^.source = source) and (dep^.target = target) then
+      exit;
+  end;
+
   dep := allocmem(sizeof(Dependency));
 
   dep^.source := source;
@@ -189,7 +199,7 @@ begin
       //if no dependency found then raise error
       if i >= pkglist.Count then
       begin
-        StdErrLn('fatal error: cannot resolve remaining dependencies');
+        writeln('fatal error: cannot resolve remaining dependencies');
 
         //make a dump here for all unresolved packages
         for j := 0 to pkglist.Count - 1 do
@@ -197,12 +207,12 @@ begin
           pkg := pkglist[j];
           if pkg^.unresolved.Count > 0 then
           begin
-            Write(pkg^.name, ' -> ');
+            write(pkg^.name, ' -> ');
             for k := 0 to pkg^.unresolved.Count - 1 do
               if k <> pkg^.unresolved.Count - 1 then
-                Write(pPackage(pkg^.unresolved[k])^.name, ', ')
+                write(pPackage(pkg^.unresolved[k])^.name, ', ')
               else
-                OutputLn(pPackage(pkg^.unresolved[k])^.name);
+                writeln(pPackage(pkg^.unresolved[k])^.name);
           end;
         end;
         halt(1);
