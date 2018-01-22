@@ -120,7 +120,7 @@ end;
 
 procedure pmake_run_quickstart(srcdir: string);
 var
-  res, recursive, dir, pmtype, name: string;
+  res, recursive, dir, pmtype, name, prefix: string;
   f: TStrings;
   i: integer;
 begin
@@ -136,11 +136,13 @@ begin
   f := TStringList.Create;
 
   //root PMake.txt
-  res := prompt('Some projects require a specific minimum compiler version, you can specify this now.', 'Please enter the minimum compiler version (' + val_('PMAKE_PAS_COMPILER_VERSION') + ')', '');
+  res := prompt('Some projects require a specific minimum compiler version, you can specify this now.', 'Please enter the minimum compiler version.', val_('PMAKE_PAS_COMPILER_VERSION'));
   f.Add('compiler_minimum_required(' + StringReplace(res, '.', ',', [rfReplaceAll]) + ');');
 
   res := prompt('PMake requires a project name for the entire project', 'Please enter the project name', '');
   f.Add('project(''' + res + ''');');
+
+  prefix := prompt('Please specify which library prefix to use', 'Enter the desired prefix', 'lib');
 
   writeln('processing all PMake.txt files now');
 
@@ -157,6 +159,7 @@ begin
     //new folder found
     if ExtractFilePath(filelist[i]) <> dir then
     begin
+      writeln('  > ', dir + 'PMake.txt');
       f.SaveToFile(dir + 'PMake.txt');
       f.Clear;
       dir := ExtractFilePath(filelist[i]);
@@ -164,9 +167,9 @@ begin
 
     ParseSourceFile(filelist[i], pmtype, name);
     case pmtype of
-      'unit': f.Add(Format('add_library(''lib_%s'', [''%s'']);', [name, ExtractFileName(filelist[i])]));
-      'program': f.Add(Format('add_executable(''%s'', ''%s'', ''%s'', []);', [name, name, ExtractFileName(filelist[i])]));
-      'include': f.Add(Format('include_directories(''lib_%s'', [''.'']);', [name]));
+      'unit': f.Add(Format('add_library(''%s_%s'', [''%s'']);', [prefix, name, ExtractFileName(filelist[i])]));
+      'program': f.Add(Format('add_executable(''%s_%s'', ''%s'', ''%s'', []);', [prefix, name, name, ExtractFileName(filelist[i])]));
+      'include': f.Add(Format('include_directories(''%s_%s'', [''$(PMAKE_CURRENT_SOURCE_DIR)'']);', [prefix, name]));
     end;
     inc(i);
   end;

@@ -205,13 +205,16 @@ begin
     f.LoadFromFile(p^.fname);
 
     make2.Add('  add_subdirectory(''%s'');', [ExtractFilePath(p^.fname)]);
+    make2.Add('//--------');
 
     //determine the start and end position of the PMake.txt in the source file
-    p^.startpos := make2.Count;
-    p^.endpos := p^.startpos + f.Count;
+    p^.startpos := make2.Count + 1;
 
-    make2.Add(f.Text);
-  end;
+    make2.AddStrings(f);
+    make2.Add('//--------');
+
+    p^.endpos := make2.Count + 1;
+end;
   f.Free;
 
   make2.Add('  execute_make2;');

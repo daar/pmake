@@ -106,10 +106,10 @@ begin
       errmsg := copy(fpc_msg.text, p2 + 2, length(fpc_msg.text) - p2);
 
       //find the line no
+      found := False;
       for j := 0 to pmakefiles.Count - 1 do
       begin
         fitem := pPMakeItem(pmakefiles[j]);
-        found := False;
         if (fitem^.startpos <= lineno) and (fitem^.endpos >= lineno) then
         begin
           found := True;

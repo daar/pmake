@@ -168,7 +168,7 @@ begin
             param.Free;
 
             if exit_code <> 0 then
-              messagefmt(FATAL_ERROR, 'fatal error: cannot compile %s', [pUnitCommand(cmd)^.filename]);
+              messagefmt(FATAL_ERROR, '(1009) fatal error: cannot compile %s', [pUnitCommand(cmd)^.filename]);
           end;
           ctCustom:
           begin
@@ -180,7 +180,7 @@ begin
             param.Free;
 
             if exit_code <> 0 then
-              messagefmt(FATAL_ERROR, 'fatal error: executing %s', [pCustomCommand(cmd)^.executable]);
+              messagefmt(FATAL_ERROR, '(1009) fatal error: executing %s', [pCustomCommand(cmd)^.executable]);
           end;
         end;
     end;
@@ -215,7 +215,7 @@ begin
             if not ForceDirectories(cmd^.destination) then
             begin
               StdOutLn('');
-              messagefmt(FATAL_ERROR, 'fatal error: failed to create directory "%s"', [cmd^.directory]);
+              messagefmt(FATAL_ERROR, '(1009) fatal error: failed to create directory "%s"', [cmd^.directory]);
             end;
 
             //give proper offset for consequtive copies
@@ -270,7 +270,7 @@ begin
           if not DeleteDirectory(pkg^.unitsoutput, False) then
           begin
             StdOutLn('');
-            messagefmt(FATAL_ERROR, 'fatal error: cannot remove directory %s', [pkg^.unitsoutput]);
+            messagefmt(FATAL_ERROR, '(1009) fatal error: cannot remove directory %s', [pkg^.unitsoutput]);
           end
           else
           if verbose then
@@ -282,7 +282,7 @@ begin
           if not DeleteDirectory(pkg^.binoutput, False) then
           begin
             StdOutLn('');
-            messagefmt(FATAL_ERROR, 'fatal error: cannot remove directory $s', [pkg^.binoutput]);
+            messagefmt(FATAL_ERROR, '(1009) fatal error: cannot remove directory $s', [pkg^.binoutput]);
           end
           else
           if verbose then
@@ -302,7 +302,7 @@ var
 begin
   //test to make sure the project is well defined
   if val_('PMAKE_PROJECT_NAME') = '' then
-    message(FATAL_ERROR, 'fatal error: no project defined');
+    message(FATAL_ERROR, '(1009) fatal error: no project defined');
 
   (*
    * add all dependencies for all packages. we do this only here to make sure all

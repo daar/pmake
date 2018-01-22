@@ -117,7 +117,7 @@ begin
 
   for i := Low(directories) to High(directories) do
   begin
-    dir := IncludeTrailingPathDelimiter(ExpandFileName(curdir + AnsiString(directories[I].VAnsiString)));
+    dir := IncludeTrailingPathDelimiter(ExpandFileName(macros_expand(AnsiString(directories[i].VAnsiString))));
     pkg^.includes.Add(dir);
   end;
 end;
