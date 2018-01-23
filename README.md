@@ -17,9 +17,9 @@ Building PMake
 Supported Platforms
 -------------------
 
-* Microsoft Windows
-* Apple macOS
+* Macintosh
 * Linux
+* Windows
 
 Other operating systems will probably work too out of the box, if not it should not be a major problem to make PMake work on this platform.
 
@@ -27,7 +27,7 @@ Building PMake from Scratch
 ---------------------------
 You need to have the latest stable freepascal compiler installed. PMake can bootstrap itself with the provided PMake.txt script. You will first need to build pmake and then install it. In short:
 
-`$ fpc pmake.pp`
+`$ fpc pmake`
 
 `$ ./pmake`
 
