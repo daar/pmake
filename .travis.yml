@@ -19,7 +19,10 @@ install:
     fi
     
 script:
-  - fpc pmake/pmake.pp 
+  - cd pmake
+  - fpc pmake.pp 
+  - pmake .
+  - make package zip
 
 notifications:
   email:
