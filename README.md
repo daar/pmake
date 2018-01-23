@@ -17,8 +17,8 @@ Building PMake
 Supported Platforms
 -------------------
 
-* Macintosh
 * Linux
+* Macintosh
 * Windows
 
 Other operating systems will probably work too out of the box, if not it should not be a major problem to make PMake work on this platform.
