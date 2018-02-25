@@ -155,8 +155,10 @@ begin
   pkg := find_or_create_package(pkglist, pkgname, val_('PMAKE_CURRENT_SOURCE_DIR'), val_('PMAKE_CURRENT_BINARY_DIR'));
 
   cmd := AllocMem(sizeof(CustomCommand));
+
   cmd^.executable := macros_expand(executable, pkg);
   cmd^.parameters := macros_expand(parameters, pkg);
+  cmd^.command := ctCustom;
 
   pkg^.commands.Add(cmd);
 
