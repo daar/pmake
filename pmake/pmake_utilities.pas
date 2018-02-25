@@ -196,6 +196,7 @@ end;
 function macros_expand(str: string; pkg: pPackage = nil): string;
 var
   tmp: string = '';
+  spos, epos: integer;
 begin
   tmp := str;
   replace_variable_macros(tmp);
@@ -224,6 +225,12 @@ begin
 {$else}
   tmp := StringReplace(tmp, '$(DLL)', '.so', [rfReplaceAll]);
 {$endif}
+
+  //check for unknown macro's
+  spos := pos('$(', tmp);
+  epos := pos(')', tmp);
+  if (spos > 0) and (epos > spos) then
+    messagefmt(WARNING, 'warning: unknown macro %s found.', [copy(tmp, spos, epos)]);
 
   Result := tmp;
 end;
