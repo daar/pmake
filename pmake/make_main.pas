@@ -8,7 +8,7 @@ uses
   Classes, SysUtils;
 
 procedure make_execute;
-procedure search_pmake(const path: string);
+procedure search_pmake(const path: string; callee: string = '');
 
 implementation
 
@@ -146,36 +146,52 @@ begin
   exit(False);
 end;
 
-//todo: replace this by a PMake interpreter that finds and follows the add_subdirectory function calls
-//      see #37 for more information
-procedure search_pmake(const path: string);
+procedure search_pmake(const path: string; callee: string = '');
 var
-  info: TSearchRec;
   p: pPMakeItem;
+  fn: string;
+  pm: TStrings;
+  line: string;
+  i: integer;
+  spos, epos: integer;
 begin
-  if FindFirst(path + '*', faAnyFile, info) = 0 then
-  begin
-    try
-      repeat
-        if (info.Attr and faDirectory) = 0 then
-        begin
-          //add PMake.txt to the file list
-          if info.Name = 'PMake.txt' then
-          begin
-            p := GetMem(SizeOf(TPMakeItem));
-            p^.fname := path + info.Name;
-            pmakefiles.Add(p);
-          end;
-        end
-        else
-        //start the recursive search
-        if (info.Name <> '.') and (info.Name <> '..') then
-          search_pmake(IncludeTrailingBackSlash(path + info.Name));
+  fn := IncludeTrailingPathDelimiter(path) + 'PMake.txt';
 
-      until FindNext(info) <> 0
-    finally
-      FindClose(info);
+  if not FileExists(fn) then
+  begin
+    messagefmt(WARNING, 'warning: error in %sPMake.txt', ['.' + DirectorySeparator + ExtractRelativepath(val_('PMAKE_SOURCE_DIR'), callee) + DirectorySeparator]);
+    messagefmt(FATAL_ERROR, 'fatal error: could not find %s', ['.' + DirectorySeparator + ExtractRelativepath(val_('PMAKE_SOURCE_DIR'), fn)]);
+  end
+  else
+  begin
+    p := GetMem(SizeOf(TPMakeItem));
+    p^.fname := fn;
+    pmakefiles.Add(p);
+
+    //parse the PMake.txt file
+    pm := TStringList.Create;
+    pm.LoadFromFile(fn);
+
+    //search for 'add_subdirectory'
+    for i := 0 to pm.Count - 1 do
+    begin
+      line := LowerCase(Trim(pm[i]));
+      if pos('add_subdirectory', line) = 1 then
+      begin
+        spos := pos('''', line) + 1;
+        line := copy(Trim(pm[i]), spos, length(line));
+        epos := pos('''', line) - 1;
+        line := macros_expand(copy(line, 1, epos));
+
+        //make sure the directory becomes absolute
+        line := ExtractRelativepath(path, line);
+        line := IncludeTrailingPathDelimiter(path) + line;
+
+        search_pmake(line, path);
+      end;
     end;
+
+    pm.Free;
   end;
 end;
 

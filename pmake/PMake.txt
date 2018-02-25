@@ -1,5 +1,5 @@
 compiler_minimum_required(3,0,0);
-project('PMake: a build tool for (free) pascal');
+project('PMake: a build tool for (free) pascal', 0, 0, 2);
 
 option('WITH_DEBUG', 'Enable debug info for PMake', _ON_);
 
@@ -11,7 +11,7 @@ add_library('lib_pmake', ['compiler.pas', 'crc16.pas', 'depsolver.pas', 'make2_m
 add_executable('pmake', 'pmake', 'pmake.pp', ['lib_pmake']);
 
 //create the package
-create_package('pmake-0.0.2-$(PMAKE_HOST_SYSTEM_PROCESSOR)-$(PMAKE_HOST_SYSTEM_NAME)', '$(PMAKE_SOURCE_DIR)..\build\');
+create_package('pmake-$(PROJECT_VERSION)-$(PMAKE_HOST_SYSTEM_PROCESSOR)-$(PMAKE_HOST_SYSTEM_NAME)', '$(PMAKE_SOURCE_DIR)..\build\');
 
 //install the compiled units and the pmake executable
 install('$(BINOUTPUTDIR)', '$(PMAKE_PACKAGE_DIR)', 'pmake$(EXE)', 'pmake');
