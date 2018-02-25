@@ -214,10 +214,10 @@ begin
       messagefmt(FATAL_ERROR, 'fatal error: invalid use of macro $(BINOUTPUTDIR) in "%s"', [str]);
   end;
 
-{$ifdef unix}
-  tmp := StringReplace(tmp, '$(EXE)', '', [rfReplaceAll]);
-{$else}
+{$ifdef windows}
   tmp := StringReplace(tmp, '$(EXE)', '.exe', [rfReplaceAll]);
+{$else}
+  tmp := StringReplace(tmp, '$(EXE)', '', [rfReplaceAll]);
 {$endif}
 
 {$ifdef windows}
