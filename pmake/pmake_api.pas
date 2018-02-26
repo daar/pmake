@@ -17,6 +17,8 @@ procedure add_executable(pkgname, executable, srcfile: string; depends: array of
 procedure add_library(pkgname: string; srcfiles: array of const);
 procedure add_library(pkgname: string; srcfiles, depends: array of const);
 
+procedure add_test(executable, srcfile: string; depends: array of const; description: string);
+
 procedure include_directories(pkgname: string; directories: array of const);
 
 procedure create_package(const file_name, base_directory: string);
@@ -103,6 +105,29 @@ begin
 
   //dependencies will be processed once all packages are processed
   add_dependecies_to_cache(pkgname, depends);
+end;
+
+procedure add_test(executable, srcfile: string; depends: array of const; description: string);
+var
+  pkg: pPackage = nil;
+  cmd: pTestCommand;
+begin
+  pkg := find_or_create_package(pkglist, _TEST_PGK_NAME_, val_('PMAKE_CURRENT_SOURCE_DIR'), val_('PMAKE_CURRENT_BINARY_DIR'));
+
+  cmd := allocmem(sizeof(TestCommand));
+
+  cmd^.command := ctTest;
+  cmd^.filename := srcfile;
+  cmd^.executable := executable;
+  cmd^.description := description;
+
+  //add the command to the package
+  pkg^.commands.Add(cmd);
+
+  Inc(cmd_count);
+
+  //dependencies will be processed once all packages are processed
+  add_dependecies_to_cache(_TEST_PGK_NAME_, depends);
 end;
 
 procedure include_directories(pkgname: string; directories: array of const);

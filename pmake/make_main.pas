@@ -20,16 +20,17 @@ type
   TRunMode = (rmBuild, rmInstall, rmClean);
 
 const
-  CmdOptions: array[1..9] of TCmdOption = (
-    (name: 'build'; descr: 'Build all targets in the project.'),
+  CmdOptions: array[1..10] of TCmdOption = (
+    (name: 'build'; descr: 'Build all targets in the project'),
     (name: 'clean'; descr: 'Clean all units and folders in the project'),
-    (name: 'install'; descr: 'Install all targets in the project.'),
+    (name: 'install'; descr: 'Install all targets in the project'),
     (name: 'package'; descr: 'Create a package (zip)'),
+    (name: 'test'; descr: 'Build all targets and run tests'),
     (name: '--compiler'; descr: 'Use indicated binary as compiler'),
-    (name: '--debug'; descr: 'Do not delete the make2 source file.'),
+    (name: '--debug'; descr: 'Do not delete the make2 source file'),
     (name: '--force'; descr: 'Force building make2.exe'),
-    (name: '--help'; descr: 'This message.'),
-    (name: '--verbose'; descr: 'Be more verbose.')
+    (name: '--help'; descr: 'This message'),
+    (name: '--verbose'; descr: 'Be more verbose')
     );
 
 var
@@ -279,7 +280,7 @@ begin
   OutputLn('Copyright (c) 2016-2017 by Darius Blaszyk');
   OutputLn('');
   OutputLn('Usage ');
-  OutputLn('  make [options] <path-to-source>');
+  OutputLn('  make [options]');
   OutputLn('');
   OutputLn('Options');
 
@@ -315,6 +316,7 @@ begin
               inc(i);
               make2_params.Add(ParamStr(i));
             end;
+            'test': make2_params.Add('test');
             '--compiler':
             begin
               if i < ParamCount then
@@ -333,7 +335,11 @@ begin
             '--force': force_build := True;
             '--debug': debug := True;
             '--help': usage;
-            '--verbose': verbose := True;
+            '--verbose':
+            begin
+              verbose := True;
+              make2_params.Add('--verbose');
+            end;
           end;
         if found then
           break;

@@ -8,7 +8,7 @@ uses
   Classes, SysUtils;
 
 type
-  TCommandType = (ctUnit, ctExecutable, ctCustom);
+  TCommandType = (ctUnit, ctExecutable, ctCustom, ctTest);
   TCommandTypes = set of TCommandType;
 
   pPackage = ^Package;
@@ -35,6 +35,14 @@ type
     command: TCommandType;
     filename: string;
     executable: string;
+  end;
+
+  pTestCommand = ^TestCommand;
+  TestCommand = record
+    command: TCommandType;
+    filename: string;
+    executable: string;
+    description: string;
   end;
 
   pInstallCommand = ^InstallCommand;

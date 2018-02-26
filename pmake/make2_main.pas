@@ -18,7 +18,7 @@ uses
   depsolver, compiler, pmake_api, make2_package;
 
 type
-  TRunMode = (rmBuild, rmInstall, rmClean, rmPackage);
+  TRunMode = (rmBuild, rmInstall, rmClean, rmPackage, rmTest);
   TPackage = (pkZip);
 
 var
@@ -64,7 +64,6 @@ procedure parse_commandline;
 var
   i: integer;
 begin
-  verbose := True;
   RunMode := rmBuild;
 
   i := 1;
@@ -87,6 +86,8 @@ begin
             package := pkZip;
         end;
       end;
+      'test': RunMode := rmTest;
+      '--verbose': verbose := True;
     end;
     Inc(i);
   end;
@@ -142,8 +143,24 @@ var
   pkg: pPackage = nil;
   cmdtype: TCommandType;
   cmd: pointer;
+  count: longint = 0;
 begin
   progress := 0;
+
+  //determine number of packages
+  for i := 0 to pkglist.Count - 1 do
+  begin
+    pkg := pkglist[i];
+
+    for j := 0 to pkg^.commands.Count - 1 do
+    begin
+      cmd := pPackage(pkglist[i])^.commands[j];
+      cmdtype := TCommandType(cmd^);
+
+      if cmdtype in mode then
+        inc(count);
+    end;
+  end;
 
   //execute commands
   for i := 0 to pkglist.Count - 1 do
@@ -152,7 +169,7 @@ begin
 
     for j := 0 to pkg^.commands.Count - 1 do
     begin
-      progress += 100 / cmd_count;
+      progress += 100 / count;
 
       cmd := pkg^.commands[j];
       cmdtype := TCommandType(cmd^);
@@ -172,7 +189,7 @@ begin
           end;
           ctCustom:
           begin
-            StdOutLn('Executing ' + pCustomCommand(cmd)^.executable);
+            StdOutLn('(5025) Executing ' + pCustomCommand(cmd)^.executable);
 
             param := TStringList.Create;
             param.Add(pCustomCommand(cmd)^.parameters);
@@ -184,7 +201,12 @@ begin
           end;
         end;
     end;
-    StdOutLn(format('(5025) [%3.0f%%] Built package %s', [progress, pkg^.name]));
+
+    if cmdtype in mode then
+      if cmdtype in [ctCustom] then
+        StdOutLn(format('(5025) [%3.0f%%] Executed package %s', [progress, pkg^.name]))
+      else
+        StdOutLn(format('(5025) [%3.0f%%] Built package %s', [progress, pkg^.name]));
   end;
 end;
 
@@ -234,6 +256,55 @@ begin
   end;
 
   StdOutLn('Installed files');
+end;
+
+procedure ExecuteTests(pkglist: TFPList);
+var
+  j, exit_code: integer;
+  param: TStringList;
+  pkg: pPackage = nil;
+  cmd: pTestCommand;
+  res: String;
+  stime: TDateTime;
+begin
+  StdOutLn('(5025) ');
+  StdOutLn('(5025) running tests');
+
+  progress := 0;
+
+  pkg := find_pkg_by_name(pkglist, _TEST_PGK_NAME_);
+
+  stime := Now;
+
+  //execute commands
+  for j := 0 to pkg^.commands.Count - 1 do
+  begin
+    progress += 100 / pkg^.commands.Count;
+
+    cmd := pkg^.commands[j];
+
+    //compile test
+    param := CompilerCommandLine(pkg, cmd);
+    sline := TStringList.Create;
+    exit_code := command_execute(val_('PMAKE_PAS_COMPILER'), param, @execute_callback);
+    sline.Free;
+    param.Free;
+
+    if exit_code <> 0 then
+      messagefmt(FATAL_ERROR, '(1009) fatal error: cannot compile %s', [cmd^.filename]);
+
+    //execute test
+    exit_code := command_execute(pkg^.binoutput + cmd^.executable, nil, @execute_callback);
+
+    if exit_code <> 0 then
+      res := 'fail'
+    else
+      res := 'ok';
+
+    StdOutLn(format('(5025)   %s (%s) ... %s', [cmd^.executable, cmd^.description, res]))
+  end;
+
+  StdOutLn(format('(5025) Ran %d tests in %0.3fs', [pkg^.commands.Count, (Now - stime) * 24 * 3600]));
 end;
 
 procedure PackageAll(package: TPackage);
@@ -333,11 +404,15 @@ begin
       InstallPackages;
       PackageAll(package);
     end;
+    rmTest:
+    begin
+      ExecutePackages(deplist, [ctUnit, ctExecutable, ctCustom]);
+      ExecuteTests(deplist);
+    end;
   end;
 
   deplist.Free;
 end;
-
 
 end.
 

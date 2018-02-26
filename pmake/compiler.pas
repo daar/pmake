@@ -203,7 +203,7 @@ begin
   cmdtype := TCommandType(cmd^);
 
   //output file paths
-  if cmdtype = ctExecutable then
+  if cmdtype in [ctExecutable, ctTest] then
     Result.Add('-FE' + pkg^.binoutput);
 
   for i := 0 to pkg^.includes.Count - 1 do
@@ -224,7 +224,7 @@ begin
   end;
 
   //output executable name
-  if cmdtype = ctExecutable then
+  if cmdtype in [ctExecutable, ctTest] then
   begin
     Result.Add(pkg^.activepath + pExecutableCommand(cmd)^.filename);
     Result.Add('-o' + pExecutableCommand(cmd)^.executable + ExtractFileExt(ParamStr(0)));

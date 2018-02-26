@@ -9,6 +9,9 @@ uses
   SysUtils,
   depsolver;
 
+const
+  _TEST_PGK_NAME_ = '@@PMAKE_TEST_PKG';
+
 type
   TCmdOption = record
     name: string;
@@ -147,21 +150,21 @@ begin
     if HasStdOut then
     begin
       if parameters = nil then
-        StdOutLn('-- Executing ' + executable)
+        StdOutLn('(5025) -- Executing ' + executable)
       else
-        StdOutLn('-- Executing ' + executable + ' ' + parameters.Text);
+        StdOutLn('(5025) -- Executing ' + executable + ' ' + parameters.Text);
     end
     else
     begin
       if parameters = nil then
-        OutputLn('-- Executing ' + executable)
+        OutputLn('(5025) -- Executing ' + executable)
       else
-        OutputLn('-- Executing ' + executable + ' ' + parameters.Text);
+        OutputLn('(5025) -- Executing ' + executable + ' ' + parameters.Text);
     end;
   end;
 
   if callback = nil then
-    message(FATAL_ERROR, 'fatal error: command_execute, no callback assigned!');
+    message(FATAL_ERROR, '(5025) fatal error: command_execute, no callback assigned!');
 
   AProcess := TProcess.Create(nil);
   AProcess.Executable := executable;
