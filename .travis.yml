@@ -21,8 +21,8 @@ install:
 script:
   - cd pmake
   - fpc pmake.pp 
-  - pmake .
-  - make package zip
+  - ./pmake .
+  - ./make package zip
 
 notifications:
   email:
