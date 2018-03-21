@@ -247,8 +247,12 @@ function execute_process(const curdir, exename: string; const commands: array of
 var
   outputstring: string;
 begin
+{$IF FPC_FULLVERSION >= 30002}
   Result := RunCommandIndir(macros_expand(curdir), exename, commands, outputstring, [poWaitOnExit]);
-
+{$ELSE}
+  Result := RunCommandIndir(macros_expand(curdir), exename, commands, outputstring);
+{$ENDIF}
+  
   set_(name, outputstring);
 end;
 
