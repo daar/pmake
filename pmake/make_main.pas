@@ -45,7 +45,7 @@ var
 begin
   fpc_msg := ParseFPCCommand(sline[0]);
 
-  WriteFPCCommand(fpc_msg, [mCompiling, mDebug, mError, mFail, mHint, mLinking, mNote, mOption, mUnitInfo, mWarning]);
+  WriteFPCCommand(fpc_msg, AllMessages);
 
   sline.Delete(0);
 end;
@@ -80,7 +80,7 @@ begin
   while sline.Count > 1 do
   begin
     fpc_msg := ParseFPCCommand(sline[0]);
-    UpdatePMakePostions(fpc_msg, [mCompiling, mDebug, mError, mFail, mHint, mLinking, mNote, mOption, mUnitInfo, mWarning], pmakefiles);
+    UpdatePMakePostions(fpc_msg, AllMessages, pmakefiles);
     sline.Delete(0);
   end;
 
@@ -89,7 +89,7 @@ begin
     while sline.Count > 0 do
     begin
       fpc_msg := ParseFPCCommand(sline[0]);
-      UpdatePMakePostions(fpc_msg, [mCompiling, mDebug, mError, mFail, mHint, mLinking, mNote, mOption, mUnitInfo, mWarning], pmakefiles);
+      UpdatePMakePostions(fpc_msg, AllMessages, pmakefiles);
       sline.Delete(0);
     end;
   end;
@@ -160,8 +160,8 @@ begin
 
   if not FileExists(fn) then
   begin
-    messagefmt(WARNING, 'warning: error in %sPMake.txt', ['.' + DirectorySeparator + ExtractRelativepath(val_('PMAKE_SOURCE_DIR'), callee) + DirectorySeparator]);
-    messagefmt(FATAL_ERROR, 'fatal error: could not find %s', ['.' + DirectorySeparator + ExtractRelativepath(val_('PMAKE_SOURCE_DIR'), fn)]);
+    messagefmt(WARNING, '(2009) warning: error in %sPMake.txt', ['.' + DirectorySeparator + ExtractRelativepath(val_('PMAKE_SOURCE_DIR'), callee) + DirectorySeparator]);
+    messagefmt(FATAL_ERROR, '(1009) fatal error: could not find %s', ['.' + DirectorySeparator + ExtractRelativepath(val_('PMAKE_SOURCE_DIR'), fn)]);
   end
   else
   begin
@@ -221,7 +221,7 @@ begin
 
     f.LoadFromFile(p^.fname);
 
-    make2.Add('  add_subdirectory(''%s'');', [ExtractFilePath(p^.fname)]);
+    make2.Add('  define_pmake(''%s'');', [ExtractFilePath(p^.fname)]);
     make2.Add('//--------');
 
     //determine the start and end position of the PMake.txt in the source file
@@ -265,7 +265,7 @@ end;
   DeleteFile(ChangeFileExt(src_name, '.o'));
 
   if exit_code <> 0 then
-    messagefmt(FATAL_ERROR, 'fatal error: cannot compile %s', [macros_expand('make2$(EXE)')]);
+    messagefmt(FATAL_ERROR, '(1009) fatal error: cannot compile %s', [macros_expand('make2$(EXE)')]);
 end;
 
 procedure usage;
@@ -324,7 +324,7 @@ begin
                 Inc(i);
                 set_('PMAKE_PAS_COMPILER', ParamStr(i));
                 if not FileExists(ParamStr(i)) then
-                  message(FATAL_ERROR, 'fatal error: cannot find the supplied compiler');
+                  message(FATAL_ERROR, '(1009) fatal error: cannot find the supplied compiler');
               end
               else
               begin
@@ -401,7 +401,7 @@ begin
   pmakefiles.Free;
 
   if exit_code <> 0 then
-    messagefmt(FATAL_ERROR, 'fatal error: cannot execute %s', [macros_expand('make2$(EXE)')]);
+    messagefmt(FATAL_ERROR, '(1009) fatal error: cannot execute %s', [macros_expand('make2$(EXE)')]);
 end;
 
 end.

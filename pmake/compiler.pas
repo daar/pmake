@@ -8,8 +8,14 @@ uses
   Crt, Classes, depsolver;
 
 type
-  TMessage = (mCompiling, mDebug, mError, mFail, mHint, mInformation, mLinking,
-    mNote, mOption, mUnitInfo, mUnknown, mWarning);
+  TMessage = (
+    mUndefined,
+    //FPC messages
+    mCompiling, mDebug, mError, mFail, mHint, mInformation, mLinking,
+    mNote, mOption, mUnitInfo, mUnknown, mWarning
+    //PMake messages
+    ,mInstalling, mCleaning);
+
   TMessages = set of TMessage;
 
   pPMakeItem = ^TPMakeItem;
@@ -36,10 +42,14 @@ type
   end;
 
 const
-  AllMessages = [mCompiling, mDebug, mError, mFail, mHint, mInformation, mLinking,
-    mNote, mOption, mUnitInfo, mUnknown, mWarning];
+  AllMessages = [
+    mCompiling, mDebug, mError, mFail, mHint, mLinking,
+    mNote, mOption, mUnitInfo, mUnknown, mWarning
+    //custom messages
+    ,mInstalling, mCleaning];
 
   MsgCol: array [TMessage] of TFPCColor = (
+  (msgtype: mUndefined; msgcol: Magenta),
   (msgtype: mCompiling; msgcol: Green),
   (msgtype: mDebug; msgcol: LightGray),
   (msgtype: mError; msgcol: White),
@@ -51,7 +61,9 @@ const
   (msgtype: mOption; msgcol: LightGray),
   (msgtype: mUnitInfo; msgcol: LightGray),
   (msgtype: mUnknown; msgcol: LightGray),
-  (msgtype: mWarning; msgcol: LightGray));
+  (msgtype: mWarning; msgcol: LightGray),
+  (msgtype: mInstalling; msgcol: Blue),
+  (msgtype: mCleaning; msgcol: Brown));
 
 //add here more FPC versions
 {$i fpc300.inc}
@@ -70,7 +82,7 @@ uses
 function GetFPCMsgType(msgidx: integer): TMessage;
 begin
   if msgidx = -1 then
-    Result := mUnknown
+    Result := mUndefined
   else
     Result := Msg[msgidx].msgtype;
 end;
@@ -126,9 +138,9 @@ begin
         lineno := lineno - fitem^.startpos;
 
         tmp := StringOfChar(' ', rowno - 1);
-        OutputLn(f[lineno - 1]);
-        OutputLn(tmp + '^');
-        OutputLn(format(' %s%s(%d,%d) %s', [tmp, fname, lineno, rowno, errmsg]));
+        OutputLn('(5025) ' + f[lineno - 1]);
+        OutputLn(tmp + '(5025) ^');
+        OutputLn(format('(5025)  %s%s(%d,%d) %s', [tmp, fname, lineno, rowno, errmsg]));
 
         if fpc_msgtype  = mFail then
           halt(1);
@@ -218,7 +230,7 @@ begin
     dep := pkg^.dependency[i];
 
     if dep = nil then
-      messagefmt(FATAL_ERROR, 'fatal error: cannot find dependency %s', [pPackage(pkg^.dependency[i])^.name]);
+      messagefmt(FATAL_ERROR, '(1009) fatal error: cannot find dependency %s', [pPackage(pkg^.dependency[i])^.name]);
 
     Result.Add('-Fu' + dep^.unitsoutput);
   end;

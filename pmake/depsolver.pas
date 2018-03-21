@@ -155,10 +155,10 @@ begin
   targetpkg := find_pkg_by_name(pkglist, target);
 
   if sourcepkg = nil then
-    messagefmt(FATAL_ERROR, 'fatal error: cannot find package %s', [source]);
+    messagefmt(FATAL_ERROR, '(1009) fatal error: cannot find package %s', [source]);
 
   if targetpkg = nil then
-    messagefmt(FATAL_ERROR, 'fatal error: cannot find package %s', [target]);
+    messagefmt(FATAL_ERROR, '(1009) fatal error: cannot find package %s', [target]);
 
   //put the dependecies in a separate list
   sourcepkg^.dependency.Add(targetpkg);
@@ -207,7 +207,7 @@ begin
       //if no dependency found then raise error
       if i >= pkglist.Count then
       begin
-        writeln('fatal error: cannot resolve remaining dependencies');
+        writeln('(1009) fatal error: cannot resolve remaining dependencies');
 
         //make a dump here for all unresolved packages
         for j := 0 to pkglist.Count - 1 do
@@ -215,7 +215,7 @@ begin
           pkg := pkglist[j];
           if pkg^.unresolved.Count > 0 then
           begin
-            write(pkg^.name, ' -> ');
+            write('(1009) ', pkg^.name, ' -> ');
             for k := 0 to pkg^.unresolved.Count - 1 do
               if k <> pkg^.unresolved.Count - 1 then
                 write(pPackage(pkg^.unresolved[k])^.name, ', ')

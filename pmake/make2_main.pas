@@ -224,7 +224,7 @@ begin
     cmd := instlist[i];
 
     progress += 100 / instlist.Count;
-    write(StdOut, format('[%3.0f%%] ', [progress]));
+    write(StdOut, format('(-100) [%3.0f%%] ', [progress]));
 
     First := True;
 
@@ -237,12 +237,12 @@ begin
             if not ForceDirectories(cmd^.destination) then
             begin
               StdOutLn('');
-              messagefmt(FATAL_ERROR, '(1009) fatal error: failed to create directory "%s"', [cmd^.directory]);
+              messagefmt(FATAL_ERROR, '(1009) fatal error: failed to create directory "%s"', [cmd^.destination]);
             end;
 
-            //give proper offset for consequtive copies
+            //give proper offset for consecutive copies
             if not First then
-              write(StdOut, '       ');
+              write(StdOut, '(-100)        ');
 
             StdOutLn('Installing - ' + cmd^.destination + info.name);
             copyfile(cmd^.directory + info.name, cmd^.destination + info.name);
@@ -255,7 +255,7 @@ begin
     end;
   end;
 
-  StdOutLn('Installed files');
+  StdOutLn('(5025) Installed files');
 end;
 
 procedure ExecuteTests(pkglist: TFPList);
@@ -326,9 +326,7 @@ begin
     pkg := pkglist[i];
 
     progress += 100 / pkglist.Count;
-    write(StdOut, format('[%3.0f%%] ', [progress]));
-
-    StdOutLn('package ' + pkg^.name);
+    StdOutLn(format('(-90) [%3.0f%%] package $s', [progress, pkg^.name]));
 
     for j := 0 to pkg^.commands.Count - 1 do
     begin
@@ -362,7 +360,7 @@ begin
       end;
     end;
   end;
-  StdOutLn('Cleaned all packages');
+  StdOutLn('(5025) Cleaned all packages');
 end;
 
 procedure execute_make2;

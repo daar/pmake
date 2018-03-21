@@ -90,7 +90,7 @@ begin
   DeleteFile(ChangeFileExt(src_name, '.o'));
 
   if exit_code <> 0 then
-    messagefmt(FATAL_ERROR, 'fatal error: cannot compile %s', [macros_expand('make$(EXE)')]);
+    messagefmt(FATAL_ERROR, '(1009) fatal error: cannot compile %s', [macros_expand('make$(EXE)')]);
 
   OutputLn('-- Build file has been written to: ' + macros_expand('make$(EXE)'));
 end;

@@ -26,16 +26,23 @@ procedure install(directory, destination, pattern, depends: string);
 procedure add_custom_command(pkgname, executable, parameters: string; depends: array of const);
 
 procedure compiler_minimum_required(major, minor, revision: integer);
-procedure project(name: string; major: integer = 0; minor: integer = 0; patch: integer = 0; tweak: integer = 0);
+procedure project(name: string; version: string = '');
 
+//todo: add as command to package
 procedure message(mode: msgMode; msg: string);
+//todo: add as command to package
 procedure message(msg: string);
+//todo: add as command to package
 procedure messagefmt(mode: msgMode; msg: string; const args: array of const);
+//todo: add as command to package
 procedure messagefmt(msg: string; const args: array of const);
 
 procedure add_subdirectory(path: string);
+procedure define_pmake(path: string);
 
+//todo: add as command to package
 function execute_process(const curdir, exename: string; const commands: array of string; name: string): boolean;
+//todo: add as command to package
 procedure execute_file(const filename, name: string; action: fileAction);
 
 implementation
@@ -51,7 +58,11 @@ var
   i: integer;
 begin
   for i := Low(depends) to High(depends) do
-    add_dependency_to_cache(depcache, pkgname, AnsiString(depends[i].VAnsiString));
+  begin
+    //ignore if dependency is empty string 
+    if AnsiString(depends[i].VAnsiString) <> '' then
+      add_dependency_to_cache(depcache, pkgname, AnsiString(depends[i].VAnsiString));
+  end;
 end;
 
 procedure add_executable(pkgname, executable, srcfile: string; depends: array of const);
@@ -148,9 +159,16 @@ begin
 end;
 
 procedure create_package(const file_name, base_directory: string);
+var
+  dir: string;
 begin
-  set_('PMAKE_PACKAGE_FILE', macros_expand(file_name));
-  set_('PMAKE_PACKAGE_DIR', macros_expand(base_directory));
+  dir := IncludeTrailingPathDelimiter(ExpandFileName(macros_expand(base_directory)));
+
+  set_('PMAKE_PACKAGE_FILE', ExpandFileName(macros_expand(file_name)));
+  set_('PMAKE_PACKAGE_DIR', dir);
+
+  if not ForceDirectories(dir) then
+    messagefmt(FATAL_ERROR, '(1009) fatal error: failed to create directory "%s"', [dir]);
 end;
 
 procedure install(directory, destination, pattern, depends: string);
@@ -161,11 +179,11 @@ begin
   pkg := find_pkg_by_name(pkglist, depends);
 
   if pkg = nil then
-    messagefmt(FATAL_ERROR, 'fatal error: cannot find dependency "%s" for install command', [depends]);
+    messagefmt(FATAL_ERROR, '(1009) fatal error: cannot find dependency "%s" for install command', [depends]);
 
   cmd := AllocMem(sizeof(InstallCommand));
-  cmd^.directory := IncludeTrailingPathDelimiter(macros_expand(directory, pkg));
-  cmd^.destination := IncludeTrailingPathDelimiter(macros_expand(destination, pkg));
+  cmd^.directory := ExpandFileName(IncludeTrailingPathDelimiter(macros_expand(directory, pkg)));
+  cmd^.destination := ExpandFileName(IncludeTrailingPathDelimiter(macros_expand(destination, pkg)));
   cmd^.pattern := macros_expand(pattern, pkg);
   cmd^.depends := pkg;
 
@@ -228,19 +246,37 @@ end;
 procedure add_subdirectory(path: string);
 var
   srcdir: string;
+  pmkdir: string;
+  locdir: string;
+  dir: string;
   bindir: string;
 begin
   srcdir := val_('PMAKE_SOURCE_DIR');
+  pmkdir := val_('PMAKE_CURRENT_DEFINE_DIR');
+
+  locdir := macros_expand(path);
+
+  //check if path is relative or not
+  if ExpandFileName(locdir) = locdir then
+    dir := locdir
+  else
+    dir := IncludeTrailingPathDelimiter(pmkdir + locdir);
 
   if srcdir = '' then
-    set_('PMAKE_SOURCE_DIR', path);
+    set_('PMAKE_SOURCE_DIR', dir);
 
   //update the source directory
-  set_('PMAKE_CURRENT_SOURCE_DIR', path);
+  set_('PMAKE_CURRENT_SOURCE_DIR', dir);
 
   //update the binary directory
   bindir := val_('PMAKE_BINARY_DIR');
-  set_('PMAKE_CURRENT_BINARY_DIR', ExpandFileName(bindir + ExtractRelativepath(srcdir, path)));
+  set_('PMAKE_CURRENT_BINARY_DIR', ExpandFileName(bindir + ExtractRelativepath(srcdir, dir)));
+end;
+
+procedure define_pmake(path: string);
+begin
+  set_('PMAKE_CURRENT_DEFINE_DIR', path);
+  add_subdirectory(path);
 end;
 
 function execute_process(const curdir, exename: string; const commands: array of string; name: string): boolean;
@@ -249,7 +285,8 @@ var
 begin
   Result := RunCommandIndir(macros_expand(curdir), exename, commands, outputstring, [poWaitOnExit]);
 
-  set_(name, outputstring);
+  if name <> '' then
+    set_(name, outputstring);
 end;
 
 procedure execute_file(const filename, name: string; action: fileAction);
@@ -308,23 +345,39 @@ begin
   ver.Free;
 
   if not isOK then
-    messagefmt(FATAL_ERROR, 'fatal error: minimum compiler version required is %d.%d.%d, got %s', [major, minor, revision, val_('PMAKE_PAS_COMPILER_VERSION')]);
+    messagefmt(FATAL_ERROR, '(1009) fatal error: minimum compiler version required is %d.%d.%d, got %s', [major, minor, revision, val_('PMAKE_PAS_COMPILER_VERSION')]);
 end;
 
-procedure project(name: string; major: integer = 0; minor: integer = 0;
-  patch: integer = 0; tweak: integer = 0);
+procedure project(name: string; version: string = '');
+var
+  str: string;
+  s: TStrings;
 begin
   set_('PMAKE_PROJECT_NAME', name);
 
-  set_('PROJECT_VERSION_MAJOR', major);
-  set_('PROJECT_VERSION_MINOR', minor);
-  set_('PROJECT_VERSION_PATCH', patch);
-  set_('PROJECT_VERSION_TWEAK', tweak);
+  if version <> '' then
+  begin
+    set_('PROJECT_VERSION', version);
 
-  if tweak <> 0 then
-    set_('PROJECT_VERSION', Format('%d.%d.%d.%d', [major, minor, patch, tweak]))
-  else
-    set_('PROJECT_VERSION', Format('%d.%d.%d', [major, minor, patch]));
+    str := version;
+
+    //replace separators in version string e.g. 2.5.0, 2.05-rc1
+    str := StringReplace(str, '.', ' ', []);
+    str := StringReplace(str, '-', ' ', []);
+
+    s := TStringList.Create;
+    s.Delimiter := ' ';
+    s.DelimitedText := str;
+
+    if s.Count > 0 then
+      set_('PROJECT_VERSION_MAJOR', s[0]);
+    if s.Count > 1 then
+      set_('PROJECT_VERSION_MINOR', s[1]);
+    if s.Count > 2 then
+      set_('PROJECT_VERSION_PATCH', s[2]);
+    if s.Count > 3 then
+      set_('PROJECT_VERSION_TWEAK', s[3]);
+  end;
 end;
 
 end.

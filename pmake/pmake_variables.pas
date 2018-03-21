@@ -575,7 +575,7 @@ var
   itm: pPMK_FileCache;
 begin
   if not FileExists('PMakeCache.txt') then
-    message(FATAL_ERROR, 'fatal error: cannot find PMakeCache.txt, rerun pmake');
+    message(FATAL_ERROR, '(1009) fatal error: cannot find PMakeCache.txt, rerun pmake');
 
   try
     ReadXMLFile(doc, 'PMakeCache.txt');

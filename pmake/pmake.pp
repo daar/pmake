@@ -80,7 +80,7 @@ const
                   Inc(i);
                   set_('PMAKE_PAS_COMPILER', ParamStr(i));
                   if not FileExists(ParamStr(i)) then
-                    message(FATAL_ERROR, 'fatal error: cannot find the pascal compiler');
+                    message(FATAL_ERROR, '(1009) fatal error: cannot find the pascal compiler');
                 end
                 else
                 begin

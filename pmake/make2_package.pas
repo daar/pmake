@@ -12,7 +12,7 @@ function package_zip(const package_folder: string): boolean;
 implementation
 
 uses
-  Zipper, pmake_variables;
+  Zipper, pmake_variables, pmake_utilities;
 
 procedure search_files(var file_list: TStringList; const path: string);
 var
@@ -45,11 +45,15 @@ var
   i: integer;
   ZEntries : TZipFileEntries;
   FileList: TStringList;
+  fname: string;
 begin
+  fname := val_('PMAKE_PACKAGE_FILE') + '.zip';
+  StdOutLn(format('(5025) Creating package zip file - %s', [fname]));
+
   AZipper := TZipper.Create;
   try
     try
-      AZipper.Filename := val_('PMAKE_PACKAGE_FILE') + '.zip';
+      AZipper.Filename := fname;
       AZipper.Clear;
       ZEntries := TZipFileEntries.Create(TZipFileEntry);
 
@@ -60,7 +64,7 @@ begin
           search_files(FileList, package_folder);
 
           for i:=0 to FileList.Count -1 do
-            ZEntries.AddFileEntry(FileList[i],ExtractRelativepath(package_folder, FileList[i]));
+            ZEntries.AddFileEntry(FileList[i], ExtractRelativepath(package_folder, FileList[i]));
 
         finally
           FileList.Free;

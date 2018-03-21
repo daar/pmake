@@ -65,18 +65,18 @@ end;
 
 function UnitsOutputDir(BasePath: string): string;
 begin
-  Result := macros_expand(BasePath + 'units' + DirectorySeparator +
+  Result := macros_expand(IncludeTrailingPathDelimiter(BasePath) + 'units' + DirectorySeparator +
     '$(PMAKE_HOST_SYSTEM_PROCESSOR)-$(PMAKE_HOST_SYSTEM_NAME)' + DirectorySeparator);
   if not ForceDirectories(Result) then
-    messagefmt(FATAL_ERROR, 'fatal error: failed to create directory "%s"', [Result]);
+    messagefmt(FATAL_ERROR, '(1009) fatal error: failed to create directory "%s"', [Result]);
 end;
 
 function BinOutputDir(BasePath: string): string;
 begin
-  Result := macros_expand(BasePath + 'bin' + DirectorySeparator +
+  Result := macros_expand(IncludeTrailingPathDelimiter(BasePath) + 'bin' + DirectorySeparator +
     '$(PMAKE_HOST_SYSTEM_PROCESSOR)-$(PMAKE_HOST_SYSTEM_NAME)' + DirectorySeparator);
   if not ForceDirectories(Result) then
-    messagefmt(FATAL_ERROR, 'fatal error: failed to create directory "%s"', [Result]);
+    messagefmt(FATAL_ERROR, '(1009) fatal error: failed to create directory "%s"', [Result]);
 end;
 
 function GetCompilerInfo(const ACompiler, AOptions: string): string;
@@ -116,7 +116,7 @@ begin
     compiler := ExeSearch(macros_expand('fpc$(EXE)'), SysUtils.GetEnvironmentVariable('PATH'));
 
   if not FileExists(compiler) then
-    message(FATAL_ERROR, 'fatal error: cannot find the pascal compiler');
+    message(FATAL_ERROR, '(1009) fatal error: cannot find the pascal compiler');
 
   set_('PMAKE_PAS_COMPILER', compiler);
 
@@ -127,7 +127,7 @@ begin
   infosl.DelimitedText := GetCompilerInfo(compiler, '-iVTPTO');
 
   if infosl.Count <> 3 then
-    message(FATAL_ERROR, 'fatal error: compiler returns invalid information, check if fpc -iV works');
+    message(FATAL_ERROR, '(1009) fatal error: compiler returns invalid information, check if fpc -iV works');
 
   set_('PMAKE_PAS_COMPILER_VERSION', infosl[0]);
   set_('PMAKE_HOST_SYSTEM_PROCESSOR', infosl[1]);
@@ -212,9 +212,9 @@ begin
   else
   begin
     if pos('$(UNITSOUTPUTDIR)', tmp) <> 0 then
-      messagefmt(FATAL_ERROR, 'fatal error: invalid use of macro $(UNITSOUTPUTDIR) in "%s"', [str]);
+      messagefmt(FATAL_ERROR, '(1009) fatal error: invalid use of macro $(UNITSOUTPUTDIR) in "%s"', [str]);
     if pos('$(BINOUTPUTDIR)', tmp) <> 0 then
-      messagefmt(FATAL_ERROR, 'fatal error: invalid use of macro $(BINOUTPUTDIR) in "%s"', [str]);
+      messagefmt(FATAL_ERROR, '(1009) fatal error: invalid use of macro $(BINOUTPUTDIR) in "%s"', [str]);
   end;
 
 {$ifdef windows}
@@ -233,7 +233,7 @@ begin
   spos := pos('$(', tmp);
   epos := pos(')', tmp);
   if (spos > 0) and (epos > spos) then
-    messagefmt(WARNING, 'warning: unknown macro %s found.', [copy(tmp, spos, epos)]);
+    messagefmt(WARNING, '(2009) warning: unknown macro %s found.', [copy(tmp, spos, epos)]);
 
   Result := tmp;
 end;

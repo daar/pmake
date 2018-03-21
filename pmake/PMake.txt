@@ -1,5 +1,5 @@
 compiler_minimum_required(3,0,0);
-project('PMake: a build tool for (free) pascal', 0, 0, 2);
+project('PMake: a build tool for (free) pascal', '0.0.2');
 
 option('WITH_DEBUG', 'Enable debug info for PMake', _ON_);
 
