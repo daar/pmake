@@ -160,8 +160,8 @@ begin
 
   if not FileExists(fn) then
   begin
-    messagefmt(WARNING, '(2009) warning: error in %sPMake.txt', ['.' + DirectorySeparator + ExtractRelativepath(val_('PMAKE_SOURCE_DIR'), callee) + DirectorySeparator]);
-    messagefmt(FATAL_ERROR, '(1009) fatal error: could not find %s', ['.' + DirectorySeparator + ExtractRelativepath(val_('PMAKE_SOURCE_DIR'), fn)]);
+    messagefmt(WARNING, 'warning: error in %sPMake.txt', ['.' + DirectorySeparator + ExtractRelativepath(val_('PMAKE_SOURCE_DIR'), callee) + DirectorySeparator]);
+    messagefmt(FATAL_ERROR, 'fatal error: could not find %s', ['.' + DirectorySeparator + ExtractRelativepath(val_('PMAKE_SOURCE_DIR'), fn)]);
   end
   else
   begin
@@ -231,7 +231,7 @@ begin
     make2.Add('//--------');
 
     p^.endpos := make2.Count + 1;
-end;
+  end;
   f.Free;
 
   make2.Add('  execute_make2;');
@@ -265,7 +265,7 @@ end;
   DeleteFile(ChangeFileExt(src_name, '.o'));
 
   if exit_code <> 0 then
-    messagefmt(FATAL_ERROR, '(1009) fatal error: cannot compile %s', [macros_expand('make2$(EXE)')]);
+    messagefmt(FATAL_ERROR, 'fatal error: cannot compile %s', [macros_expand('make2$(EXE)')]);
 end;
 
 procedure usage;
@@ -324,7 +324,7 @@ begin
                 Inc(i);
                 set_('PMAKE_PAS_COMPILER', ParamStr(i));
                 if not FileExists(ParamStr(i)) then
-                  message(FATAL_ERROR, '(1009) fatal error: cannot find the supplied compiler');
+                  message(FATAL_ERROR, 'fatal error: cannot find the supplied compiler');
               end
               else
               begin
@@ -401,7 +401,7 @@ begin
   pmakefiles.Free;
 
   if exit_code <> 0 then
-    messagefmt(FATAL_ERROR, '(1009) fatal error: cannot execute %s', [macros_expand('make2$(EXE)')]);
+    messagefmt(FATAL_ERROR, 'fatal error: cannot execute %s', [macros_expand('make2$(EXE)')]);
 end;
 
 end.
