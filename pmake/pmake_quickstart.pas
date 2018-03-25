@@ -46,12 +46,12 @@ type
   SettingsDef = record
     ignore_fpmake: boolean;
     install: string;
-    prefix: string;
+    libprefix: string;
     projname: string;
-    projversion: string;
+    projver: string;
     recursive: boolean;
-    test: string;
-    version: string;
+    testdir: string;
+    compver: string;
   end;
 
   opYesNo = (opYes, opNo);
@@ -170,7 +170,7 @@ begin
 
   //pkgname is here based on the directory the file is located in
   tmp := LowerCase(ExtractFileDir(path) + '.tmp');
-  p^.pkgname := settings.prefix + '_' + LowerCase(ExtractFileName(ChangeFileExt(tmp, '')));;
+  p^.pkgname := settings.libprefix + '_' + LowerCase(ExtractFileName(ChangeFileExt(tmp, '')));;
 
   exit(p);
 end;
@@ -203,7 +203,7 @@ begin
                 begin
                   //check if folder is a test folder
                   relpath := DirectorySeparator + ExtractRelativePath(basepath, path);
-                  if pos(DirectorySeparator + settings.test + DirectorySeparator, relpath) <> 0 then
+                  if pos(DirectorySeparator + settings.testdir + DirectorySeparator, relpath) <> 0 then
                     p^.test := True;
                 end;
 
@@ -288,8 +288,8 @@ begin
     //root folder items to add
     if p^.directory = path then
     begin
-      f.Add('compiler_minimum_required(' + StringReplace(settings.version, '.', ',', [rfReplaceAll]) + ');');
-      f.Add(Format('project(''%s'', ''%s'');', [settings.projname, settings.projversion]));
+      f.Add('compiler_minimum_required(' + StringReplace(settings.compver, '.', ',', [rfReplaceAll]) + ');');
+      f.Add(Format('project(''%s'', ''%s'');', [settings.projname, settings.projver]));
       f.Add('');
     end;
 
@@ -468,12 +468,12 @@ begin
   with settings do
   begin
     recursive := prompt_yn('PMake can recursively search the source directory provided and add PMake.txt files as required', 'Would you like PMake to search recursively?', opYes);
-    version := prompt('Some projects require a specific minimum compiler version, you can specify this now', 'Please enter the minimum compiler version', val_('PMAKE_PAS_COMPILER_VERSION'));
+    compver := prompt('Some projects require a specific minimum compiler version, you can specify this now', 'Please enter the minimum compiler version', val_('PMAKE_PAS_COMPILER_VERSION'));
     projname := prompt('PMake requires a project name to define the project', 'Please enter the project name', '');
-    projversion := prompt('A project version helps to distinguish between releases (use dot `.` or dash `-` or a combination in the version string)', 'Please enter the current project version', 'none');
-    prefix := prompt('Please specify which library prefix to use', 'Enter the desired prefix', 'lib');
+    projver := prompt('A project version helps to distinguish between releases (use dot `.` or dash `-` or a combination in the version string)', 'Please enter the current project version', 'none');
+    libprefix := prompt('Please specify which library prefix to use', 'Enter the desired prefix', 'lib');
     install := prompt('Please specify if executables should be installed', 'Enter the install directory (press enter to ignore)', '');
-    test := prompt('PMake comes out of the box with test running (run tests by doing a `make test`)', 'Please enter the test folder name (press enter to ignore)', '');
+    testdir := prompt('PMake comes out of the box with test running (run tests by doing a `make test`)', 'Please enter the test folder name (press enter to ignore)', '');
     ignore_fpmake := prompt_yn('If your project is already using fpmake, the you have tha chance here to ignore them for this build', 'Ignore fpmake files', opYes);
   end;
 
