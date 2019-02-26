@@ -12,35 +12,179 @@ uses
   Classes,
   SysUtils,
   make_main,
+  pmake_utilities,
   pmake_variables;
 
-var
-  filelist: TStringList;
+type
+  ITM_type = (itUnknown, itLibrary, itExecutable, itInclude, itSubDirectory, itInstall, itTest);
 
-function prompt(description, question, default: string): string;
+  ppmkItem = ^pmkItem;
+  pmkItem = record
+    next, prev: pointer;
+
+    depends    : string;
+    destination: string;
+    directory  : string;
+    executable : string;
+    pattern    : string;
+    srcfile    : string;
+  end;
+
+  ppmkFile = ^pmkFile;
+  pmkFile = record
+    next, prev: pointer;
+    directory : shortstring;
+    pkgname   : shortstring;
+    executable: PMK_ListBase;
+    include   : boolean;
+    install   : PMK_ListBase;
+    library_  : PMK_ListBase;
+    subdir    : PMK_ListBase;
+    test      : boolean;
+  end;
+
+  SettingsDef = record
+    ignore_fpmake: boolean;
+    install: string;
+    libprefix: string;
+    projname: string;
+    projver: string;
+    recursive: boolean;
+    testdir: string;
+    compver: string;
+  end;
+
+  opYesNo = (opYes, opNo);
+
+var
+  pmkList: PMK_ListBase;
+  settings: SettingsDef;
+
+  function prompt(description, question, default: string): string;
+  var
+    answer: string;
+  begin
+    writeln(description);
+
+    if default <> '' then
+      write('> ', question, ' [', default, ']: ')
+    else
+      write('> ', question, ': ');
+
+    readln(answer);
+    if answer = '' then
+      answer := default;
+
+    writeln;
+
+    Result := answer;
+  end;
+
+function prompt_yn(description, question: string; default: opYesNo): boolean;
 var
   answer: string;
 begin
   writeln(description);
 
-  if default <> '' then
-    write('> ', question, ' [', default, ']: ')
+  if default = opYes then
+    write('> ', question, ' (y/n) [y]: ')
   else
-    write('> ', question, ': ');
+    write('> ', question, ' (y/n) [n]: ');
 
   readln(answer);
-  if answer = '' then
-    answer := default;
-
   writeln;
 
-  Result := answer;
+  if answer = '' then
+    if default = opYes then
+      answer := 'y'
+    else
+      answer := 'n';
+
+  if LowerCase(answer[1]) = 'y' then
+    exit(True)
+  else
+    exit(False);
 end;
 
-procedure search_pascal_files(const path: string; recursive: boolean);
+procedure ParseSourceFile(fname: string; out pmtype: ITM_type; out name: string);
+var
+  f: TStrings;
+  i: integer;
+begin
+  f := TStringList.Create;
+  f.LoadFromFile(fname);
+
+  pmtype := itUnknown;
+
+  //find pmtype: very naive, but it's a start!
+  if ExtractFileExt(LowerCase(fname)) = '.inc' then
+    pmtype := itInclude
+  else
+  begin
+    for i := 0 to f.Count - 1 do
+    begin
+      if pos('unit', Trim(LowerCase(f[i]))) = 1 then
+      begin
+        pmtype := itLibrary;
+        break;
+      end;
+      if pos('program', Trim(LowerCase(f[i]))) = 1 then
+      begin
+        //name is here based on the source file
+        name := LowerCase(ExtractFileName(ChangeFileExt(fname, '')));
+        pmtype := itExecutable;
+        break;
+      end;
+      if pos('library', Trim(LowerCase(f[i]))) = 1 then
+      begin
+        //name is here based on the source file
+        name := LowerCase(ExtractFileName(ChangeFileExt(fname, '')));
+        pmtype := itExecutable;
+        break;
+      end;
+    end;
+  end;
+  f.Free;
+end;
+
+function find_or_create_itm(const path: string): ppmkFile;
+var
+  p: ppmkFile;
+  tmp: string;
+begin
+  p := pmkList.first;
+
+  while p <> nil do
+  begin
+    if p^.directory = path then
+      exit(p);
+
+    p := p^.next;
+  end;
+
+  //create a new pmkFile
+  p := callocN(SizeOf(pmkFile));
+  addtail(@pmkList, p);
+
+  p^.directory := path;
+
+  //pkgname is here based on the directory the file is located in
+  tmp := LowerCase(ExtractFileDir(path) + '.tmp');
+  p^.pkgname := settings.libprefix + '_' + LowerCase(ExtractFileName(ChangeFileExt(tmp, '')));;
+
+  exit(p);
+end;
+
+procedure parse_source_tree(const basepath, path: string; recursive: boolean);
 var
   info: TSearchRec;
+  p: ppmkFile;
+  pt: ITM_type;
+  name: string;
+  itm: ppmkItem;
+  relpath: RawByteString;
 begin
+  //search pascal files in base folder
   if FindFirst(path + '*', faAnyFile, info) = 0 then
   begin
     try
@@ -49,13 +193,62 @@ begin
         begin
           //add PMake.txt to the file list
           case ExtractFileExt(info.Name) of
-            '.pas', '.pp', '.inc': filelist.Add(path + info.Name);
+            '.p', '.pp', '.pas', '.inc':
+              begin
+                p := find_or_create_itm(path);
+
+                ParseSourceFile(path + info.Name, pt, name);
+
+                if not p^.test then
+                begin
+                  //check if folder is a test folder
+                  relpath := DirectorySeparator + ExtractRelativePath(basepath, path);
+                  if pos(DirectorySeparator + settings.testdir + DirectorySeparator, relpath) <> 0 then
+                    p^.test := True;
+                end;
+
+                case pt of
+                  itLibrary:
+                          begin
+                            itm := callocN(SizeOf(pmkItem));
+                            addtail(@p^.library_, itm);
+
+                            itm^.srcfile := info.Name;
+                          end;
+                  itExecutable:
+                          begin
+                            if not (settings.ignore_fpmake and (ChangeFileExt(info.Name, '') = 'fpmake')) then
+                            begin
+                              itm := callocN(SizeOf(pmkItem));
+                              addtail(@p^.executable, itm);
+
+                              itm^.executable := name;
+                              itm^.srcfile := info.Name;
+
+                              if settings.install <> '' then
+                              begin
+                                itm := callocN(SizeOf(pmkItem));
+                                addtail(@p^.install, itm);
+
+                                itm^.directory := '$(BINOUTPUTDIR)';
+                                itm^.destination := '$(PMAKE_PACKAGE_DIR)';
+                                itm^.pattern := name + '$(EXE)';
+                              end;
+                            end;
+                          end;
+                  itInclude:
+                          begin
+                            if not (settings.ignore_fpmake and (ChangeFileExt(info.Name, '') = 'fpmake')) then
+                              p^.include := True;
+                          end;
+                end;
+             end;
           end;
         end
         else
           //start the recursive search
           if (info.Name <> '.') and (info.Name <> '..') and (recursive = True) then
-            search_pascal_files(IncludeTrailingBackSlash(path + info.Name), recursive);
+            parse_source_tree(basepath, IncludeTrailingBackSlash(path + info.Name), recursive);
 
       until FindNext(info) <> 0
     finally
@@ -64,65 +257,206 @@ begin
   end;
 end;
 
-procedure ParseSourceFile(fname: string; var pmtype, name: string);
+procedure write_pmake_files(const path: string);
 var
+  p: ppmkFile;
   f: TStrings;
-  i: integer;
-  tmp: string;
+  uname: string = '';
+  it: ppmkItem;
 begin
   f := TStringList.Create;
-  f.LoadFromFile(fname);
 
-  //name is here based on the directory the file is located in
-  tmp := LowerCase(ExtractFileDir(fname) + '.tmp');
-  name := LowerCase(ExtractFileName(ChangeFileExt(tmp, '')));
+  p := pmkList.first;
 
-  //find pmtype: very naive, but it's a start!
-  if ExtractFileExt(LowerCase(fname)) = '.inc' then
-    pmtype := 'include'
-  else
+  while p <> nil do
   begin
-    for i := 0 to f.Count - 1 do
+    writeln('  > ', ExtractRelativepath(path, p^.directory) + 'PMake.txt');
+
+    f.Clear;
+
+    f.Add('(* This file was auto-generated');
+    f.Add(' *');
+    f.Add(' * PMake version: ' + PMAKE_VERSION);
+    uname := GetEnvironmentVariable('USER');
+    if uname = '' then
+      uname := GetEnvironmentVariable('USERNAME');
+    f.Add(' * Generated by : ' + uname);
+    f.Add(' * Date         : ' + FormatDateTime('mmmm dd, yyyy', Now));
+    f.Add(' *)');
+    f.Add('');
+
+    //root folder items to add
+    if p^.directory = path then
     begin
-      if pos('unit', Trim(LowerCase(f[i]))) = 1 then
-      begin
-        pmtype := 'unit';
-        break;
-      end;
-      if pos('program', Trim(LowerCase(f[i]))) = 1 then
-      begin
-        //name is here based on the source file
-        name := LowerCase(ExtractFileName(ChangeFileExt(fname, '')));
-        pmtype := 'program';
-        break;
-      end;
+      f.Add('compiler_minimum_required(' + StringReplace(settings.compver, '.', ',', [rfReplaceAll]) + ');');
+      f.Add(Format('project(''%s'', ''%s'');', [settings.projname, settings.projver]));
+      f.Add('');
     end;
+
+    //subdirectories
+    if p^.subdir.first <> nil then
+    begin
+      f.Add('// subdirectories');
+
+      it := p^.subdir.first;
+      while it <> nil do
+      begin
+        f.Add(Format('add_subdirectory(''%s'');', [it^.directory]));
+        it := it^.next;
+      end;
+      f.Add('');
+    end;
+
+    //include files
+    if p^.include then
+    begin
+      f.Add('// include files');
+      f.Add(Format('include_directories(''%s'', [''$(PMAKE_CURRENT_SOURCE_DIR)'']);', [p^.pkgname]));
+      f.Add('');
+    end;
+
+    //libraries
+    if p^.library_.first <> nil then
+    begin
+      f.Add('// libraries');
+      f.Add(Format('add_library(''%s'',', [p^.pkgname]));
+      f.Add('[');
+
+      it := p^.library_.first;
+      while it <> nil do
+      begin
+        if it^.next <> nil then
+          f.Add(Format('  ''%s'',', [it^.srcfile]))
+        else
+          f.Add(Format('  ''%s''', [it^.srcfile]));
+
+        it := it^.next;
+      end;
+      f.Add('], []);');
+      f.Add('');
+    end;
+
+    //executables
+    if p^.executable.first <> nil then
+    begin
+      if not p^.test then
+      begin
+        f.Add('// executables');
+
+        it := p^.executable.first;
+        while it <> nil do
+        begin
+          f.Add(Format('add_executable(''%s'', ''%s$(EXE)'', ''%s'', []);', [p^.pkgname, it^.executable, it^.srcfile]));
+          it := it^.next;
+        end;
+      end
+      else
+      begin
+        f.Add('// tests');
+
+        it := p^.executable.first;
+        while it <> nil do
+        begin
+          f.Add(Format('add_test(''%s$(EXE)'', ''%s'', [], ''%s test file'');', [it^.executable, it^.srcfile, it^.srcfile]));
+          it := it^.next;
+        end;
+      end;
+
+      f.Add('');
+    end;
+
+    //install
+    if not p^.test and (p^.install.first <> nil) then
+    begin
+      f.Add('// install');
+
+      it := p^.install.first;
+      while it <> nil do
+      begin
+        f.Add(Format('install(''$(BINOUTPUTDIR)'', ''$(PMAKE_PACKAGE_DIR)'', ''%s'', ''%s'');', [it^.pattern, p^.pkgname]));
+        it := it^.next;
+      end;
+      f.Add('');
+    end;
+
+    //root folder items to add
+    if p^.directory = path then
+    begin
+      f.Add('// create the package');
+      f.Add('create_package(''$(PMAKE_PROJECT_NAME)-$(PROJECT_VERSION)-$(PMAKE_HOST_SYSTEM_PROCESSOR)-$(PMAKE_HOST_SYSTEM_NAME)'', ''package'');');
+    end;
+
+    f.SaveToFile(p^.directory + 'PMake.txt');
+
+    p := p^.next;
   end;
-  f.Free;
 end;
 
-//a custom sort for the pmake file list
-function ComparePath(List: TStringList; Index1, Index2: Integer): Integer;
+function find_subdirectory(list: PMK_ListBase; subdir: string): boolean;
 var
-  path1, path2: string;
+  p: ppmkItem;
 begin
-  path1 := ExtractFilePath(List[Index1]);
-  path2 := ExtractFilePath(List[Index2]);
+  p := list.first;
 
-  if path1 < path2 then
-    Result := -1
-  else
-    if path1 = path2 then
-      Result := 0
-    else
-      Result := 1;
+  while p <> nil do
+  begin
+    if p^.directory = subdir then
+      exit(True);
+
+    p := p^.next;
+  end;
+
+  exit(false);
+end;
+
+//this procedure does a second pass on the pmkList to check which subdirectory calls should be added
+procedure parse_subdirectories(const path: string);
+var
+  p, p2: ppmkFile;
+  d: TStrings;
+  folder: string;
+  itm: ppmkItem;
+begin
+  d := TStringList.Create;
+  d.Delimiter := DirectorySeparator;
+
+  p := pmkList.first;
+
+  while p <> nil do
+  begin
+    d.DelimitedText := ExcludeTrailingPathDelimiter(p^.directory);
+
+    //traverse down one directory
+    folder := d[d.Count - 1];
+    d.Delete(d.Count - 1);
+
+    //traverse the path until the base path is reached or even below
+    //need to stop in that case!
+    while Length(d.DelimitedText) + 1 >= Length(path) do
+    begin
+      p2 := find_or_create_itm(d.DelimitedText + DirectorySeparator);
+
+      if not find_subdirectory(p2^.subdir, folder) then
+      begin
+        //add subdirectory
+        itm := callocN(SizeOf(pmkItem));
+        addtail(@p2^.subdir, itm);
+
+        itm^.directory := folder;
+      end;
+
+      //traverse down one directory
+      folder := d[d.Count - 1];
+      d.Delete(d.Count - 1);
+    end;
+
+    p := p^.next;
+  end;
+
+  d.Free;
 end;
 
 procedure pmake_run_quickstart(srcdir: string);
-var
-  res, recursive, dir, pmtype, name, prefix: string;
-  f: TStrings;
-  i: integer;
 begin
   writeln('Welcome to the PMake ', PMAKE_VERSION, ' quickstart utility.');
   writeln;
@@ -130,55 +464,30 @@ begin
   writeln('accept a default value, if one is given in brackets).');
   writeln;
 
-  recursive := prompt('PMake can recursively search the source directory provided and add PMake.txt files as required.',
-  'Would you like Pmake to search recursively? (y/n)', 'y');
-
-  f := TStringList.Create;
-
-  //root PMake.txt
-  res := prompt('Some projects require a specific minimum compiler version, you can specify this now.', 'Please enter the minimum compiler version.', val_('PMAKE_PAS_COMPILER_VERSION'));
-  f.Add('compiler_minimum_required(' + StringReplace(res, '.', ',', [rfReplaceAll]) + ');');
-
-  res := prompt('PMake requires a project name for the entire project', 'Please enter the project name', '');
-  f.Add('project(''' + res + ''');');
-
-  prefix := prompt('Please specify which library prefix to use', 'Enter the desired prefix', 'lib');
-
-  writeln('processing all PMake.txt files now');
-
-  filelist := TStringList.Create;
-  search_pascal_files(srcdir, recursive = 'y');
-
-  //first sort on directory
-  filelist.CustomSort(@ComparePath);
-
-  dir := srcdir;
-  i := 1;
-  while i < filelist.Count do
+  //user preferences
+  with settings do
   begin
-    //new folder found
-    if ExtractFilePath(filelist[i]) <> dir then
-    begin
-      writeln('  > ', dir + 'PMake.txt');
-      f.SaveToFile(dir + 'PMake.txt');
-      f.Clear;
-      dir := ExtractFilePath(filelist[i]);
-    end;
-
-    ParseSourceFile(filelist[i], pmtype, name);
-    case pmtype of
-      'unit': f.Add(Format('add_library(''%s_%s'', [''%s'']);', [prefix, name, ExtractFileName(filelist[i])]));
-      'program': f.Add(Format('add_executable(''%s_%s'', ''%s'', ''%s'', []);', [prefix, name, name, ExtractFileName(filelist[i])]));
-      'include': f.Add(Format('include_directories(''%s_%s'', [''$(PMAKE_CURRENT_SOURCE_DIR)'']);', [prefix, name]));
-    end;
-    inc(i);
+    recursive := prompt_yn('PMake can recursively search the source directory provided and add PMake.txt files as required', 'Would you like PMake to search recursively?', opYes);
+    compver := prompt('Some projects require a specific minimum compiler version, you can specify this now', 'Please enter the minimum compiler version', val_('PMAKE_PAS_COMPILER_VERSION'));
+    projname := prompt('PMake requires a project name to define the project', 'Please enter the project name', '');
+    projver := prompt('A project version helps to distinguish between releases (use dot `.` or dash `-` or a combination in the version string)', 'Please enter the current project version', 'none');
+    libprefix := prompt('Please specify which library prefix to use', 'Enter the desired prefix', 'lib');
+    install := prompt('Please specify if executables should be installed', 'Enter the install directory (press enter to ignore)', '');
+    testdir := prompt('PMake comes out of the box with test running (run tests by doing a `make test`)', 'Please enter the test folder name (press enter to ignore)', '');
+    ignore_fpmake := prompt_yn('If your project is already using fpmake, the you have tha chance here to ignore them for this build', 'Ignore fpmake files', opYes);
   end;
 
-  //save the last folder
-  f.SaveToFile(dir + 'PMake.txt');
+  //do the magic!
+  writeln('... generating build information');
+  parse_source_tree(srcdir, srcdir, settings.recursive);
 
-  filelist.Free;
-  f.Free;
+  //parse subdirectories
+  writeln('... parse subdirectory calls');
+  parse_subdirectories(srcdir);
+
+  //write every PMake.txt to file
+  writeln('... writing all PMake.txt files');
+  write_pmake_files(srcdir);
 
   writeln('done.');
   halt(0);

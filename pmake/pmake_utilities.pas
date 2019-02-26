@@ -21,6 +21,16 @@ type
   //callback function for the command_execute function
   PMAKECommandFun = procedure(line: string; active: boolean);
 
+  pPMK_Link = ^PMK_Link;
+  PMK_Link = record
+    next, prev: pointer;
+  end;
+
+  pPMK_ListBase = ^PMK_ListBase;
+  PMK_ListBase = record
+    first, last: pointer;
+  end;
+
 function UnitsOutputDir(BasePath: string): string;
 function BinOutputDir(BasePath: string): string;
 
@@ -31,6 +41,11 @@ procedure copyfile(old, new: string);
 function DeleteDirectory(const Directoryname: string; OnlyChildren: boolean): boolean;
 
 procedure CompilerDefaults;
+
+function countlist(listbase: pPMK_ListBase): integer;
+function callocN(Size: PtrUInt): pointer;
+procedure remlink(vlink: pointer);
+procedure addtail(listbase: pPMK_ListBase; vlink: pointer);
 
 var
   pmakefiles: TFPList;
@@ -317,6 +332,76 @@ begin
     exit;
 
   Result := True;
+end;
+
+function countlist(listbase: pPMK_ListBase): integer;
+var
+  link: pPMK_Link;
+  count: integer = 0;
+begin
+  if listbase <> nil then
+  begin
+    link := listbase^.first;
+    while link <> nil do
+    begin
+      inc(count);
+      link := link^.next;
+    end;
+  end;
+
+  exit(count);
+end;
+
+function callocN(Size: PtrUInt): pointer;
+var
+  p: pointer;
+begin
+  p := GetMem(Size);
+  FillByte(p^, Size, 0);
+  exit(p);
+end;
+
+procedure remlink(vlink: pointer);
+var
+  link: pPMK_Link;
+begin
+  link := pPMK_Link(vlink);
+
+  if link = nil then
+    exit;
+
+  if link^.next <> nil then
+    pPMK_Link(link^.next)^.prev := link^.prev;
+
+  if link^.prev <> nil then
+    pPMK_Link(link^.prev)^.next := link^.next;
+
+  if pointer(varlist.last) = pointer(link) then
+    varlist.last := link^.prev;
+
+  if pointer(varlist.first) = pointer(link) then
+    varlist.first := link^.next;
+end;
+
+procedure addtail(listbase: pPMK_ListBase; vlink: pointer);
+var
+  link: pPMK_Link;
+begin
+  link := pPMK_Link(vlink);
+
+  if link = nil then
+    exit;
+
+  link^.next := nil;
+  link^.prev := listbase^.last;
+
+  if listbase^.last <> nil then
+    pPMK_Link(listbase^.last)^.next := link;
+
+  if listbase^.first = nil then
+    listbase^.first := link;
+
+  listbase^.last := link;
 end;
 
 initialization

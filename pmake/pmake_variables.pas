@@ -4,24 +4,17 @@ unit pmake_variables;
 
 interface
 
+uses
+  pmake_utilities;
+
 type
   PMK_type = (ptBoolean, ptInteger, ptFloat, ptString, ptFileCache);
-
-  pPMK_Link = ^PMK_Link;
-  PMK_Link = record
-    next, prev: pointer;
-  end;
 
   pPMK_FileCache = ^PMK_FileCache;
   PMK_FileCache = record
     next, prev: pointer;
     fname: shortstring;
     crc: word;
-  end;
-
-  pPMK_ListBase = ^PMK_ListBase;
-  PMK_ListBase = record
-    first, last: pointer;
   end;
 
   pPMK_variant = ^PMK_variant;
@@ -80,7 +73,6 @@ procedure pmakecache_write;
 procedure pmakecache_read;
 
 function find_variable(name: shortstring): pointer;
-function countlist(listbase: pPMK_ListBase): integer;
 
 implementation
 
@@ -88,77 +80,7 @@ uses
   DOM,
   XMLRead,
   XMLWrite,
-  Classes, SysUtils, crc16, pmake_utilities, pmake_api, compiler;
-
-function countlist(listbase: pPMK_ListBase): integer;
-var
-  link: pPMK_Link;
-  count: integer = 0;
-begin
-  if listbase <> nil then
-  begin
-    link := listbase^.first;
-    while link <> nil do
-    begin
-      inc(count);
-      link := link^.next;
-    end;
-  end;
-
-  exit(count);
-end;
-
-function callocN(Size: PtrUInt): pointer;
-var
-  p: pointer;
-begin
-  p := GetMem(Size);
-  FillByte(p^, Size, 0);
-  exit(p);
-end;
-
-procedure remlink(vlink: pointer);
-var
-  link: pPMK_Link;
-begin
-  link := pPMK_Link(vlink);
-
-  if link = nil then
-    exit;
-
-  if link^.next <> nil then
-    pPMK_Link(link^.next)^.prev := link^.prev;
-
-  if link^.prev <> nil then
-    pPMK_Link(link^.prev)^.next := link^.next;
-
-  if pointer(varlist.last) = pointer(link) then
-    varlist.last := link^.prev;
-
-  if pointer(varlist.first) = pointer(link) then
-    varlist.first := link^.next;
-end;
-
-procedure addtail(listbase: pPMK_ListBase; vlink: pointer);
-var
-  link: pPMK_Link;
-begin
-  link := pPMK_Link(vlink);
-
-  if link = nil then
-    exit;
-
-  link^.next := nil;
-  link^.prev := listbase^.last;
-
-  if listbase^.last <> nil then
-    pPMK_Link(listbase^.last)^.next := link;
-
-  if listbase^.first = nil then
-    listbase^.first := link;
-
-  listbase^.last := link;
-end;
+  Classes, SysUtils, crc16, pmake_api, compiler;
 
 function RemoveSpecialChars(const str: shortstring): shortstring;
 const
