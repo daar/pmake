@@ -11,35 +11,41 @@ PMake is a minimalistic build tool for (free) pascal. It mimics to some extent t
 
 > Please be aware that for the time being PMake is under development and that some features might break. However due to the simplicity and the forgivingness of the PMake script it should be easy to adjust.
 
-Building PMake
+Getting PMake
 ==============
 
 Supported Platforms
 -------------------
 
-* Microsoft Windows
-* Apple macOS
 * Linux
+* Macintosh
+* Windows
 
-Other operating systems that FPC supports will probably work too out of the box, if not it should not be a major problem to make PMake work on this platform. Please let me know here if you used PMake succesfull on a "new" platform so I can add it to the list here. If you find an issue please report it (see below). 
+Other operating systems will probably work too out of the box, if not it should not be a major problem to make PMake work on this platform. Just make sure PMake and the compiler is available from the command-line.
 
 Building PMake from Scratch
 ---------------------------
-You need to have the latest stable freepascal compiler installed. PMake can bootstrap itself with the provided PMake.txt script. You will first need to build pmake and then install it. In short:
+You need to have the latest stable freepascal compiler 3.0.4 installed. PMake can bootstrap itself with the provided PMake.txt script. You will first need to build pmake and then install it. In short:
 
 `$ fpc pmake`
 
-`$ ./pmake install`
+`$ ./pmake`
 
-To be able to use PMake, you need to make sure the PMake executable can be found from the commandline. You should be set now.
+`$ ./make install`
 
-Reporting Bugs / New Features
-=============================
-If you have found a bug or would like a new feature implemented:
+Download a binary release
+-------------------------
+On the GitHub [release pages](https://github.com/daar/pmake/releases) you can find a pre-built binary for your platform.
+
+Reporting Bugs
+==============
+If you have found a bug:
 
 1. If you have a patch, please make a pull request.
+
 2. Otherwise, please create an issue on the GitHub page.
 
 Contributing
 ============
 You can for PMake and make contributions by making pull request.
+

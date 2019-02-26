@@ -1,0 +1,2 @@
+add_test('test_fail', 'test_fail.pp', ['lib_hello'], 'standard failing test');
+add_test('test_ok', 'test_ok.pp', ['lib_hello'], 'standard ok test');

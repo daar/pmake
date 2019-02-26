@@ -8,16 +8,22 @@ uses
   Crt, Classes, depsolver;
 
 type
-  TMessage = (mCompiling, mDebug, mError, mFail, mHint, mInformation, mLinking,
-    mNote, mOption, mUnitInfo, mUnknown, mWarning);
+  TMessage = (
+    mUndefined,
+    //FPC messages
+    mCompiling, mDebug, mError, mFail, mHint, mInformation, mLinking,
+    mNote, mOption, mUnitInfo, mUnknown, mWarning
+    //PMake messages
+    ,mInstalling, mCleaning);
+
   TMessages = set of TMessage;
 
+  pPMakeItem = ^TPMakeItem;
   TPMakeItem = record
     fname: string;
     startpos: integer;
     endpos: integer;
   end;
-  PPMakeItem = ^TPMakeItem;
 
   TFPCOutput = record
     msgno: integer;
@@ -29,17 +35,21 @@ type
     msgcol: integer;
   end;
 
+  pFPCMessage = ^TFPCMessage;
   TFPCMessage = record
     msgidx: integer;
-    Text: string;
+    text: string;
   end;
-  PFPCMessage = ^TFPCMessage;
 
 const
-  AllMessages = [mCompiling, mDebug, mError, mFail, mHint, mInformation, mLinking,
-    mNote, mOption, mUnitInfo, mUnknown, mWarning];
+  AllMessages = [
+    mCompiling, mDebug, mError, mFail, mHint, mLinking,
+    mNote, mOption, mUnitInfo, mUnknown, mWarning
+    //custom messages
+    ,mInstalling, mCleaning];
 
   MsgCol: array [TMessage] of TFPCColor = (
+  (msgtype: mUndefined; msgcol: Magenta),
   (msgtype: mCompiling; msgcol: Green),
   (msgtype: mDebug; msgcol: LightGray),
   (msgtype: mError; msgcol: White),
@@ -51,174 +61,146 @@ const
   (msgtype: mOption; msgcol: LightGray),
   (msgtype: mUnitInfo; msgcol: LightGray),
   (msgtype: mUnknown; msgcol: LightGray),
-  (msgtype: mWarning; msgcol: LightGray));
+  (msgtype: mWarning; msgcol: LightGray),
+  (msgtype: mInstalling; msgcol: Blue),
+  (msgtype: mCleaning; msgcol: Brown));
 
-//to add more FPC versions, ifdef this include file
+//add here more FPC versions
 {$i fpc300.inc}
 
-procedure UpdatePMakePostions(var FPCMsgs: TFPList; fName: string);
-function GetFPCMsgType(msgidx: integer): TMessage;
-procedure WriteFPCCommand(FPCMsgs: TFPList; ShowMsg: TMessages; progress: double = -1);
-function ParseFPCCommand(FPCOutput: TStrings; BasePath: string): TFPList;
-function RunCompilerCommand(ExeName, SrcName: string): TStrings;
+procedure UpdatePMakePostions(fpc_msg: TFPCMessage; ShowMsg: TMessages; pmakefiles: TFPList);
+procedure WriteFPCCommand(fpc_msg: TFPCMessage; ShowMsg: TMessages);
+function ParseFPCCommand(FPCOutput: string): TFPCMessage;
 
 function CompilerCommandLine(pkg: pPackage; cmd: pointer): TStringList;
 
 implementation
 
 uses
-  SysUtils, upmake;
-
-procedure UpdatePMakePostions(var FPCMsgs: TFPList; fName: string);
-var
-  i: integer;
-  fpc_msg: PFPCMessage;
-  fpc_msgtype: TMessage;
-  from_file: string;
-  sep: integer;
-  lineno, j: integer;
-  fitem: PPMakeItem;
-  found: boolean;
-  tmp: string;
-begin
-  from_file := ExtractFileName(fName);
-
-  for i := 0 to FPCMsgs.Count - 1 do
-  begin
-    fpc_msg := PFPCMessage(FPCMsgs[i]);
-    fpc_msgtype := GetFPCMsgType(fpc_msg^.msgidx);
-    if fpc_msgtype in [mError, mFail] then
-    begin
-      sep := pos(',', fpc_msg^.Text);
-      if sep > 0 then
-      begin
-        sep := sep - length(from_file) - 2;
-        lineno := StrToInt(copy(fpc_msg^.Text, length(from_file) + 2, sep));
-
-        //find the line no
-        for j := 0 to pmakelist.Count - 1 do
-        begin
-          fitem := PPMakeItem(pmakelist[j]);
-          found := False;
-          if (fitem^.startpos <= lineno) and (fitem^.endpos >= lineno) then
-          begin
-            found := True;
-            break;
-          end;
-        end;
-
-        if found then
-        begin
-          sep := pos(',', fpc_msg^.Text);
-          tmp := copy(fpc_msg^.Text, sep, length(fpc_msg^.Text) - sep + 1);
-          fpc_msg^.Text :=
-            format('%s(%d%s', [fitem^.fname, lineno - fitem^.startpos, tmp]);
-        end;
-      end;
-    end;
-  end;
-end;
+  SysUtils, pmake_api, pmake_utilities, pmake_variables;
 
 function GetFPCMsgType(msgidx: integer): TMessage;
 begin
   if msgidx = -1 then
-    Result := mUnknown
+    Result := mUndefined
   else
     Result := Msg[msgidx].msgtype;
 end;
 
-procedure WriteFPCCommand(FPCMsgs: TFPList; ShowMsg: TMessages; progress: double = -1);
-
-  function GetFPCMsgCol(msgidx: integer): TMessage;
-  begin
-    if msgidx = -1 then
-      Result := mUnknown
-    else
-      Result := Msg[msgidx].msgtype;
-  end;
-
+procedure UpdatePMakePostions(fpc_msg: TFPCMessage; ShowMsg: TMessages; pmakefiles: TFPList);
 var
-  i: integer;
-  fpc_msg: TFPCMessage;
+  lineno, rowno: integer;
+  errmsg: string;
   fpc_msgtype: TMessage;
+  j: integer;
+  fitem: pPMakeItem;
+  found: boolean;
+  tmp, fname: string;
+  p1, p2: cardinal;
+  f: TStrings;
 begin
-  for i := 0 to FPCMsgs.Count - 1 do
+  fpc_msgtype := GetFPCMsgType(fpc_msg.msgidx);
+  if fpc_msgtype in [mError, mFail] then
   begin
-    fpc_msg := TFPCMessage(FPCMsgs[i]^);
-    fpc_msgtype := GetFPCMsgType(fpc_msg.msgidx);
-    if fpc_msgtype in ShowMsg then
+    p1 := pos('(', fpc_msg.text);
+    if p1 > 0 then
     begin
-      if (fpc_msgtype = mCompiling) and (progress >= 0) and (progress <= 100) then
-        Write(format('[%3.0f%%] ', [progress]));
+      //line number
+      p2 := pos(',', fpc_msg.text);
+      lineno := StrToInt(copy(fpc_msg.text, p1 + 1, p2 - p1 - 1));
 
-      if fpc_msg.msgidx <> -1 then
-        TextColor(MsgCol[fpc_msgtype].msgcol);
-      writeln(fpc_msg.Text);
-      NormVideo;
+      //row number
+      p1 := p2;
+      p2 := pos(')', fpc_msg.text);
+      rowno := StrToInt(copy(fpc_msg.text, p1 + 1, p2 - p1 - 1));
+
+      //error message
+      errmsg := copy(fpc_msg.text, p2 + 2, length(fpc_msg.text) - p2);
+
+      //find the line no
+      found := False;
+      for j := 0 to pmakefiles.Count - 1 do
+      begin
+        fitem := pPMakeItem(pmakefiles[j]);
+        if (fitem^.startpos <= lineno) and (fitem^.endpos >= lineno) then
+        begin
+          found := True;
+          break;
+        end;
+      end;
+
+      if found then
+      begin
+        f := TStringList.Create;
+        f.LoadFromFile(fitem^.fname);
+
+        fname := '.' + DirectorySeparator + ExtractRelativepath(val_('PMAKE_SOURCE_DIR'), fitem^.fname);
+        lineno := lineno - fitem^.startpos;
+
+        tmp := StringOfChar(' ', rowno - 1);
+        OutputLn('(5025) ' + f[lineno - 1]);
+        OutputLn(tmp + '(5025) ^');
+        OutputLn(format('(5025)  %s%s(%d,%d) %s', [tmp, fname, lineno, rowno, errmsg]));
+
+        if fpc_msgtype  = mFail then
+          halt(1);
+      end;
     end;
   end;
 end;
 
-function ParseFPCCommand(FPCOutput: TStrings; BasePath: string): TFPList;
+procedure WriteFPCCommand(fpc_msg: TFPCMessage; ShowMsg: TMessages);
 var
-  sLine, snum: string;
+  fpc_msgtype: TMessage;
+  sline: string;
+begin
+  fpc_msgtype := GetFPCMsgType(fpc_msg.msgidx);
+
+  if fpc_msgtype in ShowMsg then
+  begin
+    sline := fpc_msg.text;
+
+    if  Msg[fpc_msg.msgidx].msgtype = mCompiling then
+    begin
+      write(copy(sline, 1, 6));
+      Delete(sline, 1, 6);
+    end;
+    if fpc_msg.msgidx <> -1 then
+      TextColor(MsgCol[fpc_msgtype].msgcol);
+
+    OutputLn(sline);
+
+    NormVideo;
+  end;
+end;
+
+function ParseFPCCommand(FPCOutput: string): TFPCMessage;
+var
+  snum: string;
   found: boolean;
-  i: integer;
-  FPCmsg: PFPCMessage;
   msgidx: integer;
   ipos: SizeInt;
 begin
-  Result := TFPList.Create;
-
-  for i := 0 to FPCOutput.Count - 1 do
+  found := False;
+  for msgidx := Low(Msg) to High(Msg) do
   begin
-    sLine := StringReplace(FPCOutput[i], BasePath, '.' + DirectorySeparator, [rfReplaceAll]);
-
-    found := False;
-    for msgidx := Low(Msg) to High(Msg) do
+    snum := Format('(%d)', [Msg[msgidx].msgno]);
+    ipos := Pos(snum, FPCOutput);
+    if ipos <> 0 then
     begin
-      snum := Format('(%d)', [Msg[msgidx].msgno]);
-      ipos := Pos(snum, sLine);
-      if ipos <> 0 then
-      begin
-        sLine := StringReplace(sLine, sNum + ' ', '', [rfReplaceAll]);
+      FPCOutput := StringReplace(FPCOutput, sNum + ' ', '', [rfReplaceAll]);
 
-        found := True;
-        break;
-      end;
+      found := True;
+      break;
     end;
-
-    FPCmsg := GetMem(sizeof(TFPCMessage));
-
-    if found then
-      FPCmsg^.msgidx := msgidx
-    else
-      FPCmsg^.msgidx := -1;
-
-    FPCmsg^.Text := sLine;
-    Result.Add(FPCmsg);
   end;
-end;
 
-function RunCompilerCommand(ExeName, SrcName: string): TStrings;
-var
-  param: TStrings;
-begin
-  param := TStringList.Create;
+  if found then
+    Result.msgidx := msgidx
+  else
+    Result.msgidx := -1;
 
-  param.Add('-viq');
-{$ifdef debug}
-  param.Add('-gh');
-{$endif}
-  //add the unit search path where the pmake executable is locate
-  param.Add('-FU' + ExtractFilePath(ParamStr(0)));
-  param.Add(SrcName);
-  //based on the app extension of pmake, add the same extension to make
-  param.Add(ExpandMacros('-o' + ExeName));
-
-  Result := RunCommand(fpc, param);
-
-  param.Free;
+  Result.text := FPCOutput;
 end;
 
 function CompilerCommandLine(pkg: pPackage; cmd: pointer): TStringList;
@@ -232,9 +214,12 @@ begin
 
   cmdtype := TCommandType(cmd^);
 
-  // Output file paths
-  if cmdtype = ctExecutable then
+  //output file paths
+  if cmdtype in [ctExecutable, ctTest] then
     Result.Add('-FE' + pkg^.binoutput);
+
+  for i := 0 to pkg^.includes.Count - 1 do
+    Result.Add('-Fi' + pkg^.includes[i]);
 
   Result.Add('-Fu' + pkg^.unitsoutput);
   Result.Add('-FU' + pkg^.unitsoutput);
@@ -245,27 +230,23 @@ begin
     dep := pkg^.dependency[i];
 
     if dep = nil then
-    begin
-      writeln('fail: cannot find dependency ', pPackage(pkg^.dependency[i])^.name);
-      halt(1);
-    end;
+      messagefmt(FATAL_ERROR, '(1009) fatal error: cannot find dependency %s', [pPackage(pkg^.dependency[i])^.name]);
 
     Result.Add('-Fu' + dep^.unitsoutput);
   end;
 
-  // Output executable name
-  if cmdtype = ctExecutable then
+  //output executable name
+  if cmdtype in [ctExecutable, ctTest] then
   begin
     Result.Add(pkg^.activepath + pExecutableCommand(cmd)^.filename);
     Result.Add('-o' + pExecutableCommand(cmd)^.executable + ExtractFileExt(ParamStr(0)));
   end;
 
-  // compile unit name
+  //compile unit name
   if cmdtype = ctUnit then
     Result.Add(pkg^.activepath + pUnitCommand(cmd)^.filename);
 
-  // Force the compiler-output to be easy parseable
-  //if not Verbose then
+  //force the compiler-output to be easy parseable
   Result.Add('-viq');
 end;
 

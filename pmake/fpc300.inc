@@ -1,4 +1,8 @@
-Msg: array [0..1000] of TFPCOutput = (
+Msg: array [0..1002] of TFPCOutput = (
+//custom pmake commands
+(msgno:-100; msgtype:mInstalling),
+(msgno:-90; msgtype:mCleaning),
+
 (msgno:1000; msgtype:mUnknown),
 (msgno:1001; msgtype:mDebug),
 (msgno:1002; msgtype:mInformation),

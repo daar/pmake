@@ -1,0 +1,11 @@
+{"version":1,"strings":[
+{"hash":116901964,"name":"taboutform.applicationtitlelabel.caption","sourcebytes":[97,32,112,97,115,99,97,108,32,98,117,105,108,100,32,116,111,111,108],"value":"a pascal build tool"},
+{"hash":232074651,"name":"taboutform.copyrightlabel.caption","sourcebytes":[67,111,112,121,114,105,103,104,116,32,194,169,32,50,48,49,54,32,98,121,32,68,97,114,105,117,115,32,66,108,97,115,122,121,107],"value":"Copyright \u00A9 2016 by Darius Blaszyk"},
+{"hash":176926963,"name":"taboutform.creditsbutton.caption","sourcebytes":[67,114,101,100,105,116,115],"value":"Credits"},
+{"hash":49923525,"name":"taboutform.licensebutton.caption","sourcebytes":[76,105,99,101,110,115,101],"value":"License"},
+{"hash":4863637,"name":"taboutform.closebutton.caption","sourcebytes":[67,108,111,115,101],"value":"Close"},
+{"hash":145143506,"name":"taboutform.repositorylabel.caption","sourcebytes":[70,111,117,110,100,32,111,110,32,71,105,116,72,117,98],"value":"Found on GitHub"},
+{"hash":105317986,"name":"taboutform.compilerlabel.caption","sourcebytes":[67,111,109,112,105,108,101,114],"value":"Compiler"},
+{"hash":166824318,"name":"taboutform.pmakeversionlabel.caption","sourcebytes":[80,77,97,107,101,32,118,101,114,115,105,111,110],"value":"PMake version"},
+{"hash":250768478,"name":"taboutform.documentationlabel.caption","sourcebytes":[68,111,99,117,109,101,110,116,97,116,105,111,110],"value":"Documentation"}
+]}

@@ -8,7 +8,7 @@ uses
   Classes, SysUtils;
 
 type
-  TCommandType = (ctUnit, ctExecutable, ctCustom);
+  TCommandType = (ctUnit, ctExecutable, ctCustom, ctTest);
   TCommandTypes = set of TCommandType;
 
   pPackage = ^Package;
@@ -18,6 +18,7 @@ type
     dependency: TFPList;
     unresolved: TFPList;
     commands: TFPList;
+    includes: TStrings;
     activepath: string;
     binoutput: string;
     unitsoutput: string;
@@ -34,6 +35,14 @@ type
     command: TCommandType;
     filename: string;
     executable: string;
+  end;
+
+  pTestCommand = ^TestCommand;
+  TestCommand = record
+    command: TCommandType;
+    filename: string;
+    executable: string;
+    description: string;
   end;
 
   pInstallCommand = ^InstallCommand;
@@ -59,7 +68,7 @@ type
   end;
 
 function find_pkg_by_name(pkglist: TFPList; name: string): pPackage;
-function find_or_create_package(pkglist: TFPList; name, activepath: string): pPackage;
+function find_or_create_package(pkglist: TFPList; name, srcpath, binpath: string): pPackage;
 procedure add_dependency_to_cache(depcache: TFPList; source, target: string);
 procedure add_dependency(pkglist: TFPList; source, target: string);
 procedure remove_resolved_package(var pkglist: TFPList; sourcepkg: pPackage);
@@ -68,7 +77,7 @@ function dep_resolve(pkglist: TFPList): TFPList;
 implementation
 
 uses
-  upmake;
+  pmake_utilities, pmake_api;
 
 function find_pkg_by_name(pkglist: TFPList; name: string): pPackage;
 var
@@ -86,7 +95,7 @@ begin
   exit(nil);
 end;
 
-function find_or_create_package(pkglist: TFPList; name, activepath: string): pPackage;
+function find_or_create_package(pkglist: TFPList; name, srcpath, binpath: string): pPackage;
 var
   pkg: pPackage;
 begin
@@ -103,10 +112,12 @@ begin
     pkg^.unresolved := TFPList.Create;
     pkg^.commands := TFPList.Create;
 
+    pkg^.includes := TStringList.Create;
+
     pkg^.resolved := false;
-    pkg^.activepath := ActivePath;
-    pkg^.unitsoutput := UnitsOutputDir(ActivePath, CPU, OS);;
-    pkg^.binoutput := BinOutputDir(ActivePath, CPU, OS);
+    pkg^.activepath := srcpath;
+    pkg^.unitsoutput := UnitsOutputDir(binpath);;
+    pkg^.binoutput := BinOutputDir(binpath);
 
     pkglist.Add(pkg);
   end;
@@ -116,7 +127,17 @@ end;
 procedure add_dependency_to_cache(depcache: TFPList; source, target: string);
 var
   dep: pDependency = nil;
+  i: integer;
 begin
+  //check if dependency already exists in the cache
+  for i := 0 to depcache.Count - 1 do
+  begin
+    dep := depcache[i];
+
+    if (dep^.source = source) and (dep^.target = target) then
+      exit;
+  end;
+
   dep := allocmem(sizeof(Dependency));
 
   dep^.source := source;
@@ -134,16 +155,10 @@ begin
   targetpkg := find_pkg_by_name(pkglist, target);
 
   if sourcepkg = nil then
-  begin
-    writeln('error: cannot find package ', source);
-    halt(1);
-  end;
+    messagefmt(FATAL_ERROR, '(1009) fatal error: cannot find package %s', [source]);
 
   if targetpkg = nil then
-  begin
-    writeln('error: cannot find package ', target);
-    halt(1);
-  end;
+    messagefmt(FATAL_ERROR, '(1009) fatal error: cannot find package %s', [target]);
 
   //put the dependecies in a separate list
   sourcepkg^.dependency.Add(targetpkg);
@@ -192,7 +207,7 @@ begin
       //if no dependency found then raise error
       if i >= pkglist.Count then
       begin
-        writeln('error: cannot resolve remaining dependencies');
+        writeln('(1009) fatal error: cannot resolve remaining dependencies');
 
         //make a dump here for all unresolved packages
         for j := 0 to pkglist.Count - 1 do
@@ -200,15 +215,14 @@ begin
           pkg := pkglist[j];
           if pkg^.unresolved.Count > 0 then
           begin
-            Write(pkg^.name, ' -> ');
+            write('(1009) ', pkg^.name, ' -> ');
             for k := 0 to pkg^.unresolved.Count - 1 do
               if k <> pkg^.unresolved.Count - 1 then
-                Write(pPackage(pkg^.unresolved[k])^.name, ', ')
+                write(pPackage(pkg^.unresolved[k])^.name, ', ')
               else
                 writeln(pPackage(pkg^.unresolved[k])^.name);
           end;
         end;
-
         halt(1);
       end;
       pkg := pkglist[i];

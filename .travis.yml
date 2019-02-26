@@ -4,13 +4,25 @@ dist: trusty
 
 os:
   - linux
+  - osx
 
 install:
-  - sudo apt-get update -qq
-  - sudo apt-get install -qq -y fpc
-
+  - echo $TRAVIS_OS_NAME
+  
+  - if [ ${TRAVIS_OS_NAME} == "linux" ]; then 
+        sudo add-apt-repository ppa:ok2cqr/lazarus -y;
+        sudo apt-get update -qq;
+        sudo apt-get install -qq -y fpc; 
+    else
+        brew install fpc caskroom/cask/brew-cask;
+        brew cask install fpcsrc; 
+    fi
+    
 script:
-  - fpc pmake/pmake.pp 
+  - cd pmake
+  - fpc pmake.pp 
+  - ./pmake .
+  - ./make package zip
 
 notifications:
   email:

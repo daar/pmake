@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PMakeCache>
+  <PMAKE_BOOLEAN type="boolean" value="True"/>
+  <PMAKE_INTEGER type="integer" value="1"/>
+  <PMAKE_FLOAT type="float" value="3,14159265358979"/>
+  <PMAKE_STRING type="string" value="Hello World!"/>
+  <PMAKE_FILECACHE type="filecache">
+    <item crc="12345" path="mypath"/>
+    <item crc="54321" path="mydirectory"/>
+  </PMAKE_FILECACHE>
+</PMakeCache>
