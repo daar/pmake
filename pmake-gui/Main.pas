@@ -83,7 +83,7 @@ implementation
 {$R *.lfm}
 
 uses
-  About, pmake_variables, make_main, pmake_utilities, pmake_main;
+  About, pmake_variables, make_main, pmake_utilities, pmake_main, compiler;
 
 procedure GUIOutputLn(msg: string);
 begin
@@ -148,7 +148,7 @@ begin
   UpdatePMakeCache;
   pmakecache_write;
 
-  create_and_build_make;
+  create_and_build_make(False);
 end;
 
 procedure TPMakeGUIForm.LanguagesMenuItemClick(Sender: TObject);
@@ -292,9 +292,9 @@ var
   p: integer;
 begin
   //search all PMake.txt files in the source directory
-  pmakefiles := TStringList.Create;
+  pmakefiles := TFPList.Create;
   search_pmake(val_('PMAKE_SOURCE_DIR'));
-  pmakefiles.CustomSort(@ComparePath);
+  pmakefiles.Sort(@ComparePath);
 
   (*
    * parse the PMake.txt file for all options
@@ -304,7 +304,7 @@ begin
   for i := 0 to pmakefiles.Count - 1 do
   begin
     f := TStringList.Create;
-    f.LoadFromFile(pmakefiles[i]);
+    f.LoadFromFile(pPMakeItem(pmakefiles[i])^.fname);
 
     for j := 0 to f.Count - 1 do
     begin

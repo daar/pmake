@@ -5,10 +5,6 @@ msgstr "Content-Type: text/plain; charset=UTF-8"
 msgid "a pascal build tool"
 msgstr "een pascal compileerhulpmiddel"
 
-#: taboutform.caption
-msgid "AboutForm"
-msgstr "AboutForm"
-
 #: taboutform.closebutton.caption
 msgid "Close"
 msgstr "Sluiten"
@@ -24,6 +20,10 @@ msgstr "Copyright © 2016 door Darius Blaszyk"
 #: taboutform.creditsbutton.caption
 msgid "Credits"
 msgstr "Credits"
+
+#: taboutform.documentationlabel.caption
+msgid "Documentation"
+msgstr "Documentatie"
 
 #: taboutform.licensebutton.caption
 msgid "License"
@@ -48,11 +48,6 @@ msgstr "Blader bouwen"
 #: tpmakeguiform.browsesourcebutton.caption
 msgid "Browse source"
 msgstr "Bladeren bron"
-
-#: tpmakeguiform.caption
-msgctxt "TPMAKEGUIFORM.CAPTION"
-msgid "PMake"
-msgstr "PMake"
 
 #: tpmakeguiform.configurebutton.caption
 msgctxt "tpmakeguiform.configurebutton.caption"

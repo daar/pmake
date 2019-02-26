@@ -1,19 +1,20 @@
 object AboutForm: TAboutForm
   Left = 876
-  Height = 424
+  Height = 393
   Top = 233
   Width = 394
+  ActiveControl = LicenseButton
   BorderStyle = bsDialog
   Caption = 'AboutForm'
-  ClientHeight = 424
+  ClientHeight = 393
   ClientWidth = 394
   Color = clWhite
   OnCreate = FormCreate
   Position = poScreenCenter
-  LCLVersion = '1.8.0.4'
+  Visible = False
   object ApplicationLogoImage: TImage
     Left = 6
-    Height = 250
+    Height = 203
     Top = 6
     Width = 382
     Align = alTop
@@ -642,8 +643,8 @@ object AboutForm: TAboutForm
   end
   object ApplicationTitleLabel: TLabel
     Left = 0
-    Height = 17
-    Top = 262
+    Height = 16
+    Top = 215
     Width = 394
     Align = alTop
     Alignment = taCenter
@@ -655,8 +656,8 @@ object AboutForm: TAboutForm
   end
   object CopyrightLabel: TLabel
     Left = 0
-    Height = 17
-    Top = 285
+    Height = 16
+    Top = 237
     Width = 394
     Align = alTop
     Alignment = taCenter
@@ -669,11 +670,11 @@ object AboutForm: TAboutForm
   end
   object CreditsButton: TButton
     AnchorSideLeft.Control = Owner
-    AnchorSideTop.Control = RepositoryLabel
+    AnchorSideTop.Control = DocumentationLabel
     AnchorSideTop.Side = asrBottom
     Left = 20
     Height = 25
-    Top = 393
+    Top = 363
     Width = 75
     BorderSpacing.Left = 20
     Caption = 'Credits'
@@ -684,24 +685,24 @@ object AboutForm: TAboutForm
   object LicenseButton: TButton
     AnchorSideLeft.Control = RepositoryLabel
     AnchorSideLeft.Side = asrCenter
-    AnchorSideTop.Control = RepositoryLabel
+    AnchorSideTop.Control = DocumentationLabel
     AnchorSideTop.Side = asrBottom
     Left = 160
     Height = 25
-    Top = 393
+    Top = 363
     Width = 75
     Caption = 'License'
     OnClick = LicenseButtonClick
     TabOrder = 1
   end
   object CloseButton: TButton
-    AnchorSideTop.Control = RepositoryLabel
+    AnchorSideTop.Control = DocumentationLabel
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = Owner
     AnchorSideRight.Side = asrBottom
     Left = 299
     Height = 25
-    Top = 393
+    Top = 363
     Width = 75
     Anchors = [akTop, akRight]
     BorderSpacing.Right = 20
@@ -712,8 +713,8 @@ object AboutForm: TAboutForm
   end
   object RepositoryLabel: TLabel
     Left = 6
-    Height = 17
-    Top = 370
+    Height = 16
+    Top = 319
     Width = 382
     Align = alTop
     Alignment = taCenter
@@ -730,8 +731,8 @@ object AboutForm: TAboutForm
   end
   object CompilerLabel: TLabel
     Left = 0
-    Height = 17
-    Top = 347
+    Height = 16
+    Top = 297
     Width = 394
     Align = alTop
     Alignment = taCenter
@@ -744,8 +745,8 @@ object AboutForm: TAboutForm
   end
   object PMakeVersionLabel: TLabel
     Left = 0
-    Height = 17
-    Top = 316
+    Height = 16
+    Top = 267
     Width = 394
     Align = alTop
     Alignment = taCenter
@@ -755,5 +756,25 @@ object AboutForm: TAboutForm
     Font.Name = 'Sans'
     ParentColor = False
     ParentFont = False
+  end
+  object DocumentationLabel: TLabel
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = RepositoryLabel
+    Left = 6
+    Height = 16
+    Top = 341
+    Width = 382
+    Align = alTop
+    Alignment = taCenter
+    BorderSpacing.Around = 6
+    Caption = 'Documentation'
+    Font.Color = clBlue
+    Font.Height = -13
+    Font.Name = 'Sans'
+    ParentColor = False
+    ParentFont = False
+    OnClick = DocumentationLabelClick
+    OnMouseEnter = DocumentationLabelMouseEnter
+    OnMouseLeave = DocumentationLabelMouseLeave
   end
 end

@@ -21,7 +21,11 @@ type
     ApplicationTitleLabel: TLabel;
     CopyrightLabel: TLabel;
     RepositoryLabel: TLabel;
+    DocumentationLabel: TLabel;
     procedure CreditsButtonClick(Sender: TObject);
+    procedure DocumentationLabelClick(Sender: TObject);
+    procedure DocumentationLabelMouseEnter(Sender: TObject);
+    procedure DocumentationLabelMouseLeave(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure LicenseButtonClick(Sender: TObject);
     procedure CloseButtonClick(Sender: TObject);
@@ -53,7 +57,7 @@ end;
 
 procedure TAboutForm.RepositoryLabelClick(Sender: TObject);
 begin
-  OpenURL('http://daar.github.io/pmake');
+  OpenURL('https://github.com/daar/pmake');
 end;
 
 procedure TAboutForm.RepositoryLabelMouseEnter(Sender: TObject);
@@ -70,6 +74,23 @@ end;
 
 procedure TAboutForm.CreditsButtonClick(Sender: TObject);
 begin
+end;
+
+procedure TAboutForm.DocumentationLabelClick(Sender: TObject);
+begin
+  OpenURL('http://daar.github.io/pmake');
+end;
+
+procedure TAboutForm.DocumentationLabelMouseEnter(Sender: TObject);
+begin
+  DocumentationLabel.Cursor := crHandPoint;
+  DocumentationLabel.Font.Underline := True;
+end;
+
+procedure TAboutForm.DocumentationLabelMouseLeave(Sender: TObject);
+begin
+  DocumentationLabel.Cursor := crDefault;
+  DocumentationLabel.Font.Underline := False;
 end;
 
 procedure TAboutForm.FormCreate(Sender: TObject);

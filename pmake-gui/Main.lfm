@@ -1,6 +1,6 @@
 object PMakeGUIForm: TPMakeGUIForm
   Left = 269
-  Height = 502
+  Height = 482
   Top = 180
   Width = 813
   Caption = 'PMake'
@@ -9,11 +9,12 @@ object PMakeGUIForm: TPMakeGUIForm
   Menu = MainMenu
   OnCreate = FormCreate
   Position = poScreenCenter
-  LCLVersion = '1.8.0.6'
+  LCLVersion = '1.8.4.0'
+  Visible = False
   object ButtonPanel: TButtonPanel
     Left = 6
     Height = 34
-    Top = 442
+    Top = 422
     Width = 801
     OKButton.Name = 'OKButton'
     OKButton.DefaultCaption = True
@@ -31,7 +32,7 @@ object PMakeGUIForm: TPMakeGUIForm
   object MessagePanel: TPanel
     Left = 0
     Height = 135
-    Top = 301
+    Top = 281
     Width = 813
     Align = alBottom
     BevelOuter = bvNone
@@ -93,12 +94,12 @@ object PMakeGUIForm: TPMakeGUIForm
   end
   object ConfigurePanel: TPanel
     Left = 0
-    Height = 296
+    Height = 276
     Top = 0
     Width = 813
     Align = alClient
     BevelOuter = bvNone
-    ClientHeight = 296
+    ClientHeight = 276
     ClientWidth = 813
     TabOrder = 2
     object OptionsValueListEditor: TValueListEditor
@@ -110,7 +111,7 @@ object PMakeGUIForm: TPMakeGUIForm
       AnchorSideBottom.Control = ConfigurePanel
       AnchorSideBottom.Side = asrBottom
       Left = 6
-      Height = 199
+      Height = 179
       Top = 91
       Width = 801
       Anchors = [akTop, akLeft, akRight, akBottom]
@@ -225,7 +226,7 @@ object PMakeGUIForm: TPMakeGUIForm
     Cursor = crVSplit
     Left = 0
     Height = 5
-    Top = 296
+    Top = 276
     Width = 813
     Align = alBottom
     ResizeAnchor = akBottom

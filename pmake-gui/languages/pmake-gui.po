@@ -5,10 +5,6 @@ msgstr "Content-Type: text/plain; charset=UTF-8"
 msgid "a pascal build tool"
 msgstr ""
 
-#: taboutform.caption
-msgid "AboutForm"
-msgstr ""
-
 #: taboutform.closebutton.caption
 msgid "Close"
 msgstr ""
@@ -23,6 +19,10 @@ msgstr ""
 
 #: taboutform.creditsbutton.caption
 msgid "Credits"
+msgstr ""
+
+#: taboutform.documentationlabel.caption
+msgid "Documentation"
 msgstr ""
 
 #: taboutform.licensebutton.caption
@@ -47,11 +47,6 @@ msgstr ""
 
 #: tpmakeguiform.browsesourcebutton.caption
 msgid "Browse source"
-msgstr ""
-
-#: tpmakeguiform.caption
-msgctxt "TPMAKEGUIFORM.CAPTION"
-msgid "PMake"
 msgstr ""
 
 #: tpmakeguiform.configurebutton.caption

@@ -9,6 +9,7 @@ uses
 
 procedure make_execute;
 procedure search_pmake(const path: string; callee: string = '');
+function ComparePath(Item1: Pointer; Item2: Pointer): Integer;
 
 implementation
 
