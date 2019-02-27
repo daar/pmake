@@ -11,8 +11,8 @@ PMake is a minimalistic build tool for (free) pascal. It mimics to some extent t
 
 > Please be aware that for the time being PMake is under development and that some features might break. However due to the simplicity and the forgivingness of the PMake script it should be easy to adjust.
 
-Getting PMake
-==============
+Using PMake
+===========
 
 Supported Platforms
 -------------------
@@ -36,6 +36,14 @@ You need to have the latest stable freepascal compiler 3.0.4 installed. PMake ca
 Download a binary release
 -------------------------
 On the GitHub [release pages](https://github.com/daar/pmake/releases) you can find a pre-built binary for your platform.
+
+Building a project
+------------------
+Building your project is easy. You can setup initial build scripts by using the built in function `--quickstart`. This will parse the source tree and create a sequence of `PMake.txt` files. You can do an in-source or out-of-source build if you would like your source tree to stay clean. Below is a simple example how PMake (pre-installed tool) can be used to do an out-of-source build. 
+
+<img src="./doc/pmake_build.gif" alt="PMake build" width="50%" height="50%"/>
+
+Notice the nice visual feedback. PMake will regenerate the build tools automatically if a PMake.txt file in the source tree changes.
 
 Reporting Bugs
 ==============
