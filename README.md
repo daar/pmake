@@ -51,7 +51,7 @@ If you have found a bug:
 
 1. If you have a patch, please make a pull request.
 
-2. Otherwise, please create an issue on the GitHub page.
+2. Otherwise, please create an [issue](https://github.com/daar/pmake/issues) on the GitHub page.
 
 Contributing
 ============
