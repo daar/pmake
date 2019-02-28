@@ -45,7 +45,7 @@ const
   //minor version number for PMake, e.g. the "4" in PMake 2.4.3
   PMAKE_MINOR_VERSION = 0;
   //patch version number for PMake, e.g. the "3" in PMake 2.4.3
-  PMAKE_PATCH_VERSION = 2;
+  PMAKE_PATCH_VERSION = 3;
   //tweak version number for PMake, e.g. the "1" in PMake X.X.X.1. Releases use tweak < 20000000 and development versions use the date format CCYYMMDD for the tweak level.
   PMAKE_TWEAK_VERSION = 0;
 

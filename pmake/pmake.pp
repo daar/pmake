@@ -25,7 +25,7 @@ const
     (name: '--debug'; descr: 'Do not delete the make source file.'),
     (name: '--force'; descr: 'Force building the make executable'),
     (name: '--help'; descr: 'This message.'),
-    (name: '--quickstart'; descr: 'Create PMake.txt files in the supplied source directory'),
+    (name: '--quickstart'; descr: 'Create PMake.txt files in the selected source directory'),
     (name: '--verbose'; descr: 'Be more verbose.')
     );
 

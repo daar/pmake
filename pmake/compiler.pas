@@ -239,7 +239,7 @@ begin
   if cmdtype in [ctExecutable, ctTest] then
   begin
     Result.Add(pkg^.activepath + pExecutableCommand(cmd)^.filename);
-    Result.Add('-o' + pExecutableCommand(cmd)^.executable + ExtractFileExt(ParamStr(0)));
+    Result.Add('-o' + pExecutableCommand(cmd)^.executable);
   end;
 
   //compile unit name

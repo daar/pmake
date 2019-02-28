@@ -75,8 +75,8 @@ begin
   cmd := allocmem(sizeof(ExecutableCommand));
 
   cmd^.command := ctExecutable;
-  cmd^.filename := srcfile;
-  cmd^.executable := executable;
+  cmd^.filename := macros_expand(srcfile, pkg);
+  cmd^.executable := macros_expand(executable, pkg);
 
   //add the command to the package
   pkg^.commands.Add(cmd);
