@@ -8,6 +8,8 @@
 compiler_minimum_required(3,0,4);
 project('PMake', '0.0.3');
 
+option('WITH_DEBUG', 'Enable debug info for PMake', _ON_);
+
 // libraries
 add_library('lib_pmake',
 [
