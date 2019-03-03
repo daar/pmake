@@ -33,6 +33,8 @@ You need to have the latest stable freepascal compiler 3.0.4 installed. PMake ca
 
 `$ ./make install`
 
+> Note that you need to have administrsator privileges to be able to install PMake on your system.
+
 Download a binary release
 -------------------------
 On the GitHub [release pages](https://github.com/daar/pmake/releases) you can find a pre-built binary for your platform.
