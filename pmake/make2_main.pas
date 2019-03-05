@@ -326,7 +326,7 @@ begin
     pkg := pkglist[i];
 
     progress += 100 / pkglist.Count;
-    StdOutLn(format('(-90) [%3.0f%%] package $s', [progress, pkg^.name]));
+    StdOutLn(format('(-90) [%3.0f%%] package %s', [progress, pkg^.name]));
 
     for j := 0 to pkg^.commands.Count - 1 do
     begin
