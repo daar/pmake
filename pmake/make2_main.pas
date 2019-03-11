@@ -19,7 +19,7 @@ uses
 
 type
   TRunMode = (rmBuild, rmInstall, rmClean, rmPackage, rmTest);
-  TPackage = (pkZip);
+  TPackage = (pkZip, pkDeb);
 
 var
   RunMode: TRunMode;
@@ -70,7 +70,7 @@ begin
 
   while i <= ParamCount do
   begin
-    case ParamStr(i) of
+    case LowerCase(ParamStr(i)) of
       'build': RunMode := rmBuild;
       'clean': RunMode := rmClean;
       'install': RunMode := rmInstall;
@@ -80,8 +80,9 @@ begin
 
         Inc(i);
 
-        case ParamStr(i) of
+        case LowerCase(ParamStr(i)) of
           'zip': package := pkZip;
+          'deb': package := pkDeb;
           else
             package := pkZip;
         end;
@@ -311,6 +312,7 @@ procedure PackageAll(package: TPackage);
 begin
   case package of
     pkZip: package_zip(val_('PMAKE_PACKAGE_DIR'));
+    pkDeb: package_deb(val_('PMAKE_PACKAGE_DIR'));
   end;
 end;
 
@@ -399,6 +401,10 @@ begin
     rmPackage:
     begin
       ExecutePackages(deplist, [ctUnit, ctExecutable, ctCustom]);
+
+      //installing shoud happen to a temp folder
+      //after packaging this folder is deleted
+
       InstallPackages;
       PackageAll(package);
     end;

@@ -366,8 +366,8 @@ begin
     str := version;
 
     //replace separators in version string e.g. 2.5.0, 2.05-rc1
-    str := StringReplace(str, '.', ' ', []);
-    str := StringReplace(str, '-', ' ', []);
+    str := StringReplace(str, '.', ' ', [rfReplaceAll]);
+    str := StringReplace(str, '-', ' ', [rfReplaceAll]);
 
     s := TStringList.Create;
     s.Delimiter := ' ';

@@ -25,7 +25,7 @@ const
     (name: 'build'; descr: 'Build all targets in the project'),
     (name: 'clean'; descr: 'Clean all units and folders in the project'),
     (name: 'install'; descr: 'Install all targets in the project'),
-    (name: 'package'; descr: 'Create a package (zip)'),
+    (name: 'package'; descr: 'Create a package (zip, deb)'),
     (name: 'test'; descr: 'Build all targets and run tests'),
     (name: '--compiler'; descr: 'Use indicated binary as compiler'),
     (name: '--debug'; descr: 'Do not delete the make2 source file'),
