@@ -238,15 +238,26 @@ begin
   make2.Add('  execute_make2;');
   make2.Add('end.');
 
-  src_name := GetTempFileName('.', 'pmake');
+  src_name := GetTempFileName('.', 'make2');
   make2.SaveToFile(src_name);
 
   param := TStringList.Create;
   param.Add('-viq');
 
-  //add the unit search path where the pmake executable is locate
+  //add the unit output path
   param.Add('-FU' + UnitsOutputDir(val_('PMAKE_BINARY_DIR')));
-  param.Add('-Fu' + val_('PMAKE_TOOL_DIR'));
+
+  //add the unit search path depending on the platform
+  {$IFDEF WINDOWS}
+  param.Add('-Fu"' + val_('PMAKE_TOOL_DIR') + 'units"');
+  {$ENDIF}
+  {$IFDEF LINUX}
+  param.Add('-Fu' + macros_expand('/usr/lib/pmake/$(PROJECT_VERSION)'));
+  {$ENDIF}
+  {$IFDEF DARWIN}
+  not defined!
+  {$ENDIF}
+
   param.Add(src_name);
   param.Add(macros_expand('-omake2$(EXE)'));
 

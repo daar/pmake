@@ -99,7 +99,7 @@ end;
 procedure clean_variable_name(var name: shortstring);
 var
   tmp: string;
-  len: cardinal;
+  len: SizeInt;
 begin
   tmp := Trim(name);
   if pos('$(', tmp) = 1 then
@@ -303,6 +303,8 @@ begin
     _OFF_: set_(option_variable, False);
     _ON_ : set_(option_variable, True);
   end;
+
+  set_(option_variable + '_DESCRIPTION', description);
 end;
 
 function option(option_variable: shortstring): boolean;

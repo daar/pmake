@@ -23,7 +23,7 @@ type
 
 var
   RunMode: TRunMode;
-  Package: TPackage;
+  pkgtype: TPackage;
   sline: TStringList;
   progress: double = 0;
 
@@ -81,10 +81,10 @@ begin
         Inc(i);
 
         case LowerCase(ParamStr(i)) of
-          'zip': package := pkZip;
-          'deb': package := pkDeb;
+          'zip': pkgtype := pkZip;
+          'deb': pkgtype := pkDeb;
           else
-            package := pkZip;
+            pkgtype := pkZip;
         end;
       end;
       'test': RunMode := rmTest;
@@ -211,6 +211,56 @@ begin
   end;
 end;
 
+procedure InstallTempPackages(const base_path, temp_path: string);
+var
+  i: integer;
+  progress: double = 0;
+  cmd: pInstallCommand;
+  info: TSearchRec;
+  First: boolean = True;
+  destination: string;
+begin
+  //execute commands
+  for i := 0 to instlist.Count - 1 do
+  begin
+    cmd := instlist[i];
+
+    progress += 100 / instlist.Count;
+    write(StdOut, format('(-100) [%3.0f%%] ', [progress]));
+
+    First := True;
+
+    if FindFirst(cmd^.directory + cmd^.pattern, faAnyFile, info) = 0 then
+    begin
+      try
+        repeat
+          if (info.Attr and faDirectory) = 0 then
+          begin
+            destination := StringReplace(cmd^.destination, base_path, temp_path, []);
+            if not ForceDirectories(destination) then
+            begin
+              StdOutLn('');
+              messagefmt(FATAL_ERROR, '(1009) fatal error: failed to create directory "%s"', [destination]);
+            end;
+
+            //give proper offset for consecutive copies
+            if not First then
+              write(StdOut, '(-100)        ');
+
+            StdOutLn('Installing - ' + destination + info.name);
+            copyfile(cmd^.directory + info.name, destination + info.name);
+            First := False;
+          end;
+        until FindNext(info) <> 0
+      finally
+        FindClose(info);
+      end;
+    end;
+  end;
+
+  StdOutLn('(5025) Installed files');
+end;
+
 procedure InstallPackages;
 var
   i: integer;
@@ -308,11 +358,11 @@ begin
   StdOutLn(format('(5025) Ran %d tests in %0.3fs', [pkg^.commands.Count, (Now - stime) * 24 * 3600]));
 end;
 
-procedure PackageAll(package: TPackage);
+procedure PackageAll(pkgtype: TPackage; const dir: string);
 begin
-  case package of
-    pkZip: package_zip(val_('PMAKE_PACKAGE_DIR'));
-    pkDeb: package_deb(val_('PMAKE_PACKAGE_DIR'));
+  case pkgtype of
+    pkZip: package_zip(dir);
+    pkDeb: package_deb(dir);
   end;
 end;
 
@@ -370,6 +420,8 @@ var
   i: integer;
   dep: pDependency;
   deplist: TFPList;
+  dir: String;
+  res: Boolean;
 begin
   //test to make sure the project is well defined
   if val_('PMAKE_PROJECT_NAME') = '' then
@@ -402,11 +454,16 @@ begin
     begin
       ExecutePackages(deplist, [ctUnit, ctExecutable, ctCustom]);
 
-      //installing shoud happen to a temp folder
+      //installing is done to a temp folder
       //after packaging this folder is deleted
 
-      InstallPackages;
-      PackageAll(package);
+      dir := IncludeTrailingPathDelimiter(GetTempDir + 'PMAKE' + FormatDateTime('hhnnss', Now));
+      InstallTempPackages(BaseInstallPath, dir);
+      PackageAll(pkgtype, dir);
+
+      res := DeleteDirectory(dir, False);
+      if res then
+        messagefmt(FATAL_ERROR, '(1009) fatal error: cannot remove directory $s', [dir]);
     end;
     rmTest:
     begin

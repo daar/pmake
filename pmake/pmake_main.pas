@@ -64,15 +64,27 @@ begin
   tmp.Add('  make_execute;');
   tmp.Add('end.');
 
-  src_name := GetTempFileName('.', 'pmake');
+  src_name := GetTempFileName('.', 'make');
   tmp.SaveToFile(src_name);
   tmp.Free;
 
   param := TStringList.Create;
   param.Add('-viq');
-  //add the unit search path to the pmake source directory
+
+  //add the unit output path
   param.Add('-FU' + UnitsOutputDir(val_('PMAKE_BINARY_DIR')));
-  param.Add('-Fu' + val_('PMAKE_TOOL_DIR'));
+
+  //add the unit search path depending on the platform
+  {$IFDEF WINDOWS}
+  param.Add('-Fu"' + val_('PMAKE_TOOL_DIR') + 'units"');
+  {$ENDIF}
+  {$IFDEF LINUX}
+  param.Add('-Fu' + macros_expand('/usr/lib/pmake/$(PROJECT_VERSION)'));
+  {$ENDIF}
+  {$IFDEF DARWIN}
+  not defined!
+  {$ENDIF}
+
   param.Add(src_name);
   param.Add(macros_expand('-o$(PMAKE_BINARY_DIR)make$(EXE)'));
 

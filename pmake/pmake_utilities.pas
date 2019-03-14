@@ -34,6 +34,8 @@ type
 function UnitsOutputDir(BasePath: string): string;
 function BinOutputDir(BasePath: string): string;
 
+function BaseInstallPath: string;
+
 function command_execute(executable: string; parameters: TStrings; callback: PMAKECommandFun; HasStdOut: boolean = true): integer;
 function macros_expand(str: string; pkg: pPackage = nil): string;
 
@@ -92,6 +94,30 @@ begin
     '$(PMAKE_HOST_SYSTEM_PROCESSOR)-$(PMAKE_HOST_SYSTEM_NAME)' + DirectorySeparator);
   if not ForceDirectories(Result) then
     messagefmt(FATAL_ERROR, '(1009) fatal error: failed to create directory "%s"', [Result]);
+end;
+
+function BaseInstallPath: string;
+var
+  i: integer;
+  bpath: string;
+  path: string;
+begin
+  if instlist.Capacity = 0 then
+    exit;
+
+  bpath := pInstallCommand(instlist[0])^.destination;
+
+  //parse commands
+  for i := 1 to instlist.Count - 1 do
+  begin
+    path := pInstallCommand(instlist[i])^.destination;
+
+    //delete last character from bpath, until a match is found
+    while pos(bpath, path) = 0 do
+      Delete(bpath, Length(bpath), 1);
+  end;
+
+  Result := bpath;
 end;
 
 function GetCompilerInfo(const ACompiler, AOptions: string): string;
@@ -253,6 +279,7 @@ begin
   Result := tmp;
 end;
 
+//todo: copy also the file attributes
 procedure copyfile(old, new: string);
 const
   BUF_SIZE = 2048; // Buffer size for reading the output in chunks
@@ -282,6 +309,7 @@ begin
   Close(outfile);
 end;
 
+//todo: does not work on windows, it leaves files in subfolders
 function DeleteDirectory(const Directoryname: string; OnlyChildren: boolean): boolean;
 const
   //Don't follow symlinks on *nix, just delete them

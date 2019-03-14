@@ -21,7 +21,7 @@ procedure add_test(executable, srcfile: string; depends: array of const; descrip
 
 procedure include_directories(pkgname: string; directories: array of const);
 
-procedure create_package(const file_name, base_directory: string);
+procedure create_package(const file_name: string);
 procedure install(directory, destination, pattern, depends: string);
 procedure add_custom_command(pkgname, executable, parameters: string; depends: array of const);
 
@@ -158,17 +158,9 @@ begin
   end;
 end;
 
-procedure create_package(const file_name, base_directory: string);
-var
-  dir: string;
+procedure create_package(const file_name: string);
 begin
-  dir := IncludeTrailingPathDelimiter(ExpandFileName(macros_expand(base_directory)));
-
   set_('PMAKE_PACKAGE_FILE', ExpandFileName(macros_expand(file_name)));
-  set_('PMAKE_PACKAGE_DIR', dir);
-
-  if not ForceDirectories(dir) then
-    messagefmt(FATAL_ERROR, '(1009) fatal error: failed to create directory "%s"', [dir]);
 end;
 
 procedure install(directory, destination, pattern, depends: string);
