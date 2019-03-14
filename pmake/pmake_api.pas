@@ -106,7 +106,7 @@ begin
     cmd := allocmem(sizeof(ExecutableCommand));
 
     cmd^.command := ctUnit;
-    cmd^.filename := AnsiString(srcfiles[I].VAnsiString);
+    cmd^.filename := AnsiString(srcfiles[i].VAnsiString);
 
     //add the command to the package
     pkg^.commands.Add(cmd);

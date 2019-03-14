@@ -82,7 +82,7 @@ begin
   param.Add('-Fu' + macros_expand('/usr/lib/pmake/$(PROJECT_VERSION)'));
   {$ENDIF}
   {$IFDEF DARWIN}
-  not defined!
+  param.Add('-Fu' + macros_expand('/usr/local/share/pmake/$(PROJECT_VERSION))'));
   {$ENDIF}
 
   param.Add(src_name);
