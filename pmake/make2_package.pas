@@ -84,6 +84,7 @@ begin
   end;
 end;
 
+{$IFDEF LINUX}
 var
   str: TStringList;
 
@@ -98,13 +99,18 @@ begin
     str.Delete(0);
   end;
 end;
+{$ENDIF}
 
 function package_deb(const package_folder: string): boolean;
 var
+{$IFDEF LINUX}
   exit_code: integer;
   control, param: TStringList;
-  fname, dir: string;
+  dir: string;
+{$ENDIF}
+  fname: string;
 begin
+  fname := LowerCase(macros_expand('$(PMAKE_PACKAGE_FILE).deb'));
 {$IFDEF LINUX}
   //http://www.king-foo.com/2011/11/creating-debianubuntu-deb-packages/
 
@@ -146,7 +152,7 @@ begin
   param := TStringList.Create;
   param.Add('--build');
   param.Add(macros_expand('$(PMAKE_PACKAGE_DIR)'));
-  param.Add(LowerCase(macros_expand('$(PMAKE_PACKAGE_FILE).deb')));
+  param.Add(fname);
 
   str := TStringList.Create;
   exit_code := command_execute('dpkg-deb', param, @command_callback);
@@ -157,8 +163,10 @@ begin
 
   param.Free;
 
+  Result := True;
 {$ELSE}
   StdOutLn(format('(5025) Cannot create deb pacakge file - %s on non Linux systems', [fname]));
+  Result := False;
 {$ENDIF}
 end;
 
