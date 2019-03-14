@@ -58,13 +58,12 @@ set_('$(PMAKE_DEBIAN_PACKAGE_DEPENDS)', '${misc:Depends}, ${shlibs:Depends}, fpc
   install('$(UNITSOUTPUTDIR)', '/usr/lib/pmake/$(PROJECT_VERSION)', 'make2_*.*',   'lib_pmake');
 {$endif}
 {$IFDEF DARWIN}
-  not defined!
-  //install('$(BINOUTPUTDIR)',   '/usr/bin',                          'pmake$(EXE)', 'pmake');
-  //install('$(UNITSOUTPUTDIR)', '/usr/lib/pmake/$(PROJECT_VERSION)', 'compiler.*',  'lib_pmake');
-  //install('$(UNITSOUTPUTDIR)', '/usr/lib/pmake/$(PROJECT_VERSION)', 'crc16.*',     'lib_pmake');
-  //install('$(UNITSOUTPUTDIR)', '/usr/lib/pmake/$(PROJECT_VERSION)', 'depsolver.*', 'lib_pmake');
-  //install('$(UNITSOUTPUTDIR)', '/usr/lib/pmake/$(PROJECT_VERSION)', 'pmake_*.*',   'lib_pmake');
-  //install('$(UNITSOUTPUTDIR)', '/usr/lib/pmake/$(PROJECT_VERSION)', 'make_*.*',    'lib_pmake');
-  //install('$(UNITSOUTPUTDIR)', '/usr/lib/pmake/$(PROJECT_VERSION)', 'make2_*.*',   'lib_pmake');
+  install('$(BINOUTPUTDIR)',   '/usr/local/bin',                            'pmake$(EXE)', 'pmake');
+  install('$(UNITSOUTPUTDIR)', '/usr/local/share/pmake/$(PROJECT_VERSION)', 'compiler.*',  'lib_pmake');
+  install('$(UNITSOUTPUTDIR)', '/usr/local/share/pmake/$(PROJECT_VERSION)', 'crc16.*',     'lib_pmake');
+  install('$(UNITSOUTPUTDIR)', '/usr/local/share/pmake/$(PROJECT_VERSION)', 'depsolver.*', 'lib_pmake');
+  install('$(UNITSOUTPUTDIR)', '/usr/local/share/pmake/$(PROJECT_VERSION)', 'pmake_*.*',   'lib_pmake');
+  install('$(UNITSOUTPUTDIR)', '/usr/local/share/pmake/$(PROJECT_VERSION)', 'make_*.*',    'lib_pmake');
+  install('$(UNITSOUTPUTDIR)', '/usr/local/share/pmake/$(PROJECT_VERSION)', 'make2_*.*',   'lib_pmake');
 {$endif}
 
