@@ -40,30 +40,33 @@ set_('$(PMAKE_DEBIAN_PACKAGE_DEPENDS)', '${misc:Depends}, ${shlibs:Depends}, fpc
 
 // install
 {$ifdef WINDOWS}
-  install('$(BINOUTPUTDIR)',   'C:\Program Files\pmake',       'pmake$(EXE)', 'pmake');
-  install('$(UNITSOUTPUTDIR)', 'C:\Program Files\pmake\units', 'compiler.*',  'lib_pmake');
-  install('$(UNITSOUTPUTDIR)', 'C:\Program Files\pmake\units', 'crc16.*',     'lib_pmake');
-  install('$(UNITSOUTPUTDIR)', 'C:\Program Files\pmake\units', 'depsolver.*', 'lib_pmake');
-  install('$(UNITSOUTPUTDIR)', 'C:\Program Files\pmake\units', 'pmake_*.*',   'lib_pmake');
-  install('$(UNITSOUTPUTDIR)', 'C:\Program Files\pmake\units', 'make_*.*',    'lib_pmake');
-  install('$(UNITSOUTPUTDIR)', 'C:\Program Files\pmake\units', 'make2_*.*',   'lib_pmake');
+  install('$(BINOUTPUTDIR)',        'C:\Program Files\pmake',       'pmake$(EXE)', 'pmake');
+  install('$(PMAKE_SOURCE_DIR)sfx', 'C:\Program Files\pmake\sfx',   'sfx.pp',      'pmake');
+  install('$(UNITSOUTPUTDIR)',      'C:\Program Files\pmake\units', 'compiler.*',  'lib_pmake');
+  install('$(UNITSOUTPUTDIR)',      'C:\Program Files\pmake\units', 'crc16.*',     'lib_pmake');
+  install('$(UNITSOUTPUTDIR)',      'C:\Program Files\pmake\units', 'depsolver.*', 'lib_pmake');
+  install('$(UNITSOUTPUTDIR)',      'C:\Program Files\pmake\units', 'pmake_*.*',   'lib_pmake');
+  install('$(UNITSOUTPUTDIR)',      'C:\Program Files\pmake\units', 'make_*.*',    'lib_pmake');
+  install('$(UNITSOUTPUTDIR)',      'C:\Program Files\pmake\units', 'make2_*.*',   'lib_pmake');
 {$endif}
 {$ifdef LINUX}
-  install('$(BINOUTPUTDIR)',   '/usr/bin',                          'pmake$(EXE)', 'pmake');
-  install('$(UNITSOUTPUTDIR)', '/usr/lib/pmake/$(PROJECT_VERSION)', 'compiler.*',  'lib_pmake');
-  install('$(UNITSOUTPUTDIR)', '/usr/lib/pmake/$(PROJECT_VERSION)', 'crc16.*',     'lib_pmake');
-  install('$(UNITSOUTPUTDIR)', '/usr/lib/pmake/$(PROJECT_VERSION)', 'depsolver.*', 'lib_pmake');
-  install('$(UNITSOUTPUTDIR)', '/usr/lib/pmake/$(PROJECT_VERSION)', 'pmake_*.*',   'lib_pmake');
-  install('$(UNITSOUTPUTDIR)', '/usr/lib/pmake/$(PROJECT_VERSION)', 'make_*.*',    'lib_pmake');
-  install('$(UNITSOUTPUTDIR)', '/usr/lib/pmake/$(PROJECT_VERSION)', 'make2_*.*',   'lib_pmake');
+  install('$(BINOUTPUTDIR)',        '/usr/bin',                              'pmake$(EXE)', 'pmake');
+  install('$(PMAKE_SOURCE_DIR)sfx', '/usr/lib/pmake/$(PROJECT_VERSION)/sfx', 'sfx.pp',      'pmake');
+  install('$(UNITSOUTPUTDIR)',      '/usr/lib/pmake/$(PROJECT_VERSION)',     'compiler.*',  'lib_pmake');
+  install('$(UNITSOUTPUTDIR)',      '/usr/lib/pmake/$(PROJECT_VERSION)',     'crc16.*',     'lib_pmake');
+  install('$(UNITSOUTPUTDIR)',      '/usr/lib/pmake/$(PROJECT_VERSION)',     'depsolver.*', 'lib_pmake');
+  install('$(UNITSOUTPUTDIR)',      '/usr/lib/pmake/$(PROJECT_VERSION)',     'pmake_*.*',   'lib_pmake');
+  install('$(UNITSOUTPUTDIR)',      '/usr/lib/pmake/$(PROJECT_VERSION)',     'make_*.*',    'lib_pmake');
+  install('$(UNITSOUTPUTDIR)',      '/usr/lib/pmake/$(PROJECT_VERSION)',     'make2_*.*',   'lib_pmake');
 {$endif}
 {$IFDEF DARWIN}
-  install('$(BINOUTPUTDIR)',   '/usr/local/bin',                            'pmake$(EXE)', 'pmake');
-  install('$(UNITSOUTPUTDIR)', '/usr/local/share/pmake/$(PROJECT_VERSION)', 'compiler.*',  'lib_pmake');
-  install('$(UNITSOUTPUTDIR)', '/usr/local/share/pmake/$(PROJECT_VERSION)', 'crc16.*',     'lib_pmake');
-  install('$(UNITSOUTPUTDIR)', '/usr/local/share/pmake/$(PROJECT_VERSION)', 'depsolver.*', 'lib_pmake');
-  install('$(UNITSOUTPUTDIR)', '/usr/local/share/pmake/$(PROJECT_VERSION)', 'pmake_*.*',   'lib_pmake');
-  install('$(UNITSOUTPUTDIR)', '/usr/local/share/pmake/$(PROJECT_VERSION)', 'make_*.*',    'lib_pmake');
-  install('$(UNITSOUTPUTDIR)', '/usr/local/share/pmake/$(PROJECT_VERSION)', 'make2_*.*',   'lib_pmake');
+  install('$(BINOUTPUTDIR)',        '/usr/local/bin',                                'pmake$(EXE)', 'pmake');
+  install('$(PMAKE_SOURCE_DIR)sfx', '/usr/local/share/pmake/$(PROJECT_VERSION)/sfx', 'sfx.pp',      'pmake');
+  install('$(UNITSOUTPUTDIR)',      '/usr/local/share/pmake/$(PROJECT_VERSION)',     'compiler.*',  'lib_pmake');
+  install('$(UNITSOUTPUTDIR)',      '/usr/local/share/pmake/$(PROJECT_VERSION)',     'crc16.*',     'lib_pmake');
+  install('$(UNITSOUTPUTDIR)',      '/usr/local/share/pmake/$(PROJECT_VERSION)',     'depsolver.*', 'lib_pmake');
+  install('$(UNITSOUTPUTDIR)',      '/usr/local/share/pmake/$(PROJECT_VERSION)',     'pmake_*.*',   'lib_pmake');
+  install('$(UNITSOUTPUTDIR)',      '/usr/local/share/pmake/$(PROJECT_VERSION)',     'make_*.*',    'lib_pmake');
+  install('$(UNITSOUTPUTDIR)',      '/usr/local/share/pmake/$(PROJECT_VERSION)',     'make2_*.*',   'lib_pmake');
 {$endif}
 

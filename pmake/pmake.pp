@@ -38,7 +38,7 @@ const
       + '] for ' +
 {$I %FPCTARGETCPU%}
       );
-    OutputLn('Copyright (c) 2016-2017 by Darius Blaszyk');
+    OutputLn('Copyright (c) 2016-2019 by Darius Blaszyk');
     OutputLn('');
     OutputLn('Usage ');
     OutputLn('  pmake [options] <path-to-source>');

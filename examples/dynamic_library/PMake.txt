@@ -1,3 +1,0 @@
-project('dynamic_library');
-
-add_executable('subs', 'subs', 'subs.pp', []);

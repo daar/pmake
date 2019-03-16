@@ -16,7 +16,7 @@ uses
   pmake_variables;
 
 type
-  ITM_type = (itUnknown, itLibrary, itExecutable, itInclude, itSubDirectory, itInstall, itTest);
+  ITM_type = (itUnknown, itLibrary, itExecutable, itDynLib, itInclude, itSubDirectory, itInstall, itTest);
 
   ppmkItem = ^pmkItem;
   pmkItem = record
@@ -28,6 +28,7 @@ type
     executable : string;
     pattern    : string;
     srcfile    : string;
+    type_      : ITM_type;
   end;
 
   ppmkFile = ^pmkFile;
@@ -60,25 +61,25 @@ var
   pmkList: PMK_ListBase;
   settings: SettingsDef;
 
-  function prompt(description, question, default: string): string;
-  var
-    answer: string;
-  begin
-    writeln(description);
+function prompt(description, question, default: string): string;
+var
+  answer: string;
+begin
+  writeln(description);
 
-    if default <> '' then
-      write('> ', question, ' [', default, ']: ')
-    else
-      write('> ', question, ': ');
+  if default <> '' then
+    write('> ', question, ' [', default, ']: ')
+  else
+    write('> ', question, ': ');
 
-    readln(answer);
-    if answer = '' then
-      answer := default;
+  readln(answer);
+  if answer = '' then
+    answer := default;
 
-    writeln;
+  writeln;
 
-    Result := answer;
-  end;
+  Result := answer;
+end;
 
 function prompt_yn(description, question: string; default: opYesNo): boolean;
 var
@@ -106,40 +107,41 @@ begin
     exit(False);
 end;
 
-procedure ParseSourceFile(fname: string; out pmtype: ITM_type; out name: string);
+procedure ParseSourceFile(fname: string; out pmType: ITM_type; out name: string);
 var
   f: TStrings;
   i: integer;
+  done: boolean = false;
 begin
   f := TStringList.Create;
   f.LoadFromFile(fname);
 
-  pmtype := itUnknown;
+  pmType := itUnknown;
 
   //find pmtype: very naive, but it's a start!
   if ExtractFileExt(LowerCase(fname)) = '.inc' then
-    pmtype := itInclude
+    pmType := itInclude
   else
   begin
     for i := 0 to f.Count - 1 do
     begin
       if pos('unit', Trim(LowerCase(f[i]))) = 1 then
       begin
-        pmtype := itLibrary;
+        pmType := itLibrary;
         break;
       end;
       if pos('program', Trim(LowerCase(f[i]))) = 1 then
       begin
         //name is here based on the source file
         name := LowerCase(ExtractFileName(ChangeFileExt(fname, '')));
-        pmtype := itExecutable;
+        pmType := itExecutable;
         break;
       end;
       if pos('library', Trim(LowerCase(f[i]))) = 1 then
       begin
         //name is here based on the source file
         name := LowerCase(ExtractFileName(ChangeFileExt(fname, '')));
-        pmtype := itExecutable;
+        pmType := itDynLib;
         break;
       end;
     end;
@@ -213,6 +215,7 @@ begin
                             itm := callocN(SizeOf(pmkItem));
                             addtail(@p^.library_, itm);
 
+                            itm^.type_ := pt;
                             itm^.srcfile := info.Name;
                           end;
                   itExecutable:
@@ -222,6 +225,7 @@ begin
                               itm := callocN(SizeOf(pmkItem));
                               addtail(@p^.executable, itm);
 
+                              itm^.type_ := pt;
                               itm^.executable := name;
                               itm^.srcfile := info.Name;
 
@@ -234,6 +238,25 @@ begin
                                 itm^.destination := '$(PMAKE_PACKAGE_DIR)';
                                 itm^.pattern := name + '$(EXE)';
                               end;
+                            end;
+                          end;
+                  itDynLib:
+                          begin
+                            itm := callocN(SizeOf(pmkItem));
+                            addtail(@p^.executable, itm);
+
+                            itm^.type_ := pt;
+                            itm^.executable := name;
+                            itm^.srcfile := info.Name;
+
+                            if settings.install <> '' then
+                            begin
+                              itm := callocN(SizeOf(pmkItem));
+                              addtail(@p^.install, itm);
+
+                              itm^.directory := '$(BINOUTPUTDIR)';
+                              itm^.destination := '$(PMAKE_PACKAGE_DIR)';
+                              itm^.pattern := name + '$(DLL)';
                             end;
                           end;
                   itInclude:
@@ -341,12 +364,16 @@ begin
     begin
       if not p^.test then
       begin
-        f.Add('// executables');
+        f.Add('// executables & dynamic libraries');
 
         it := p^.executable.first;
         while it <> nil do
         begin
-          f.Add(Format('add_executable(''%s'', ''%s$(EXE)'', ''%s'', []);', [p^.pkgname, it^.executable, it^.srcfile]));
+          if it^.type_ = itExecutable then
+            f.Add(Format('add_executable(''%s'', ''%s$(EXE)'', ''%s'', []);', [p^.pkgname, it^.executable, it^.srcfile]))
+          else
+            f.Add(Format('add_executable(''%s'', ''%s$(DLL)'', ''%s'', []);', [p^.pkgname, it^.executable, it^.srcfile]));
+
           it := it^.next;
         end;
       end
@@ -383,7 +410,7 @@ begin
     if p^.directory = path then
     begin
       f.Add('// create the package');
-      f.Add('create_package(''$(PMAKE_PROJECT_NAME)-$(PROJECT_VERSION)-$(PMAKE_HOST_SYSTEM_PROCESSOR)-$(PMAKE_HOST_SYSTEM_NAME)'', ''package'');');
+      f.Add('create_package(''$(PMAKE_PROJECT_NAME)-$(PROJECT_VERSION)-$(PMAKE_HOST_SYSTEM_PROCESSOR)-$(PMAKE_HOST_SYSTEM_NAME)'');');
     end;
 
     f.SaveToFile(p^.directory + 'PMake.txt');
@@ -469,7 +496,7 @@ begin
   begin
     recursive := prompt_yn('PMake can recursively search the source directory provided and add PMake.txt files as required', 'Would you like PMake to search recursively?', opYes);
     compver := prompt('Some projects require a specific minimum compiler version, you can specify this now', 'Please enter the minimum compiler version', val_('PMAKE_PAS_COMPILER_VERSION'));
-    projname := prompt('PMake requires a project name to define the project', 'Please enter the project name', '');
+    projname := prompt('PMake requires a project name to define the project', 'Please enter the project name', 'project');
     projver := prompt('A project version helps to distinguish between releases (use dot `.` or dash `-` or a combination in the version string)', 'Please enter the current project version', 'none');
     libprefix := prompt('Please specify which library prefix to use', 'Enter the desired prefix', 'lib');
     install := prompt('Please specify if executables should be installed', 'Enter the install directory (press enter to ignore)', '');

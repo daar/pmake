@@ -19,7 +19,7 @@ uses
 
 type
   TRunMode = (rmBuild, rmInstall, rmClean, rmPackage, rmTest);
-  TPackage = (pkZip, pkDeb);
+  TPackage = (pkZip, pkDeb, pkSFX);
 
 var
   RunMode: TRunMode;
@@ -83,6 +83,7 @@ begin
         case LowerCase(ParamStr(i)) of
           'zip': pkgtype := pkZip;
           'deb': pkgtype := pkDeb;
+          'sfx': pkgtype := pkSFX;
           else
             pkgtype := pkZip;
         end;
@@ -363,6 +364,7 @@ begin
   case pkgtype of
     pkZip: package_zip(dir);
     pkDeb: package_deb(dir);
+    pkSFX: package_sfx(dir);
   end;
 end;
 
@@ -461,6 +463,7 @@ begin
       InstallTempPackages(BaseInstallPath, dir);
       PackageAll(pkgtype, dir);
 
+      //todo: improve the function DeleteDirectory that only deletes the files in the folder
       res := DeleteDirectory(dir, False);
       if res then
         messagefmt(FATAL_ERROR, '(1009) fatal error: cannot remove directory $s', [dir]);

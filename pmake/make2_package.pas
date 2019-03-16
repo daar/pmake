@@ -9,6 +9,7 @@ uses
 
 function package_zip(const package_folder: string): boolean;
 function package_deb(const package_folder: string): boolean;
+function package_sfx(const package_folder: string): boolean;
 
 implementation
 
@@ -84,11 +85,10 @@ begin
   end;
 end;
 
-{$IFDEF LINUX}
 var
   str: TStringList;
 
-//parsing dpkg-deb output
+//parsing command_execute output
 procedure command_callback(line: string; active: boolean);
 begin
   str.Text := str.Text + line;
@@ -99,7 +99,6 @@ begin
     str.Delete(0);
   end;
 end;
-{$ENDIF}
 
 function package_deb(const package_folder: string): boolean;
 var
@@ -168,6 +167,57 @@ begin
   StdOutLn(format('(5025) Cannot create deb pacakge file - %s on non Linux systems', [fname]));
   Result := False;
 {$ENDIF}
+end;
+
+function package_sfx(const package_folder: string): boolean;
+var
+  s, param: TStringList;
+  fname: string;
+  exit_code: Integer;
+begin
+  //1. create the zip file
+  package_zip(package_folder);
+
+  StdOutLn('(5025) Creating SFX...');
+
+  //2. create the sfx.rc file
+  fname := ExtractFileName(macros_expand('$(PMAKE_PACKAGE_FILE)'));
+  s := TStringList.Create;
+  s.Add('ZIPDATA         RCDATA "' + fname + '.zip"');
+  s.SaveToFile(macros_expand('$(PMAKE_BINARY_DIR)sfx.rc'));
+  s.Free;
+
+  //3. create settings.inc
+  s := TStringList.Create;
+  s.Add('//settings for SFX');
+  {$IFDEF WINDOWS}
+  s.Add(macros_expand('DEST_FOLDER = ''C:\Program Files\$(PMAKE_PROJECT_NAME)'';'));
+  {$ENDIF}
+  {$IFDEF LINUX}
+  s.Add('DEST_FOLDER = ''/usr/bin'';');
+  {$ENDIF}
+  {$IFDEF DARWIN}
+  s.Add('DEST_FOLDER = ''/usr/local'';');
+  {$ENDIF}
+  s.SaveToFile(macros_expand('$(PMAKE_BINARY_DIR)settings.inc'));
+  s.Free;
+
+  //4. copy sfx source file
+  copyfile(macros_expand('$(PMAKE_TOOL_DIR)sfx') + DirectorySeparator + 'sfx.pp', macros_expand('$(PMAKE_BINARY_DIR)sfx.pp'));
+
+  //5. compile sfx
+  param := TStringList.Create;
+  param.Add('sfx.pp');
+  param.Add(macros_expand('-o$(PMAKE_PACKAGE_FILE)$(EXE)'));
+
+  str := TStringList.Create;
+  exit_code := command_execute(val_('PMAKE_PAS_COMPILER'), param, @command_callback);
+  str.Free;
+
+  if exit_code <> 0 then
+    StdOutLn('(1009) fatal error: cannot execute sfx.pp');
+
+  param.Free;
 end;
 
 end.
