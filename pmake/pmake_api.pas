@@ -25,6 +25,8 @@ procedure create_package(const file_name: string);
 procedure install(directory, destination, pattern, depends: string);
 procedure add_custom_command(pkgname, executable, parameters: string; depends: array of const);
 
+procedure add_compile_option(const option: string);
+
 procedure compiler_minimum_required(major, minor, revision: integer);
 procedure project(name: string; version: string = '');
 
@@ -37,13 +39,15 @@ procedure messagefmt(mode: msgMode; msg: string; const args: array of const);
 //todo: add as command to package
 procedure messagefmt(msg: string; const args: array of const);
 
-procedure add_subdirectory(path: string);
-procedure define_pmake(path: string);
+procedure add_subdirectory(const path: string);
+procedure define_pmake(const path: string);
 
 //todo: add as command to package
 function execute_process(const curdir, exename: string; const commands: array of string; name: string): boolean;
 //todo: add as command to package
 procedure execute_file(const filename, name: string; action: fileAction);
+
+procedure add_module_path(const path: string);
 
 implementation
 
@@ -70,7 +74,7 @@ var
   pkg: pPackage = nil;
   cmd: pExecutableCommand;
 begin
-  pkg := find_or_create_package(pkglist, pkgname, val_('PMAKE_CURRENT_SOURCE_DIR'), val_('PMAKE_CURRENT_BINARY_DIR'));
+  pkg := find_or_create_package(pkglist, pkgname, vals('PMAKE_CURRENT_SOURCE_DIR'), vals('PMAKE_CURRENT_BINARY_DIR'));
 
   cmd := allocmem(sizeof(ExecutableCommand));
 
@@ -98,7 +102,7 @@ var
   pkg: pPackage = nil;
   cmd: pExecutableCommand;
 begin
-  pkg := find_or_create_package(pkglist, pkgname, val_('PMAKE_CURRENT_SOURCE_DIR'), val_('PMAKE_CURRENT_BINARY_DIR'));
+  pkg := find_or_create_package(pkglist, pkgname, vals('PMAKE_CURRENT_SOURCE_DIR'), vals('PMAKE_CURRENT_BINARY_DIR'));
 
   //for each source file add a command to the package
   for i := 0 to High(srcfiles) do
@@ -123,7 +127,7 @@ var
   pkg: pPackage = nil;
   cmd: pTestCommand;
 begin
-  pkg := find_or_create_package(pkglist, _TEST_PGK_NAME_, val_('PMAKE_CURRENT_SOURCE_DIR'), val_('PMAKE_CURRENT_BINARY_DIR'));
+  pkg := find_or_create_package(pkglist, _TEST_PGK_NAME_, vals('PMAKE_CURRENT_SOURCE_DIR'), vals('PMAKE_CURRENT_BINARY_DIR'));
 
   cmd := allocmem(sizeof(TestCommand));
 
@@ -148,8 +152,8 @@ var
   dir: string;
   curdir: string;
 begin
-  curdir := val_('PMAKE_CURRENT_SOURCE_DIR');
-  pkg := find_or_create_package(pkglist, pkgname, curdir, val_('PMAKE_CURRENT_BINARY_DIR'));
+  curdir := vals('PMAKE_CURRENT_SOURCE_DIR');
+  pkg := find_or_create_package(pkglist, pkgname, curdir, vals('PMAKE_CURRENT_BINARY_DIR'));
 
   for i := Low(directories) to High(directories) do
   begin
@@ -187,7 +191,7 @@ var
   cmd: pCustomCommand;
   pkg: pPackage;
 begin
-  pkg := find_or_create_package(pkglist, pkgname, val_('PMAKE_CURRENT_SOURCE_DIR'), val_('PMAKE_CURRENT_BINARY_DIR'));
+  pkg := find_or_create_package(pkglist, pkgname, vals('PMAKE_CURRENT_SOURCE_DIR'), vals('PMAKE_CURRENT_BINARY_DIR'));
 
   cmd := AllocMem(sizeof(CustomCommand));
 
@@ -206,17 +210,17 @@ end;
 procedure message(mode: msgMode; msg: string);
 begin
   case mode of
-    NONE: StdErrLn(msg);
-    STATUS: StdOutLn(msg);
-    WARNING: StdErrLn( msg);
-    AUTHOR_WARNING: StdErrLn(msg);
-    SEND_ERROR: StdErrLn(msg);
+    NONE: StdErrLn(macros_expand(msg));
+    STATUS: StdOutLn(macros_expand(msg));
+    WARNING: StdErrLn(macros_expand(msg));
+    AUTHOR_WARNING: StdErrLn(macros_expand(msg));
+    SEND_ERROR: StdErrLn(macros_expand(msg));
     FATAL_ERROR:
     begin
-      StdErrLn(msg);
+      StdErrLn(macros_expand(msg));
       halt(1);
     end;
-    DEPRECATION: StdErrLn(msg);
+    DEPRECATION: StdErrLn(macros_expand(msg));
   end;
 end;
 
@@ -235,7 +239,7 @@ begin
   messagefmt(NONE, msg, args);
 end;
 
-procedure add_subdirectory(path: string);
+procedure add_subdirectory(const path: string);
 var
   srcdir: string;
   pmkdir: string;
@@ -243,8 +247,8 @@ var
   dir: string;
   bindir: string;
 begin
-  srcdir := val_('PMAKE_SOURCE_DIR');
-  pmkdir := val_('PMAKE_CURRENT_DEFINE_DIR');
+  srcdir := vals('PMAKE_SOURCE_DIR');
+  pmkdir := vals('PMAKE_CURRENT_DEFINE_DIR');
 
   locdir := macros_expand(path);
 
@@ -261,11 +265,11 @@ begin
   set_('PMAKE_CURRENT_SOURCE_DIR', dir);
 
   //update the binary directory
-  bindir := val_('PMAKE_BINARY_DIR');
+  bindir := vals('PMAKE_BINARY_DIR');
   set_('PMAKE_CURRENT_BINARY_DIR', ExpandFileName(bindir + ExtractRelativepath(srcdir, dir)));
 end;
 
-procedure define_pmake(path: string);
+procedure define_pmake(const path: string);
 begin
   set_('PMAKE_CURRENT_DEFINE_DIR', path);
   add_subdirectory(path);
@@ -318,6 +322,19 @@ begin
   f.Free;
 end;
 
+procedure add_module_path(const path: string);
+begin
+  //do nothing here, this function is parsed from PMake.txt by the make utility
+end;
+
+procedure add_compile_option(const option: string);
+begin
+  if comp_option =  nil then
+    comp_option := TStringList.Create;
+
+  comp_option.Add(macros_expand(option));
+end;
+
 procedure compiler_minimum_required(major, minor, revision: integer);
 var
   ver: TStrings;
@@ -325,7 +342,7 @@ var
 begin
   ver := TStringList.Create;
   ver.Delimiter := '.';
-  ver.DelimitedText := val_('PMAKE_PAS_COMPILER_VERSION');
+  ver.DelimitedText := vals('PMAKE_PAS_COMPILER_VERSION');
 
   //check version numbers
   if StrToInt(ver[0]) > major then
@@ -341,7 +358,7 @@ begin
   ver.Free;
 
   if not isOK then
-    messagefmt(FATAL_ERROR, '(1009) fatal error: minimum compiler version required is %d.%d.%d, got %s', [major, minor, revision, val_('PMAKE_PAS_COMPILER_VERSION')]);
+    messagefmt(FATAL_ERROR, '(1009) fatal error: minimum compiler version required is %d.%d.%d, got %s', [major, minor, revision, vals('PMAKE_PAS_COMPILER_VERSION')]);
 end;
 
 procedure project(name: string; version: string = '');
@@ -373,6 +390,8 @@ begin
       set_('PROJECT_VERSION_PATCH', s[2]);
     if s.Count > 3 then
       set_('PROJECT_VERSION_TWEAK', s[3]);
+
+    s.Free;
   end;
 end;
 

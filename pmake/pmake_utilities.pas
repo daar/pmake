@@ -36,7 +36,7 @@ function BinOutputDir(BasePath: string): string;
 
 function BaseInstallPath: string;
 
-function command_execute(executable: string; parameters: TStrings; callback: PMAKECommandFun; HasStdOut: boolean = true): integer;
+function command_execute(executable: string; parameters: TStrings; callback: PMAKECommandFun; HasStdOut: boolean = True): integer;
 function macros_expand(str: string; pkg: pPackage = nil): string;
 
 procedure copyfile(old, new: string);
@@ -49,11 +49,15 @@ function callocN(Size: PtrUInt): pointer;
 procedure remlink(vlink: pointer);
 procedure addtail(listbase: pPMK_ListBase; vlink: pointer);
 
+function which(executable: string): string;
+
 var
   pmakefiles: TFPList;
+  mod_list: TStrings;
   pkglist: TFPList;
   depcache: TFPList;
   instlist: TFPList;
+  comp_option: TStringList;
   cmd_count: longint = 0;
   verbose: boolean = False;
   OutputLn: procedure(msg: string);
@@ -63,7 +67,9 @@ var
 implementation
 
 uses
-  Process, pmake_variables, pmake_api;
+  Process,
+  pmake_variables,
+  pmake_api;
 
 procedure CmdOutputLn(msg: string);
 begin
@@ -150,7 +156,7 @@ var
   infoSL: TStringList;
   compiler: string;
 begin
-  compiler := val_('PMAKE_PAS_COMPILER');
+  compiler := vals('PMAKE_PAS_COMPILER');
 
   //for now we initialize the FPC compiler, but we will add other compilers here later!!
   if compiler = '' then
@@ -293,20 +299,22 @@ begin
   for i := 1 to BUF_SIZE do
     buf[i] := #0;
 
-  // open files - no error checking this should be added
+  //todo: open files - no error checking this should be added
   Assign(infile, old);
-  reset(infile, 1);
+  Reset(infile, 1);
   Assign(outfile, new);
-  rewrite(outfile, 1);
+  Rewrite(outfile, 1);
 
   // copy file
   repeat
-    blockread(infile, buf, sizeof(buf), numread);
-    blockwrite(outfile, buf, numread, numwritten);
+    BlockRead(infile, buf, sizeof(buf), numread);
+    BlockWrite(outfile, buf, numread, numwritten);
   until (numread = 0) or (numwritten <> numread);
 
   Close(infile);
   Close(outfile);
+
+  //todo: copy also the file attributes
 end;
 
 //todo: does not work on windows, it leaves files in subfolders
@@ -325,8 +333,8 @@ const
   {$ENDIF}
 var
   FileInfo: TSearchRec;
-  CurSrcDir: String;
-  CurFilename: String;
+  CurSrcDir: string;
+  CurFilename: string;
 begin
   Result := False;
   CurSrcDir := Directoryname;
@@ -342,7 +350,8 @@ begin
       if ((FileInfo.Attr and faDirectory) > 0)
       {$ifdef unix}
         and ((FileInfo.Attr and faSymLink) = 0)
-      {$endif unix} then
+      {$endif unix}
+      then
       begin
         if not DeleteDirectory(CurFilename, False) then
           exit;
@@ -430,6 +439,29 @@ begin
     listbase^.first := link;
 
   listbase^.last := link;
+end;
+
+function which(executable: string): string;
+var
+  Output: string;
+  i: integer = 1;
+begin
+{$IFDEF UNIX}
+  RunCommand('which ' + executable, [], Output);
+{$ELSE}
+  RunCommand('where', [executable], Output);
+{$ENDIF UNIX}
+
+  //extract first occurence
+  while (i < Length(Output)) and not (Output[i] in [#10, #13])  do
+    inc(i);
+
+  Output := Copy(Output, 1, i - 1);
+
+  if (Output <> '') and FileExists(Output) then
+    Result := Output
+  else
+    Result := '';
 end;
 
 initialization

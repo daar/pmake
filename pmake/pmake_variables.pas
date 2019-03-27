@@ -58,10 +58,10 @@ procedure set_(name: shortstring; value: shortstring);
 procedure set_(name: shortstring; value: double);
 procedure set_(name: shortstring; value: pPMK_ListBase);
 
-function val_(name: shortstring): shortstring;
-function val_(name: shortstring): boolean;
-function val_(name: shortstring): integer;
-function val_(name: shortstring): double;
+function vals(name: shortstring): shortstring;
+function valb(name: shortstring): boolean;
+function vali(name: shortstring): integer;
+function vald(name: shortstring): double;
 function VALfc(name: shortstring): pPMK_ListBase;
 
 procedure option(option_variable, description: shortstring; initial_value: PMK_Bool);
@@ -237,7 +237,7 @@ begin
   addtail(@varlist, v);
 end;
 
-function val_(name: shortstring): boolean;
+function valb(name: shortstring): boolean;
 var
   v: pPMK_variant;
 begin
@@ -249,7 +249,7 @@ begin
     exit(False);
 end;
 
-function val_(name: shortstring): integer;
+function vali(name: shortstring): integer;
 var
   v: pPMK_variant;
 begin
@@ -261,7 +261,7 @@ begin
     exit(0);
 end;
 
-function val_(name: shortstring): shortstring;
+function vals(name: shortstring): shortstring;
 var
   v: pPMK_variant;
 begin
@@ -273,7 +273,7 @@ begin
     exit('');
 end;
 
-function val_(name: shortstring): double;
+function vald(name: shortstring): double;
 var
   v: pPMK_variant;
 begin

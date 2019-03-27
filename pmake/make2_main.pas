@@ -31,7 +31,7 @@ procedure output_line(var sline: TStringList);
 var
   line: string;
 begin
-  line := StringReplace(sline[0], val_('PMAKE_SOURCE_DIR'), '.' + DirectorySeparator, [rfReplaceAll]);
+  line := StringReplace(sline[0], vals('PMAKE_SOURCE_DIR'), '.' + DirectorySeparator, [rfReplaceAll]);
   line := StringReplace(line, '(3104)', format('(3104) [%3.0f%%]', [progress]), [rfReplaceAll]);
 
   StdOutLn(line);
@@ -182,7 +182,7 @@ begin
           begin
             param := CompilerCommandLine(pkg, cmd);
             sline := TStringList.Create;
-            exit_code := command_execute(val_('PMAKE_PAS_COMPILER'), param, @command_callback);
+            exit_code := command_execute(vals('PMAKE_PAS_COMPILER'), param, @command_callback);
             sline.Free;
             param.Free;
 
@@ -338,7 +338,7 @@ begin
     //compile test
     param := CompilerCommandLine(pkg, cmd);
     sline := TStringList.Create;
-    exit_code := command_execute(val_('PMAKE_PAS_COMPILER'), param, @execute_callback);
+    exit_code := command_execute(vals('PMAKE_PAS_COMPILER'), param, @execute_callback);
     sline.Free;
     param.Free;
 
@@ -426,7 +426,7 @@ var
   res: Boolean;
 begin
   //test to make sure the project is well defined
-  if val_('PMAKE_PROJECT_NAME') = '' then
+  if vals('PMAKE_PROJECT_NAME') = '' then
     message(FATAL_ERROR, '(1009) fatal error: no project defined');
 
   (*
@@ -476,6 +476,9 @@ begin
   end;
 
   deplist.Free;
+
+  if comp_option <>nil then
+    comp_option.Free;
 end;
 
 end.

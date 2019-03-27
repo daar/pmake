@@ -39,6 +39,7 @@ var
   force_build: boolean = False;
   debug: boolean = False;
   make2_params: TStrings;
+  mod_list: TStrings;
 
 procedure output_line(var sline: TStringList);
 var
@@ -197,6 +198,84 @@ begin
   end;
 end;
 
+procedure add_pmake_modules(make2: TStrings);
+var
+  i: integer;
+  module: string;
+  info: TSearchRec;
+
+  procedure add_module_path(const path: string);
+  var
+    p: string;
+  begin
+    p := IncludeTrailingPathDelimiter(macros_expand(path));
+
+    if not DirectoryExists(p) then
+      message(WARNING, 'the module path "' + p + '" does not exist!')
+    else
+      mod_list.Add(p);
+  end;
+
+  function search_module(const fname: string): string;
+  var
+    pm: TStrings;
+    line: string;
+    i: integer;
+    spos, epos: integer;
+  begin
+    if not FileExists(fname) then
+      messagefmt(FATAL_ERROR, 'fatal error: could not find %s', ['.' + DirectorySeparator + ExtractRelativepath(val_('PMAKE_SOURCE_DIR'), fname)])
+    else
+    begin
+      //parse the PMake.txt file
+      pm := TStringList.Create;
+      pm.LoadFromFile(fname);
+
+      //search for 'add_module_path'
+      for i := 0 to pm.Count - 1 do
+      begin
+        line := LowerCase(Trim(pm[i]));
+        if pos('add_module_path', line) = 1 then
+        begin
+          spos := pos('''', line) + 1;
+          line := copy(Trim(pm[i]), spos, length(line));
+          epos := pos('''', line) - 1;
+          line := copy(line, 1, epos);
+
+          exit(line);
+        end;
+      end;
+      pm.Free;
+    end;
+    exit('');
+  end;
+
+begin
+  //search all pmake files for add_module_path definitions
+  for i := 0 to pmakefiles.Count - 1 do
+  begin
+    module := search_module(pPMakeItem(pmakefiles[i])^.fname);
+
+    if module <> '' then
+      add_module_path(module);
+  end;
+
+  //as last add the "official" pmake modules
+  add_module_path('$(PMAKE_TOOL_DIR)modules');
+
+  //now add all module source files to make2
+  for i := 0 to mod_list.Count - 1 do
+  begin
+    if FindFirst(mod_list[i] + '*.pas', faAnyFile, info) = 0 then
+    begin
+      repeat
+        make2.Add(' , ' + ChangeFileExt(info.Name, ''));
+      until FindNext(info)<>0;
+    end;
+    FindClose(info);
+  end;
+end;
+
 procedure make2_build;
 var
   make2, f: TStrings;
@@ -210,7 +289,15 @@ begin
   make2 := TStringList.Create;
 
   make2.Add('program make2;');
-  make2.Add('uses {$IFDEF UNIX} cthreads, {$ENDIF} make2_main, pmake_api, pmake_variables;');
+  make2.Add('uses');
+  make2.Add('{$IFDEF UNIX} cthreads, {$ENDIF}');
+  make2.Add('  make2_main, pmake_api, pmake_variables');
+
+  //add all modules to the make2 source file
+  mod_list := TStringList.Create;
+  add_pmake_modules(make2);
+
+  make2.Add(';');
   make2.Add('begin');
   make2.Add('  init_make2;');
 
@@ -248,15 +335,20 @@ begin
   param.Add('-FU' + UnitsOutputDir(val_('PMAKE_BINARY_DIR')));
 
   //add the unit search path depending on the platform
-  {$IFDEF WINDOWS}
+{$IFDEF WINDOWS}
   param.Add('-Fu"' + val_('PMAKE_TOOL_DIR') + 'units"');
-  {$ENDIF}
-  {$IFDEF LINUX}
+{$ENDIF}
+{$IFDEF LINUX}
   param.Add('-Fu' + macros_expand('/usr/lib/pmake/$(PROJECT_VERSION)'));
-  {$ENDIF}
-  {$IFDEF DARWIN}
-  not defined!
-  {$ENDIF}
+{$ENDIF}
+{$IFDEF DARWIN}
+  param.Add('-Fu' + macros_expand('/usr/local/share/pmake/$(PROJECT_VERSION)'));
+{$ENDIF}
+
+  //add module paths
+  for i := 0 to mod_list.Count - 1 do
+    param.Add('-Fu"' + mod_list[i] + '"');
+  mod_list.Free;
 
   param.Add(src_name);
   param.Add(macros_expand('-omake2$(EXE)'));
@@ -413,7 +505,7 @@ begin
   pmakefiles.Free;
 
   if exit_code <> 0 then
-    messagefmt(FATAL_ERROR, 'fatal error: cannot execute %s', [macros_expand('make2$(EXE)')]);
+    message(FATAL_ERROR, macros_expand('fatal error: cannot execute make2$(EXE)'));
 end;
 
 end.

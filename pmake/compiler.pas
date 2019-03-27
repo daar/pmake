@@ -134,7 +134,7 @@ begin
         f := TStringList.Create;
         f.LoadFromFile(fitem^.fname);
 
-        fname := '.' + DirectorySeparator + ExtractRelativepath(val_('PMAKE_SOURCE_DIR'), fitem^.fname);
+        fname := '.' + DirectorySeparator + ExtractRelativepath(vals('PMAKE_SOURCE_DIR'), fitem^.fname);
         lineno := lineno - fitem^.startpos;
 
         tmp := StringOfChar(' ', rowno - 1);
@@ -216,13 +216,16 @@ begin
 
   //output file paths
   if cmdtype in [ctExecutable, ctTest] then
-    Result.Add('-FE' + pkg^.binoutput);
+    Result.Add('-FE"' + pkg^.binoutput + '"');
 
   for i := 0 to pkg^.includes.Count - 1 do
-    Result.Add('-Fi' + pkg^.includes[i]);
+    Result.Add('-Fi"' + pkg^.includes[i] + '"');
 
-  Result.Add('-Fu' + pkg^.unitsoutput);
-  Result.Add('-FU' + pkg^.unitsoutput);
+  //set unit output path
+  Result.Add('-FU"' + pkg^.unitsoutput + '"');
+
+  //add unit search path
+  Result.Add('-Fu"' + pkg^.unitsoutput + '"');
 
   //search other unit files for the dependencies
   for i := 0 to pkg^.dependency.Count - 1 do
@@ -232,19 +235,23 @@ begin
     if dep = nil then
       messagefmt(FATAL_ERROR, '(1009) fatal error: cannot find dependency %s', [pPackage(pkg^.dependency[i])^.name]);
 
-    Result.Add('-Fu' + dep^.unitsoutput);
+    Result.Add('-Fu"' + dep^.unitsoutput + '"');
   end;
+
+  //add custom compiler paramaters
+  if comp_option <> nil then
+    Result.AddStrings(comp_option);
 
   //output executable name
   if cmdtype in [ctExecutable, ctTest] then
   begin
     Result.Add(pkg^.activepath + pExecutableCommand(cmd)^.filename);
-    Result.Add('-o' + pExecutableCommand(cmd)^.executable);
+    Result.Add('-o"' + pExecutableCommand(cmd)^.executable + '"');
   end;
 
   //compile unit name
   if cmdtype = ctUnit then
-    Result.Add(pkg^.activepath + pUnitCommand(cmd)^.filename);
+    Result.Add('"' + pkg^.activepath + pUnitCommand(cmd)^.filename + '"');
 
   //force the compiler-output to be easy parseable
   Result.Add('-viq');
