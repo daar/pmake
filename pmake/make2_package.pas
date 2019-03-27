@@ -49,7 +49,7 @@ var
   FileList: TStringList;
   fname: string;
 begin
-  fname := val_('PMAKE_PACKAGE_FILE') + '.zip';
+  fname := vals('PMAKE_PACKAGE_FILE') + '.zip';
   StdOutLn(format('(5025) Creating zip package file - %s', [fname]));
 
   AZipper := TZipper.Create;
@@ -211,7 +211,7 @@ begin
   param.Add(macros_expand('-o$(PMAKE_PACKAGE_FILE)$(EXE)'));
 
   str := TStringList.Create;
-  exit_code := command_execute(val_('PMAKE_PAS_COMPILER'), param, @command_callback);
+  exit_code := command_execute(vals('PMAKE_PAS_COMPILER'), param, @command_callback);
   str.Free;
 
   if exit_code <> 0 then
