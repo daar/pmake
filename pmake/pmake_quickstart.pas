@@ -495,7 +495,7 @@ begin
   with settings do
   begin
     recursive := prompt_yn('PMake can recursively search the source directory provided and add PMake.txt files as required', 'Would you like PMake to search recursively?', opYes);
-    compver := prompt('Some projects require a specific minimum compiler version, you can specify this now', 'Please enter the minimum compiler version', val_('PMAKE_PAS_COMPILER_VERSION'));
+    compver := prompt('Some projects require a specific minimum compiler version, you can specify this now', 'Please enter the minimum compiler version', vals('PMAKE_PAS_COMPILER_VERSION'));
     projname := prompt('PMake requires a project name to define the project', 'Please enter the project name', 'project');
     projver := prompt('A project version helps to distinguish between releases (use dot `.` or dash `-` or a combination in the version string)', 'Please enter the current project version', 'none');
     libprefix := prompt('Please specify which library prefix to use', 'Enter the desired prefix', 'lib');

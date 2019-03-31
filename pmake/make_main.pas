@@ -162,8 +162,8 @@ begin
 
   if not FileExists(fn) then
   begin
-    messagefmt(WARNING, 'warning: error in %sPMake.txt', ['.' + DirectorySeparator + ExtractRelativepath(val_('PMAKE_SOURCE_DIR'), callee) + DirectorySeparator]);
-    messagefmt(FATAL_ERROR, 'fatal error: could not find %s', ['.' + DirectorySeparator + ExtractRelativepath(val_('PMAKE_SOURCE_DIR'), fn)]);
+    messagefmt(WARNING, 'warning: error in %sPMake.txt', ['.' + DirectorySeparator + ExtractRelativepath(vals('PMAKE_SOURCE_DIR'), callee) + DirectorySeparator]);
+    messagefmt(FATAL_ERROR, 'fatal error: could not find %s', ['.' + DirectorySeparator + ExtractRelativepath(vals('PMAKE_SOURCE_DIR'), fn)]);
   end
   else
   begin
@@ -224,7 +224,7 @@ var
     spos, epos: integer;
   begin
     if not FileExists(fname) then
-      messagefmt(FATAL_ERROR, 'fatal error: could not find %s', ['.' + DirectorySeparator + ExtractRelativepath(val_('PMAKE_SOURCE_DIR'), fname)])
+      messagefmt(FATAL_ERROR, 'fatal error: could not find %s', ['.' + DirectorySeparator + ExtractRelativepath(vals('PMAKE_SOURCE_DIR'), fname)])
     else
     begin
       //parse the PMake.txt file
@@ -332,17 +332,17 @@ begin
   param.Add('-viq');
 
   //add the unit output path
-  param.Add('-FU' + UnitsOutputDir(val_('PMAKE_BINARY_DIR')));
+  param.Add('-FU' + UnitsOutputDir(vals('PMAKE_BINARY_DIR')));
 
   //add the unit search path depending on the platform
 {$IFDEF WINDOWS}
-  param.Add('-Fu"' + val_('PMAKE_TOOL_DIR') + 'units"');
+  param.Add(macros_expand('-Fu"$(PMAKE_TOOL_DIR)units"'));
 {$ENDIF}
 {$IFDEF LINUX}
-  param.Add('-Fu' + macros_expand('/usr/lib/pmake/$(PROJECT_VERSION)'));
+  param.Add(macros_expand('-Fu/usr/lib/pmake/$(PROJECT_VERSION)'));
 {$ENDIF}
 {$IFDEF DARWIN}
-  param.Add('-Fu' + macros_expand('/usr/local/share/pmake/$(PROJECT_VERSION)'));
+  param.Add(macros_expand('-Fu/usr/local/share/pmake/$(PROJECT_VERSION)'));
 {$ENDIF}
 
   //add module paths
@@ -354,7 +354,7 @@ begin
   param.Add(macros_expand('-omake2$(EXE)'));
 
   sline := TStringList.Create;
-  exit_code := command_execute(val_('PMAKE_PAS_COMPILER'), param, @make2_callback, false);
+  exit_code := command_execute(vals('PMAKE_PAS_COMPILER'), param, @make2_callback, false);
   sline.Free;
 
   param.Free;
@@ -487,7 +487,7 @@ begin
   parse_commandline;
 
   pmakefiles := TFPList.Create;
-  search_pmake(val_('PMAKE_SOURCE_DIR'));
+  search_pmake(vals('PMAKE_SOURCE_DIR'));
   pmakefiles.Sort(@ComparePath);
 
   if check_rebuild_make2 or force_build then

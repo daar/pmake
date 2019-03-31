@@ -124,7 +124,7 @@ begin
   parse_commandline;
 
   if quickstart then
-    pmake_run_quickstart(val_('PMAKE_SOURCE_DIR'));
+    pmake_run_quickstart(vals('PMAKE_SOURCE_DIR'));
 
   if not FileExists(macros_expand('make$(EXE)')) or force_build then
     create_and_build_make(debug);

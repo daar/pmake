@@ -72,11 +72,11 @@ begin
   param.Add('-viq');
 
   //add the unit output path
-  param.Add('-FU' + UnitsOutputDir(val_('PMAKE_BINARY_DIR')));
+  param.Add('-FU' + UnitsOutputDir(vals('PMAKE_BINARY_DIR')));
 
   //add the unit search path depending on the platform
   {$IFDEF WINDOWS}
-  param.Add('-Fu"' + val_('PMAKE_TOOL_DIR') + 'units"');
+  param.Add(macros_expand('-Fu"$(PMAKE_TOOL_DIR)units"'));
   {$ENDIF}
   {$IFDEF LINUX}
   param.Add('-Fu' + macros_expand('/usr/lib/pmake/$(PROJECT_VERSION)'));
@@ -89,7 +89,7 @@ begin
   param.Add(macros_expand('-o$(PMAKE_BINARY_DIR)make$(EXE)'));
 
   str := TStringList.Create;
-  exit_code := command_execute(val_('PMAKE_PAS_COMPILER'), param, @command_callback);
+  exit_code := command_execute(vals('PMAKE_PAS_COMPILER'), param, @command_callback);
   str.Free;
 
   //remove the object and source files
