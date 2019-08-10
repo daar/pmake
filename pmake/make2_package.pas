@@ -129,7 +129,7 @@ begin
   control.Add(macros_expand('Maintainer: $(PMAKE_DEBIAN_PACKAGE_MAINTAINER)'));
 
   //replace x86_64 by amd64
-  if val_('$(PMAKE_HOST_SYSTEM_PROCESSOR)') = 'x86_64' then
+  if vals('$(PMAKE_HOST_SYSTEM_PROCESSOR)') = 'x86_64' then
     control.Add('Architecture: amd64')
   else
     control.Add(macros_expand('Architecture: $(PMAKE_HOST_SYSTEM_PROCESSOR)'));
@@ -221,4 +221,3 @@ begin
 end;
 
 end.
-
