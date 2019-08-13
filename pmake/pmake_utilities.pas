@@ -191,22 +191,23 @@ var
   BytesRead: longint;
   buf: array[1..BUF_SIZE] of byte;
   sStream: TStringStream;
+  i: integer;
 begin
   if verbose then
   begin
     if HasStdOut then
     begin
-      if parameters = nil then
-        StdOutLn('(5025) -- Executing ' + executable)
-      else
-        StdOutLn('(5025) -- Executing ' + executable + ' ' + parameters.Text);
+      StdOutLn('(5025) -- Executing ' + executable);
+      if parameters <> nil then
+        for i := 0 to parameters.Count - 1 do
+          StdOutLn('(5025)              ' + parameters[i]);
     end
     else
     begin
-      if parameters = nil then
-        OutputLn('(5025) -- Executing ' + executable)
-      else
-        OutputLn('(5025) -- Executing ' + executable + ' ' + parameters.Text);
+      OutputLn('(5025) -- Executing ' + executable);
+      if parameters <> nil then
+        for i := 0 to parameters.Count - 1 do
+          OutputLn('(5025)              ' + parameters[i]);
     end;
   end;
 
@@ -250,6 +251,8 @@ var
 begin
   tmp := str;
   replace_variable_macros(tmp);
+
+  tmp := StringReplace(tmp, '$(PMAKE_VERSION)', PMAKE_VERSION, [rfReplaceAll]);
 
   if pkg <> nil then
   begin
