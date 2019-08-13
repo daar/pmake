@@ -75,15 +75,15 @@ begin
   param.Add('-FU' + UnitsOutputDir(vals('PMAKE_BINARY_DIR')));
 
   //add the unit search path depending on the platform
-  {$IFDEF WINDOWS}
+{$IFDEF WINDOWS}
   param.Add(macros_expand('-Fu"$(PMAKE_TOOL_DIR)units"'));
-  {$ENDIF}
-  {$IFDEF LINUX}
-  param.Add('-Fu' + macros_expand('/usr/lib/pmake/$(PROJECT_VERSION)'));
-  {$ENDIF}
-  {$IFDEF DARWIN}
-  param.Add('-Fu' + macros_expand('/usr/local/share/pmake/$(PROJECT_VERSION))'));
-  {$ENDIF}
+{$ENDIF}
+{$IFDEF LINUX}
+  param.Add('-Fu' + macros_expand('/usr/lib/pmake/$(PMAKE_VERSION)'));
+{$ENDIF}
+{$IFDEF DARWIN}
+  param.Add('-Fu' + macros_expand('/usr/local/share/pmake/$(PMAKE_VERSION))'));
+{$ENDIF}
 
   param.Add(src_name);
   param.Add(macros_expand('-o$(PMAKE_BINARY_DIR)make$(EXE)'));

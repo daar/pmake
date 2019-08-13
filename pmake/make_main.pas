@@ -187,8 +187,7 @@ begin
         line := macros_expand(copy(line, 1, epos));
 
         //make sure the directory becomes absolute
-        line := ExtractRelativepath(path, line);
-        line := IncludeTrailingPathDelimiter(path) + line;
+        line := IncludeTrailingPathDelimiter(IncludeTrailingPathDelimiter(path) + line);
 
         search_pmake(line, path);
       end;
@@ -261,7 +260,15 @@ begin
   end;
 
   //as last add the "official" pmake modules
+{$ifdef WINDOWS}
   add_module_path('$(PMAKE_TOOL_DIR)modules');
+{$endif}
+{$ifdef LINUX}
+  add_module_path('/usr/lib/pmake/$(PMAKE_VERSION)/pmake/modules');
+{$endif}
+{$ifdef DARWIN}
+  add_module_path('/usr/local/share/pmake/$(PMAKE_VERSION)/pmake/modules');
+{$endif}
 
   //now add all module source files to make2
   for i := 0 to mod_list.Count - 1 do
@@ -336,18 +343,18 @@ begin
 
   //add the unit search path depending on the platform
 {$IFDEF WINDOWS}
-  param.Add(macros_expand('-Fu"$(PMAKE_TOOL_DIR)units"'));
+  param.Add(macros_expand('-Fu"$(PMAKE_TOOL_DIR)units/"'));
 {$ENDIF}
 {$IFDEF LINUX}
-  param.Add(macros_expand('-Fu/usr/lib/pmake/$(PROJECT_VERSION)'));
+  param.Add(macros_expand('-Fu/usr/lib/pmake/$(PMAKE_VERSION)/'));
 {$ENDIF}
 {$IFDEF DARWIN}
-  param.Add(macros_expand('-Fu/usr/local/share/pmake/$(PROJECT_VERSION)'));
+  param.Add(macros_expand('-Fu/usr/local/share/pmake/$(PMAKE_VERSION)/'));
 {$ENDIF}
 
   //add module paths
   for i := 0 to mod_list.Count - 1 do
-    param.Add('-Fu"' + mod_list[i] + '"');
+    param.Add('-Fu' + mod_list[i]);
   mod_list.Free;
 
   param.Add(src_name);
@@ -509,4 +516,3 @@ begin
 end;
 
 end.
-

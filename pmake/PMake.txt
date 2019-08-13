@@ -61,7 +61,7 @@ set_('$(PMAKE_DEBIAN_PACKAGE_DEPENDS)', '${misc:Depends}, ${shlibs:Depends}, fpc
   install('$(UNITSOUTPUTDIR)',      	'/usr/lib/pmake/$(PROJECT_VERSION)',               'make_*.*',    'lib_pmake');
   install('$(UNITSOUTPUTDIR)',     	'/usr/lib/pmake/$(PROJECT_VERSION)',               'make2_*.*',   'lib_pmake');
 {$endif}
-{$IFDEF DARWIN}
+{$ifdef DARWIN}
   install('$(BINOUTPUTDIR)',            '/usr/local/bin',                                          'pmake$(EXE)', 'pmake');
   install('$(PMAKE_SOURCE_DIR)sfx',     '/usr/local/share/pmake/$(PROJECT_VERSION)/sfx',           'sfx.pp',      'pmake');
   install('$(PMAKE_SOURCE_DIR)modules', '/usr/local/share/pmake/$(PROJECT_VERSION)/pmake/modules', '*.pas',       'pmake');
@@ -72,4 +72,3 @@ set_('$(PMAKE_DEBIAN_PACKAGE_DEPENDS)', '${misc:Depends}, ${shlibs:Depends}, fpc
   install('$(UNITSOUTPUTDIR)',          '/usr/local/share/pmake/$(PROJECT_VERSION)',               'make_*.*',    'lib_pmake');
   install('$(UNITSOUTPUTDIR)',          '/usr/local/share/pmake/$(PROJECT_VERSION)',               'make2_*.*',   'lib_pmake');
 {$endif}
-

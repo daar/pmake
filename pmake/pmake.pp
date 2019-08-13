@@ -35,6 +35,8 @@ const
   begin
     OutputLn('PMake the pascal build tool. Version ' + PMAKE_VERSION + ' [' +
 {$I %DATE%}
+      + ' ' +
+{$I %TIME%}
       + '] for ' +
 {$I %FPCTARGETCPU%}
       );

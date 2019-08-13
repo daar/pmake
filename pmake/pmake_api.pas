@@ -63,7 +63,7 @@ var
 begin
   for i := Low(depends) to High(depends) do
   begin
-    //ignore if dependency is empty string 
+    //ignore if dependency is empty string
     if AnsiString(depends[i].VAnsiString) <> '' then
       add_dependency_to_cache(depcache, pkgname, AnsiString(depends[i].VAnsiString));
   end;
@@ -240,6 +240,12 @@ begin
 end;
 
 procedure add_subdirectory(const path: string);
+begin
+  //dummy function, only used to retrieve the locations
+  //of PMake.txt by the parser
+end;
+
+procedure define_pmake(const path: string);
 var
   srcdir: string;
   pmkdir: string;
@@ -247,6 +253,8 @@ var
   dir: string;
   bindir: string;
 begin
+  set_('PMAKE_CURRENT_DEFINE_DIR', path);
+
   srcdir := vals('PMAKE_SOURCE_DIR');
   pmkdir := vals('PMAKE_CURRENT_DEFINE_DIR');
 
@@ -269,12 +277,6 @@ begin
   set_('PMAKE_CURRENT_BINARY_DIR', ExpandFileName(bindir + ExtractRelativepath(srcdir, dir)));
 end;
 
-procedure define_pmake(const path: string);
-begin
-  set_('PMAKE_CURRENT_DEFINE_DIR', path);
-  add_subdirectory(path);
-end;
-
 function execute_process(const curdir, exename: string; const commands: array of string; name: string): boolean;
 var
   outputstring: string;
@@ -284,7 +286,7 @@ begin
 {$ELSE}
   Result := RunCommandIndir(macros_expand(curdir), exename, commands, outputstring);
 {$ENDIF}
-  
+
   if name <> '' then
     set_(name, outputstring);
 end;
