@@ -4,8 +4,8 @@
   "license" : "GNU GPL v2",
   "author" : "Darius Blaszyk <dhkblaszyk@gmail.com>",
   "description" : "A cross-platform build tool for (free)pascal",
-  "type" : "tool",
-  "bin" : [
+  "type" : "project",
+  "source" : [
     "pmake/pmake.pp"
   ]
 }
