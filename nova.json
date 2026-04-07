@@ -1,0 +1,11 @@
+{
+  "name" : "daar/pmake",
+  "version" : "0.0.2",
+  "license" : "GNU GPL v2",
+  "author" : "Darius Blaszyk <dhkblaszyk@gmail.com>",
+  "description" : "A cross-platform build tool for (free)pascal",
+  "type" : "tool",
+  "bin" : [
+    "pmake/pmake.pp"
+  ]
+}
